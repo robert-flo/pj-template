@@ -76,6 +76,16 @@ Un cambio al sistema es cualquier cosa fuera de la carpeta de un repo: paquetes,
 ### Omarchy
 Antes de tocar el escritorio o la configuración de Omarchy (`$HOME/.config/hypr/` o `$HOME/.config/niri/`, `$HOME/.config/omarchy/`, temas, barra, terminales, monitores, comandos `omarchy-*`) usás la skill oficial `omarchy`; para un cuelgue, `diagnose-crash`; para hacer una app de Omarchy, `omarchy-app`. No viven en el repo: están en la config local del agente.
 
+## Herramientas propias: el estilo de git-setup
+
+Toda herramienta nueva que nazca de git-setup (`robert-flo/pj-domina-rf-git-setup`) o de shared_dir, o que viva en un duo `ravn-<tool>` + `ravn-<tool>-arch`, se arma como git-setup. Nunca un bash monolítico.
+
+- Antes de escribir código, leé git-setup entero: su estructura, sus módulos y su lenguaje visual.
+- Estructura modular: `runtime/lib` con las librerías compartidas copiadas byte por byte (por ejemplo `global_fn.sh`), un módulo por subcomando, `commands.tsv`, `completion/`, Makefile con lint/test/install y tests.
+- Lenguaje visual: los mismos colores, banners, helpers de mensajes y formato de `--help` que git-setup. La herramienta tiene que sentirse de Roberto.
+- Reutilizá antes de escribir: copiá de git-setup y cambiá lo mínimo. El `-arch` sale de `git-setup-arch` con cambios mínimos.
+- El RV bloquea si la herramienta no sigue este diseño.
+
 ## Git
 - Identidad de git en todo commit: `Roberto Flores <25asab015@ujmd.edu.sv>` (`git config user.name "Roberto Flores"` y `git config user.email 25asab015@ujmd.edu.sv` en cada clon y worktree, si no vienen de la config global).
 - Todo commit hecho por un agente del trío termina con el trailer `agente: <pm|wk|rv> · plataforma: <agy|Cursor>` (p. ej. `agente: wk · plataforma: agy`), en la última línea, después de cualquier otro trailer.
