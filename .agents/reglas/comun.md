@@ -49,7 +49,7 @@ No hay TickTick. El estado vive en las etiquetas y en el estado del issue o PR, 
 | Hecho | issue cerrado por el merge y **sin etiquetas de triage** (un issue cerrado nunca queda con `ready-for-agent` ni `needs-*`) |
 | Descartado | issue cerrado como «not planned», con `wontfix` |
 
-Las etiquetas viven en `schema/etiquetas.tsv` de pj-template; `scripts/etiquetas.sh` las crea en cada repo (lo corre pj-sync en cada hijo).
+Las etiquetas viven en `schema/etiquetas.tsv` de pj-template; `scripts/etiquetas.sh` las crea en cada repo (lo corre `scripts/ci-sync.sh` en cada sync de cada hijo).
 
 Si faltan las etiquetas en el repo, el PM las crea con `gh label create`. Títulos limpios: `<número> - <título corto>`, sin estado en el título.
 
