@@ -1,6 +1,6 @@
 # 0009. El RV revisa el PR final
 
-Fecha: 2026-10-26 · Estado: aceptado
+Fecha: 2026-10-26 · Estado: aceptado; el punto APRUEBO, reemplazado por [0014](0014-el-pm-mergea-tras-apruebo.md)
 Origen: fleet ADR 0017
 
 ## Contexto
@@ -12,7 +12,7 @@ El `code-review` del WK es una autorrevisión, no una segunda mirada. Revisar ca
 - Su veredicto es un comentario del PR que empieza con **BLOQUEO** o **APRUEBO** (todo usa la cuenta de Roberto y GitHub no deja aprobar un PR propio).
 - El RV no programa código de PR, no hace commits, no mergea ni cambia etiquetas.
 - **BLOQUEO:** el trabajo vuelve al WK (o al grill si es de diseño) y después se pide otra revisión.
-- **APRUEBO:** el PM pone `ready-to-merge` (el rol `ready-for-human` de Matt) y le pasa a Roberto el PR, el veredicto y los pasos de validación manual. Solo con una orden explícita de Roberto («merge») el PM mergea, con squash y atado al commit aprobado (`--match-head-commit`), confirma el merge y le pasa el SHA. Si Roberto rechaza, se quita `ready-to-merge` y vuelve al WK o al grill.
+- **APRUEBO** (reemplazado por [0014](0014-el-pm-mergea-tras-apruebo.md): ahora el PM mergea sin esperar orden): el PM pone `ready-to-merge` (el rol `ready-for-human` de Matt) y le pasa a Roberto el PR, el veredicto y los pasos de validación manual. Solo con una orden explícita de Roberto («merge») el PM mergea, con squash y atado al commit aprobado (`--match-head-commit`), confirma el merge y le pasa el SHA. Si Roberto rechaza, se quita `ready-to-merge` y vuelve al WK o al grill.
 
 ## Consecuencias
 - Reglas en `.agents/reglas/rv.md` y `pm.md` paso 8.

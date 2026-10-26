@@ -1,5 +1,5 @@
 # Solo en pj-template (no está en template-paths.txt, así que no llega a los hijos).
-# Todos los días (y a mano) compara los hijos de pj-template (creados con «Use this template» o en
+# Todos los días, a mano y cuando cambia family.yml en main, compara los hijos de pj-template (creados con «Use this template» o en
 # modo dependencia, con template_ref en proyecto.yml) con family.yml, revisa que cada hijo tenga el
 # secreto PJ_TEMPLATE_TOKEN y corre scripts/deriva.sh: regenera cada hijo con el template actual y
 # muestra el % de archivos idénticos en el resumen del run. Si falta algo o hay deriva, abre o
@@ -10,6 +10,9 @@ on:
   schedule:
     - cron: "17 12 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [family.yml]
 permissions:
   contents: read
   issues: write

@@ -78,6 +78,8 @@ Antes de tocar el escritorio o la configuración de Omarchy (`$HOME/.config/hypr
 
 ## Herramientas propias: el estilo de git-setup
 
+Por qué: [ADR 0015](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0015-herramientas-propias-estilo-git-setup.md).
+
 Toda herramienta nueva que nazca de git-setup (`robert-flo/pj-domina-rf-git-setup`) o de shared_dir, o que viva en un duo `ravn-<tool>` + `ravn-<tool>-arch`, se arma como git-setup. Nunca un bash monolítico.
 
 - Antes de escribir código, leé git-setup entero: su estructura, sus módulos y su lenguaje visual.
@@ -91,7 +93,7 @@ Toda herramienta nueva que nazca de git-setup (`robert-flo/pj-domina-rf-git-setu
 - Todo commit hecho por un agente del trío termina con el trailer `agente: <pm|wk|rv> · plataforma: <agy|Cursor>` (p. ej. `agente: wk · plataforma: agy`), en la última línea, después de cualquier otro trailer.
 - Antes de cada push: `git pull --rebase --autostash`. Nunca `git push --force` (ni `--force-with-lease`).
 - Todo merge es squash y atado al commit revisado: `gh pr merge <N> --squash --delete-branch --match-head-commit <sha>`.
-- A la rama por defecto solo mergea el PM, y solo después del `APRUEBO <sha>` del RV, con `gh pr merge --squash --delete-branch --match-head-commit <sha>`. El WK y el RV nunca mergean.
+- A la rama por defecto solo mergea el PM, y solo después del `APRUEBO <sha>` del RV, con `gh pr merge --squash --delete-branch --match-head-commit <sha>` ([ADR 0014](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0014-el-pm-mergea-tras-apruebo.md)). El WK y el RV nunca mergean.
 - Nunca commits directos a la rama por defecto ni a la rama de un spec: todo entra por PR.
 - El clon del meta-repo lo comparten los tres agentes y Roberto. El WK trabaja en un worktree propio y al terminar deja el clon principal con `git status` limpio y en la rama por defecto.
 - Las capturas y videos de prueba de un PR van al repo público `robert-flo/assets`, en `<repo>/pr-<número>/<archivo>` (push directo a `main`, solo agregar), y se embeben en el body con `https://raw.githubusercontent.com/robert-flo/assets/main/<repo>/pr-<número>/<archivo>`. Nunca imágenes commiteadas en el repo del código.
