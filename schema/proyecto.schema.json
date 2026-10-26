@@ -40,6 +40,12 @@
       "then": {"contains": {"properties": {"primero": {"const": true}}, "required": ["primero"]}, "minContains": 1, "maxContains": 1}
     },
     "notas": {"type": "string"},
+    "extras": {
+      "type": "array", "uniqueItems": true,
+      "description": "Archivos a mano propios del hijo, además de los 6 (por ejemplo un adaptador propio en .agents/, que se conserva intacto). ./pj check no los borra ni los revisa.",
+      "items": {"type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[A-Za-z0-9._/-]+$",
+        "not": {"enum": ["proyecto.yml", "AGENTS.md", "README.md", ".gitignore", "pj", ".github/workflows/pj-template.yml"]}}
+    },
     "skills_extra": {
       "type": "object", "additionalProperties": false,
       "properties": {

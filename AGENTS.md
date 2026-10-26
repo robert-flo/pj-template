@@ -9,7 +9,7 @@ Plantilla única de los tríos PM/WK/RV de Roberto para **Cursor** y **agy** (An
 - Lo que va en este repo se lee en `docs/pj-template.md` («Quién manda qué»). Los archivos generados no se tocan a mano.
 
 ## Cómo crear un hijo
-Un hijo nuevo va en **modo dependencia**: versiona 6 archivos (`proyecto.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj`, `.github/workflows/pj-template.yml`) y trae todo lo demás de este repo al SHA de `template_ref`. Detalle y por qué no se versiona lo generado: `docs/pj-template.md`.
+Un hijo nuevo va en **modo dependencia**: versiona 6 archivos (`proyecto.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj`, `.github/workflows/pj-template.yml`) y trae todo lo demás de este repo al SHA de `template_ref`. Archivos propios a conservar (p. ej. un adaptador propio en `.agents/`) van en `extras:` de `proyecto.yml`. Detalle y por qué no se versiona lo generado: `docs/pj-template.md`.
 
 1. Desde pj-template, con `PJ_TEMPLATE_TOKEN` exportado: `make nuevo-hijo P=<nombre> [DIR=<carpeta>]`. Crea `robert-flo/pj-<nombre>` vacío y privado (si no existe), lo clona en `/z-drive/tries/rf-pj-<nombre>` o en `./`, escribe los 6 archivos con `template_ref` = `main` actual, corre `./pj` y `./pj check`, pushea, carga el secreto y abre el PR de `family.yml`.
 2. Completá `area`, `repos`, `specs` y `notas` de `proyecto.yml` y la arquitectura en `AGENTS.md` y `README.md`. `./pj` falla si quedan datos del molde.

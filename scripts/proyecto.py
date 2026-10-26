@@ -61,6 +61,7 @@ def cargar(raiz, dependencia):
     p["specs"] = sorted(specs, key=lambda s: s["orden"])
     p["notas"] = (p.get("notas") or "").strip()
     p["skills_extra"] = p.get("skills_extra") or {}
+    p["extras"] = p.get("extras") or []
     return p
 
 

@@ -5,6 +5,8 @@ Este archivo vive en `robert-flo/pj-template`. Un hijo en modo dependencia lo ti
 ## Modo dependencia (el de los hijos nuevos)
 El hijo versiona solo **6 archivos**: `proyecto.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj` y `.github/workflows/pj-template.yml`. Todo lo demás llega como dependencia:
 
+**Extras.** Si un hijo necesita conservar archivos propios a mano (por ejemplo un adaptador propio en `.agents/` que se deja intacto, o un `.code-workspace`), los lista en `extras:` de `proyecto.yml`. `./pj check` los acepta versionados y no los revisa (tampoco en la búsqueda de referencias de otras plataformas); `./pj` no los genera ni los borra. Ninguno puede ser uno de los 6 archivos ni salir del repo.
+
 1. `./pj` lee `template_ref` (SHA completo de pj-template) de `proyecto.yml` y trae ese commit a `.pj/tpl` (ignorado por git; `git fetch --depth 1`, con `PJ_TEMPLATE_TOKEN` o `gh auth git-credential`).
 2. Corre `.pj/tpl/scripts/generar.py` con `PJ_RAIZ=<hijo>`: escribe las fichas y adaptadores **y copia** reglas, skills y la regla sin coautor de Cursor a `.agents/` y `.cursor/`.
 3. `./pj listo [--abrir]` es el paso único tras un clone: `git pull --rebase --autostash`, trae el template, genera, `./pj hooks` (hooks `post-merge` y `post-checkout` que corren `./pj` tras cada pull o cambio de rama; no pisa hooks propios), `agy`, `clonar`, `check`, e imprime `agy --agent PM-<proyecto>` (`--abrir` lo arranca).

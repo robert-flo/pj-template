@@ -28,12 +28,17 @@ for f in $(cat .agents/generados.txt) .gitignore; do cmp -s "$f" "$tmp/$f" || ma
 rm -rf "${tmp:?}"/* "$tmp"/.[!.]* 2>/dev/null || true
 
 if grep -rnE '\{\{|\}\}' --include='*.md' --include='*.mdc' .agents/agents .cursor .gitignore; then mal "quedan {{ }} en archivos generados"; else ok "sin {{ }} en lo generado"; fi
-git grep -nIiE 'grok ?bot|robert-flo/fleet|fleet/bots' -- . ':!scripts/check.sh' ':!docs/adr-antigravity' && mal "hay referencias a Grok Bot o fleet" || ok "sin referencias a Grok Bot ni fleet"
-[ -e .agents/grokbot.md ] && mal ".agents/grokbot.md no debe existir" || true
+# extras: archivos a mano propios del hijo (proyecto.yml), que el check conserva y no revisa.
+extras="$("$PY" -c 'import sys,yaml;[print(x) for x in (yaml.safe_load(open("proyecto.yml")) or {}).get("extras") or []]' 2>/dev/null || true)"
+excl=(); while IFS= read -r x; do [ -n "$x" ] && excl+=(":!$x"); done <<< "$extras"
+git grep -nIiE 'grok ?bot|robert-flo/fleet|fleet/bots' -- . ':!scripts/check.sh' ':!docs/adr-antigravity' "${excl[@]}" && mal "hay referencias a Grok Bot o fleet" || ok "sin referencias a Grok Bot ni fleet"
+if [ -e .agents/grokbot.md ] && ! grep -qxF .agents/grokbot.md <<< "$extras"; then mal ".agents/grokbot.md no debe existir (salvo que esté en extras de proyecto.yml)"; fi
 
 if [ "$DEP" = 1 ]; then
   # El hijo versiona solo sus archivos a mano; todo lo demás viene de pj-template.
   permitidos=$'.github/workflows/pj-template.yml\n.gitignore\nAGENTS.md\nREADME.md\npj\nproyecto.yml'
+  [ -n "$extras" ] && permitidos+=$'\n'"$extras"
+  for x in $extras; do git ls-files --error-unmatch "$x" >/dev/null 2>&1 || mal "extras: $x no está versionado"; done
   extra="$(git ls-files | LC_ALL=C sort | comm -23 - <(echo "$permitidos" | LC_ALL=C sort))"
   [ -z "$extra" ] && ok "el hijo versiona solo $(git ls-files | wc -l) archivos a mano" || mal "archivos versionados que deberían venir de pj-template: $(echo $extra)"
   for f in $(cat .agents/generados.txt); do git ls-files --error-unmatch "$f" >/dev/null 2>&1 && mal "$f es generado y no debe versionarse"; done
@@ -62,6 +67,8 @@ specs:
     primero: true
 notas: |
   Hijo de prueba.
+extras:
+  - ".agents/grokbot.md"
 YML
   if PJ_RAIZ="$h" "$PY" "$T/scripts/generar.py" >/dev/null && PJ_RAIZ="$h" "$PY" "$T/scripts/humo.py" >/dev/null; then
     grep -q '1. robert-flo/demo#1 — uno (#1 primero) ← \*\*primer trabajo\*\*' "$h/.agents/agents/PM-demo.md" \
@@ -80,6 +87,8 @@ YML
   rechaza "notas de pj-template en un hijo" "sed -i 's|Hijo de prueba.|Este repo es la plantilla de los meta-repos hijos|' '$h/proyecto.yml'"
   rechaza "hijo llamado pj-template" "sed -i 's|^proyecto: \"demo\"|proyecto: \"pj-template\"|' '$h/proyecto.yml'"
   rechaza "ficha sobrante del molde" "cp '$T/.agents/agents/PM-pj-template.md' '$h/.agents/agents/'"
+  rechaza "extras que pisa un archivo del hijo" "sed -i 's|\".agents/grokbot.md\"|\"pj\"|' '$h/proyecto.yml'"
+  rechaza "extras con .." "sed -i 's|\".agents/grokbot.md\"|\"../x\"|' '$h/proyecto.yml'"
   rechaza "sin template_ref" "sed -i '/^template_ref/d' '$h/proyecto.yml'"
 fi
 
