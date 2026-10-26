@@ -16,6 +16,15 @@ for d in "$src"/skills/{engineering,productivity,in-progress}/*/; do
   n="$(basename "$d")"
   [ -e "$dst/$n" ] && { echo "Skill duplicada: $n" >&2; exit 1; }
   cp -R "${d%/}" "$dst/$n"
+  # agy y Cursor esconden del modelo las skills con `disable-model-invocation: true` (solo quedan como
+  # /comando manual), y el trío PM/WK/RV no podría seguir el flujo de Matt Pocock solo. La copia del
+  # template las deja invocables; robert-flo/skills sigue siendo la única fuente.
+  "$PY" - "$dst/$n/SKILL.md" <<'PYX'
+import pathlib, re, sys
+f = pathlib.Path(sys.argv[1]); t = f.read_text()
+m = re.match(r"(---\n.*?\n)(---\n)", t, re.S)
+if m: f.write_text(re.sub(r"(?m)^disable-model-invocation:[ \t]*true[ \t]*\n", "", m.group(1)) + t[len(m.group(1)):])
+PYX
   rel="${d#"$src"/}"; rel="${rel%/}"
   hash="$(cd "$dst/$n" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
   entradas+=("$n"$'\t'"$rel/SKILL.md"$'\t'"$hash")

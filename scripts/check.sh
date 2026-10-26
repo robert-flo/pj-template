@@ -108,8 +108,25 @@ for f in pathlib.Path(".agents/agents").glob("*.md"):
     for s in fm.get("skills", []):
         if s.split("/", 1)[1] not in lock: err.append(f"{f}: skill {s} no está en el lock")
     if not fm.get("name") or not fm.get("tools"): err.append(f"{f}: frontmatter incompleto")
+# Ruta de descubrimiento: agy y Cursor leen <raíz>/.agents/skills/<nombre>/SKILL.md y no muestran al
+# modelo las que traen disable-model-invocation: true. Cada skill requerida (roles + skills_extra +
+# fichas) tiene que estar ahí, con name igual a la carpeta y visible para el modelo.
+roles = yaml.safe_load((pathlib.Path(sys.argv[1]) / "plantillas/roles.yml").read_text())["skills"]
+req = {s for v in roles.values() for s in v}
+py = pathlib.Path("proyecto.yml")
+if py.exists():
+    extra = (yaml.safe_load(py.read_text()) or {}).get("skills_extra") or {}
+    req |= {s for v in extra.values() for s in (v or [])}
+for f in pathlib.Path(".agents/agents").glob("*.md"):
+    req |= {s.split("/", 1)[1] for s in yaml.safe_load(f.read_text().split("---")[1]).get("skills", [])}
+for s in sorted(req):
+    sk = d / s / "SKILL.md"
+    if not sk.exists(): err.append(f"skill requerida {s} falta en .agents/skills/{s}/SKILL.md (agy y Cursor no la ven)"); continue
+    fm = yaml.safe_load(sk.read_text().split("---")[1]) or {}
+    if fm.get("name") != s: err.append(f"{sk}: name {fm.get('name')!r} distinto de la carpeta")
+    if fm.get("disable-model-invocation") is True: err.append(f"{sk}: disable-model-invocation: true la esconde del modelo en agy y Cursor")
 for e in err: print("FALLA", e)
-print("ok   skills-lock, .agents/skills y fichas cuadran" if not err else "")
+print(f"ok   skills-lock, .agents/skills y fichas cuadran; {len(req)} skills requeridas visibles para agy y Cursor" if not err else "")
 sys.exit(1 if err else 0)
 PY
 "$PY" "$T/scripts/humo.py" || fallas=$((fallas+1))
