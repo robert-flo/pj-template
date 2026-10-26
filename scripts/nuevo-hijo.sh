@@ -69,7 +69,8 @@ pon README.md <<MD
 Meta-repo del trío PM/WK/RV de $P (hijo de \`robert-flo/pj-template\`, modo dependencia).
 
 \`\`\`bash
-./pj            # trae pj-template al template_ref y genera .agents/ y .cursor/
+./pj listo      # todo de una: pull, template, genera, hooks, agy, clonar, check
+./pj            # solo trae pj-template al template_ref y genera .agents/ y .cursor/
 ./pj check      # esquema de proyecto.yml, idempotencia y prueba de humo
 ./pj clonar     # clona los repos de proyecto.yml al lado
 ./pj agy        # una vez por máquina; después: agy --agent PM-$P

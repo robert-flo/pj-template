@@ -11,6 +11,8 @@ make generar            # fichas de agy y adaptadores de Cursor de este repo
 
 # en un hijo
 ./pj                    # trae pj-template@template_ref a .pj/ y genera .agents/ y .cursor/
+./pj listo [--abrir]    # todo de una tras clonar: pull, template, genera, hooks, agy, clonar, check
+./pj hooks              # cada git pull regenera solo (lo instala ./pj listo)
 ./pj check | humo | clonar | agy
 ```
 

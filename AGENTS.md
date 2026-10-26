@@ -17,7 +17,7 @@ Un hijo nuevo va en **modo dependencia**: versiona 6 archivos (`proyecto.yml`, `
 4. `./pj clonar` clona los repos de `proyecto.yml` al lado.
 5. agy: `./pj agy` una vez por máquina y `agy --agent PM-<proyecto>`. Cursor: abrí la carpeta y hablá con el PM. `./pj humo` confirma que el PM arranca y lee sus reglas.
 
-Después de cada `git clone` o `git pull` de un hijo, `./pj`.
+Después de cada `git clone` de un hijo, un solo comando: `./pj listo` (pull, trae el template, genera, instala los hooks, enlaza las fichas en agy, clona los repos, corre check e imprime `agy --agent PM-<proyecto>`; con `--abrir` lo arranca). Instala los hooks `post-merge` y `post-checkout` (`./pj hooks`), así que cada `git pull` posterior regenera solo. `./pj` a secas sigue regenerando sin más.
 
 Hijos viejos (creados con «Use this template», modo copia): se migran por PR dejando solo los 6 archivos, agregando `template_ref` y llevando `specs` al formato nuevo (ejemplo: `robert-flo/pj-ravn`). Mientras tanto siguen recibiendo PR de sync en modo copia.
 
