@@ -78,6 +78,7 @@ Antes de tocar el escritorio o la configuración de Omarchy (`$HOME/.config/hypr
 
 ## Git
 - Identidad de git en todo commit: `Roberto Flores <25asab015@ujmd.edu.sv>` (`git config user.name "Roberto Flores"` y `git config user.email 25asab015@ujmd.edu.sv` en cada clon y worktree, si no vienen de la config global).
+- Todo commit hecho por un agente del trío termina con el trailer `agente: <pm|wk|rv> · plataforma: <agy|Cursor>` (p. ej. `agente: wk · plataforma: agy`), en la última línea, después de cualquier otro trailer.
 - Antes de cada push: `git pull --rebase --autostash`. Nunca `git push --force` (ni `--force-with-lease`).
 - Todo merge es squash y atado al commit revisado: `gh pr merge <N> --squash --delete-branch --match-head-commit <sha>`.
 - Nadie mergea a la rama por defecto sin una orden explícita de Roberto en el chat («merge» o algo igual de claro) sobre un PR con `ready-to-merge`.
