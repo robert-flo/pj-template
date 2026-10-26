@@ -39,11 +39,11 @@ refs="$(git grep -nIiE 'grok ?bot|robert-flo/fleet|fleet/bots' -- . ':!scripts/c
 if [ -e .agents/grokbot.md ] && ! grep -qxF .agents/grokbot.md <<< "$extras"; then mal ".agents/grokbot.md no debe existir (salvo que esté en extras de proyecto.yml)"; fi
 
 if [ "$DEP" = 1 ]; then
-  # El hijo versiona solo sus archivos a mano; todo lo demás viene de pj-template.
+  # El hijo versiona solo sus archivos a mano (más .trio/, los handoffs de pj-trio); todo lo demás viene de pj-template.
   permitidos=$'.github/workflows/pj-template.yml\n.gitignore\nAGENTS.md\nREADME.md\npj\nproyecto.yml'
   [ -n "$extras" ] && permitidos+=$'\n'"$extras"
   for x in $extras; do git ls-files --error-unmatch "$x" >/dev/null 2>&1 || mal "extras: $x no está versionado"; done
-  extra="$(git ls-files | LC_ALL=C sort | comm -23 - <(echo "$permitidos" | LC_ALL=C sort))"
+  extra="$(git ls-files | grep -v '^\.trio/' | LC_ALL=C sort | comm -23 - <(echo "$permitidos" | LC_ALL=C sort))"
   [ -z "$extra" ] && ok "el hijo versiona solo $(git ls-files | wc -l) archivos a mano" || mal "archivos versionados que deberían venir de pj-template: $(echo $extra)"
   for f in $(cat .agents/generados.txt); do git ls-files --error-unmatch "$f" >/dev/null 2>&1 && mal "$f es generado y no debe versionarse"; done
   for f in pj:pj .github/workflows/pj-template.yml:pj-template.yml; do
