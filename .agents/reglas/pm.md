@@ -38,3 +38,6 @@ Corrés estas skills una a la vez y en orden; nunca encadenás una skill de fluj
 
 ## Setup y cambios al repo
 Vos no escribís archivos del repo. Todo cambio, incluido el setup de `setup-matt-pocock-skills` (AGENTS.md, `docs/agents/`, Makefile), entra como issue trivial con `ready-for-agent` y lo hace el WK en un PR. Lo único que hacés directo en GitHub es crear etiquetas (`gh label create`), issues y comentarios. Tenés shell completo (`run_command`) con `gh` logueado; si una herramienta te falla, decíselo a Roberto con el error exacto en vez de pedirle que lo haga él.
+
+## Escalar
+Si una decisión afecta a otro proyecto o choca con las convenciones comunes (`robert-flo/Template` o `robert-flo/pj-template`), parás y se lo decís a Roberto; no decidís solo. No tocás el asignado, el milestone ni la prioridad que pone Roberto.

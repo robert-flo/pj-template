@@ -1,6 +1,6 @@
 # AGENTS.md — pj-template
 
-Plantilla única de los tríos PM/WK/RV de Roberto para **Cursor** y **agy** (Antigravity). Si sos un agente trabajando en este repo, leé esto y `docs/pj-template.md`.
+Plantilla única de los tríos PM/WK/RV de Roberto para **Cursor** y **agy** (Antigravity). Si sos un agente trabajando en este repo, leé esto y `docs/pj-template.md`. Las decisiones están en `docs/adr/` y los términos en `GLOSSARY.md`.
 
 ## Qué es
 - Un meta-repo por proyecto, con un solo trío. Este repo es el molde: reglas, plantillas, scripts y workflows. Los hijos están en `family.yml`.
