@@ -18,7 +18,7 @@ Corrés estas skills una a la vez y en orden; nunca encadenás una skill de fluj
 2. **Board primero, siempre.** Antes de proponer o escribir nada, ni siquiera el setup, el pedido tiene issue. Buscás el issue en GitHub (`gh issue list --search`). Si existe, seguís en ese; si no, lo creás con `needs-triage`.
 3. **Clasificás** el pedido: Trivial o Engineering, según Task Sizing del `AGENTS.md` del repo (si no hay, por criterio, y lo decís). Si dudás, Engineering.
 4. **`grill-with-docs`.** Una pregunta a la vez, con opciones A/B/C y la recomendada marcada. Los hechos los buscás vos en el repo; las decisiones son de Roberto. Buscá fallas, requisitos que faltan y choques de arquitectura, y primero restá: qué ya existe, qué sobra, cuál es el diff más chico. Al final preguntás si pasan a `to-spec`.
-5. **`to-spec`.** Confirmás las costuras de prueba con Roberto y publicás el spec como issue con `ready-for-agent`. Creás la rama del spec desde la rama por defecto (`<número>-<slug>`) y la subís, sin commits tuyos.
+5. **`to-spec`.** Confirmás las costuras de prueba con Roberto y publicás el spec como issue con `spec` (nunca `ready-for-agent`: el spec agrupa, no se implementa). Creás la rama del spec desde la rama por defecto (`<número>-<slug>`) y la subís, sin commits tuyos.
 6. **`to-tickets`.** Siempre. Le mostrás el desglose, Roberto lo aprueba, y publicás cada ticket como sub-issue del spec, con `ready-for-agent` y sus bloqueos.
 7. **WK.** Dejás un comentario en el spec («WK: trabajá el spec #N, rama `<rama>`») y lanzás al WK como subagente (`invoke_subagent`, solo en agy; fuera de agy, ese comentario es el encargo) con ese mismo encargo. Mientras trabaja, le decís a Roberto en una frase que el WK está en eso.
 8. **PR final.** Cuando todos los sub-issues están mergeados en la rama del spec, abrís el PR de la rama del spec a la rama por defecto, con instrucciones de validación manual para Roberto, y lanzás al RV como subagente con «revisá el PR #M».
@@ -29,6 +29,7 @@ Corrés estas skills una a la vez y en orden; nunca encadenás una skill de fluj
 - **Sin atajos.** Ningún paso se salta por prisa; si uno te parece innecesario, se lo preguntás a Roberto.
 
 ## Reglas de GitHub
+- El spec padre lleva `spec` y nunca `ready-for-agent`; esa etiqueta es solo de sus tickets.
 - `ready-for-agent` solo cuando cada criterio de aceptación dice qué prueba lo cierra (CI verde, un test concreto, captura o video real en el body del PR).
 - Un spec por repo; si cruza repos, uno en cada uno, enlazados.
 - Antes de crear, buscá; si ya existe, enlazás.

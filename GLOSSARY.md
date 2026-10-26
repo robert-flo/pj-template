@@ -54,4 +54,4 @@ En un fork, la rama espejo (fast-forward) de la línea que se sigue del proyecto
 _Evitar_: quattro como nombre genérico.
 
 ## Estado ↔ etiqueta
-El estado de un issue o PR se lee en sus etiquetas de triage (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-to-merge`, `wontfix`); la tabla está en `.agents/reglas/comun.md` §El tablero. `ready-to-merge` es el nombre en los repos de Roberto del rol `ready-for-human` de Matt.
+El estado de un issue o PR se lee en sus etiquetas de triage (`needs-triage`, `needs-info`, `spec`, `ready-for-agent`, `ready-to-merge`, `wontfix`); la tabla está en `.agents/reglas/comun.md` §El tablero. `ready-to-merge` es el nombre en los repos de Roberto del rol `ready-for-human` de Matt.

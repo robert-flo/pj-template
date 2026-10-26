@@ -1,0 +1,8 @@
+# Etiquetas que pj-template manda a cada repo (nombre<TAB>color<TAB>descripción).
+# scripts/etiquetas.sh las crea o actualiza con `gh label create --force` (idempotente).
+needs-triage	FBCA04	Idea sin revisar
+needs-info	D876E3	Falta información o trabado (ON HOLD)
+ready-for-agent	0E8A16	Listo para que lo tome el WK
+ready-to-merge	1D76DB	PR final aprobado por el RV, espera la orden de Roberto
+wontfix	FFFFFF	Descartado
+spec	5319E7	Spec padre; agrupa tickets, no lo implementa un agente
