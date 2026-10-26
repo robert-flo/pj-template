@@ -24,9 +24,9 @@ jobs:
           ISSUES_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          pip install -q pyyaml jsonschema
+          PY="$(bash scripts/py.sh)"; export PY
           titulo="hijos sin registrar o sin secret"
-          familia=$(python3 -c 'import yaml;print("\n".join(sorted(yaml.safe_load(open("family.yml"))["hijos"])))')
+          familia=$("$PY" -c 'import yaml;print("\n".join(sorted(yaml.safe_load(open("family.yml"))["hijos"])))')
           desde_template=$(gh api --paginate "user/repos?per_page=100&affiliation=owner" --jq '.[] | select(.owner.login=="robert-flo") | .full_name')
           creados=""
           for r in $desde_template; do

@@ -3,6 +3,7 @@
 # Uso: scripts/sync-skills.sh <ruta-al-checkout-de-skills>
 # Promovidas: skills/{engineering,productivity,in-progress}/*. Quedan fuera misc/ y deprecated/.
 set -euo pipefail
+PY="${PY:-$(bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../scripts/py.sh")}"; export PY
 raiz="$(cd "$(dirname "$0")/.." && pwd)"
 src="${1:?uso: sync-skills.sh <checkout-de-robert-flo/skills>}"
 src="$(cd "$src" && pwd)"
@@ -19,7 +20,7 @@ for d in "$src"/skills/{engineering,productivity,in-progress}/*/; do
   hash="$(cd "$dst/$n" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
   entradas+=("$n"$'\t'"$rel/SKILL.md"$'\t'"$hash")
 done
-printf '%s\n' "${entradas[@]}" | LC_ALL=C sort | python3 -c '
+printf '%s\n' "${entradas[@]}" | LC_ALL=C sort | "$PY" -c '
 import json, sys
 s = {}
 for l in sys.stdin.read().splitlines():

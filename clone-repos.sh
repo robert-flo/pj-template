@@ -2,9 +2,10 @@
 # clone-repos.sh — clona y alinea los repos hijos listados en proyecto.yml. Seguro e idempotente.
 # Nunca destruye cambios locales: si un clon tiene cambios, se queda en su rama y avisa.
 set -euo pipefail
+PY="${PY:-$(bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts/py.sh")}"; export PY
 cd "${PJ_RAIZ:-$(dirname "${BASH_SOURCE[0]}")}"
 
-mapfile -t REPOS < <(python3 -c '
+mapfile -t REPOS < <("$PY" -c '
 import yaml
 p = yaml.safe_load(open("proyecto.yml")) or {}
 for r in p.get("repos") or []:

@@ -32,8 +32,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}
         run: |
-          python3 -c 'import yaml' || pip install pyyaml
-          for h in $(python3 -c 'import yaml;print(" ".join(yaml.safe_load(open("family.yml"))["hijos"]))'); do
+          PY="$(bash scripts/py.sh)"
+          for h in $("$PY" -c 'import yaml;print(" ".join(yaml.safe_load(open("family.yml"))["hijos"]))'); do
             echo "-> $h"
             gh api "repos/$h/dispatches" -f event_type=pj-template-updated -f "client_payload[sha]=$GITHUB_SHA" || echo "::warning::no pude avisar a $h"
           done

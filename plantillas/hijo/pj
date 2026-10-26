@@ -9,7 +9,8 @@
 #   ./pj hooks      instala los hooks post-merge y post-checkout: cada `git pull` regenera solo.
 #   ./pj <target>   corre un target del Makefile del template: check, humo, clonar, agy, generar…
 # Auth: PJ_TEMPLATE_TOKEN si está (CI); si no, `gh auth git-credential`. PJ_TEMPLATE_DIR=<checkout>
-# usa un pj-template local en vez de bajarlo (pruebas).
+# usa un pj-template local en vez de bajarlo (pruebas). Python: crea .pj/venv (PyYAML + jsonschema)
+# la primera vez; PY=<python> lo reemplaza.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 raiz="$PWD"
@@ -44,6 +45,8 @@ else
   fi
 fi
 export PJ_RAIZ="$raiz" PJ_TPL="$tpl"
+# Python propio en .pj/venv con PyYAML y jsonschema (requirements.txt del template); nunca el del sistema.
+PY="${PY:-$(bash "$tpl/scripts/py.sh")}"; export PY
 for f in pj .github/workflows/pj-template.yml; do
   cmp -s "$tpl/plantillas/hijo/$(basename "$f")" "$f" || echo "pj: aviso: $f difiere del de pj-template@${ref:0:12} (el PR de sync lo actualiza)" >&2
 done
@@ -65,11 +68,11 @@ HOOK
   echo "pj: hooks post-merge y post-checkout instalados"
 }
 case "${1:-sync}" in
-  sync) exec python3 "$tpl/scripts/generar.py" ;;
+  sync) exec "$PY" "$tpl/scripts/generar.py" ;;
   hooks) instalar_hooks; exit 0 ;;
   listo)
     shift; abrir=0; for a in "$@"; do case "$a" in --abrir) abrir=1 ;; *) echo "pj: listo no conoce $a" >&2; exit 2 ;; esac; done
-    python3 "$tpl/scripts/generar.py"
+    "$PY" "$tpl/scripts/generar.py"
     instalar_hooks
     make -s --no-print-directory -f "$tpl/Makefile" agy clonar check
     p="$(sed -nE 's/^proyecto:[[:space:]]*["'\'']?([^"'\'' #]+).*$/\1/p' proyecto.yml)"
@@ -77,5 +80,5 @@ case "${1:-sync}" in
     if [ "$abrir" = 1 ]; then exec agy --agent "PM-$p"; fi
     exit 0 ;;
 esac
-python3 "$tpl/scripts/generar.py" >/dev/null
+"$PY" "$tpl/scripts/generar.py" >/dev/null
 exec make -s --no-print-directory -f "$tpl/Makefile" "$@"

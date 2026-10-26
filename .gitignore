@@ -18,6 +18,9 @@ scratch-*.md
 *~
 __pycache__/
 
+# venv de pj (scripts/py.sh)
+/.pj/
+
 # >>> pj-template: repos (generado) >>>
 /.pj-sync/
 # <<< pj-template: repos (generado) <<<

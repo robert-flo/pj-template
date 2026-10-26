@@ -16,7 +16,7 @@ make generar            # fichas de agy y adaptadores de Cursor de este repo
 ./pj check | humo | clonar | agy
 ```
 
-Necesitás `python3` con PyYAML y jsonschema (`sudo pacman -S python-yaml python-jsonschema`), `gh`, `git` y `make`.
+Necesitás `python3` (con el módulo venv); PyYAML y jsonschema se instalan solos en `.pj/venv` desde `requirements.txt`, `gh`, `git` y `make`.
 
 - Cómo crear un hijo y cambiar el template: [`AGENTS.md`](AGENTS.md).
 - Modo dependencia, esquema, prueba de humo, workflows y el secreto `PJ_TEMPLATE_TOKEN`: [`docs/pj-template.md`](docs/pj-template.md).

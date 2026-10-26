@@ -41,8 +41,6 @@ jobs:
           repository: robert-flo/skills
           ref: ${{ inputs.skills_ref }}
           path: .pj-sync/skills
-      - name: Dependencias
-        run: pip install -q pyyaml jsonschema
       - name: Sincronizar
         env:
           PJ_TEMPLATE_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}

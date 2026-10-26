@@ -5,11 +5,12 @@ set -euo pipefail
 T="$(cd "$(dirname "$0")/.." && pwd)"; R="$(cd "${PJ_RAIZ:-$T}" && pwd)"; export PJ_RAIZ="$R"
 DEP=0; [ "$R" != "$T" ] && DEP=1
 cd "$R"
+PY="${PY:-$(bash "$T/scripts/py.sh")}"; export PY
 fallas=0; ok(){ echo "ok   $*"; }; mal(){ echo "FALLA $*"; fallas=$((fallas+1)); }
-gen(){ python3 "$T/scripts/generar.py"; }
+gen(){ "$PY" "$T/scripts/generar.py"; }
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 
-python3 "$T/scripts/proyecto.py" || fallas=$((fallas+1))
+"$PY" "$T/scripts/proyecto.py" || fallas=$((fallas+1))
 
 snap(){ find . -path ./.git -prune -o -path ./.pj -prune -o -path ./.pj-sync -prune -o -path './rf-*' -prune -o -path './fo-*' -prune -o -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum; }
 gen >/dev/null || { mal "generar.py falló"; echo "check: $fallas fallas"; exit 1; }
@@ -20,7 +21,7 @@ a="$(snap)"; gen >/dev/null; b="$(snap)"
 git ls-files -co --exclude-standard -z | xargs -0 -I{} cp --parents {} "$tmp/" 2>/dev/null || true
 if [ "$DEP" = 1 ]; then rm -rf "$tmp/.agents" "$tmp/.cursor"; else xargs -I{} rm -f "$tmp/{}" < .agents/generados.txt; fi
 if [ "$DEP" = 1 ]; then g="$T/scripts/generar.py"; else g="$tmp/scripts/generar.py"; fi
-( cd "$tmp" && PJ_RAIZ="$tmp" python3 "$g" >/dev/null ) || mal "generar desde cero falló"
+( cd "$tmp" && PJ_RAIZ="$tmp" "$PY" "$g" >/dev/null ) || mal "generar desde cero falló"
 antes=$fallas
 for f in $(cat .agents/generados.txt) .gitignore; do cmp -s "$f" "$tmp/$f" || mal "regenerar desde cero cambia $f"; done
 [ "$fallas" -eq "$antes" ] && ok "regenerar desde cero da los mismos bytes"
@@ -62,14 +63,14 @@ specs:
 notas: |
   Hijo de prueba.
 YML
-  if PJ_RAIZ="$h" python3 "$T/scripts/generar.py" >/dev/null && PJ_RAIZ="$h" python3 "$T/scripts/humo.py" >/dev/null; then
+  if PJ_RAIZ="$h" "$PY" "$T/scripts/generar.py" >/dev/null && PJ_RAIZ="$h" "$PY" "$T/scripts/humo.py" >/dev/null; then
     grep -q '1. robert-flo/demo#1 — uno (#1 primero) ← \*\*primer trabajo\*\*' "$h/.agents/agents/PM-demo.md" \
       && [ "$(grep -n 'demo#1 —' "$h/.agents/agents/PM-demo.md" | cut -d: -f1)" -lt "$(grep -n 'demo#2 —' "$h/.agents/agents/PM-demo.md" | cut -d: -f1)" ] \
       && ok "modo dependencia: hijo de prueba genera, ordena specs y marca el primer trabajo" || mal "modo dependencia: specs mal ordenados o sin primer trabajo"
   else mal "modo dependencia: el hijo de prueba no genera o no pasa humo"; fi
   rechaza(){ # $1 descripción, $2 sed sobre proyecto.yml o comando
     cp "$h/proyecto.yml" "$h/p.bak"; eval "$2"
-    if PJ_RAIZ="$h" python3 "$T/scripts/generar.py" >/dev/null 2>&1; then mal "generar aceptó: $1"; else ok "generar rechaza: $1"; fi
+    if PJ_RAIZ="$h" "$PY" "$T/scripts/generar.py" >/dev/null 2>&1; then mal "generar aceptó: $1"; else ok "generar rechaza: $1"; fi
     mv "$h/p.bak" "$h/proyecto.yml"; rm -f "$h/.agents/agents/PM-pj-template.md"
   }
   rechaza "# sin comillas en un título" "sed -i 's|titulo: \"segundo\"|titulo: segundo #2|' '$h/proyecto.yml'"
@@ -82,7 +83,7 @@ YML
   rechaza "sin template_ref" "sed -i '/^template_ref/d' '$h/proyecto.yml'"
 fi
 
-python3 - "$T" <<'PY' || fallas=$((fallas+1))
+"$PY" - "$T" <<'PY' || fallas=$((fallas+1))
 import json, pathlib, sys, yaml
 lock = json.load(open(pathlib.Path(sys.argv[1]) / "skills-lock.json"))["skills"]
 d = pathlib.Path(".agents/skills")
@@ -98,8 +99,8 @@ for e in err: print("FALLA", e)
 print("ok   skills-lock, .agents/skills y fichas cuadran" if not err else "")
 sys.exit(1 if err else 0)
 PY
-python3 "$T/scripts/humo.py" || fallas=$((fallas+1))
+"$PY" "$T/scripts/humo.py" || fallas=$((fallas+1))
 for f in "$T"/scripts/*.sh "$T"/clone-repos.sh "$T"/plantillas/hijo/pj; do bash -n "$f" || mal "sintaxis $f"; done; ok "sintaxis bash"
-python3 -c 'import yaml,glob,os;[yaml.safe_load(open(f)) for f in glob.glob(".github/workflows/*.yml")+["family.yml","proyecto.yml"] if os.path.exists(f)]' && ok "YAML válido" || mal "YAML inválido"
+"$PY" -c 'import yaml,glob,os;[yaml.safe_load(open(f)) for f in glob.glob(".github/workflows/*.yml")+["family.yml","proyecto.yml"] if os.path.exists(f)]' && ok "YAML válido" || mal "YAML inválido"
 
 [ "$fallas" -eq 0 ] && echo "check: todo bien" || { echo "check: $fallas fallas"; exit 1; }

@@ -15,3 +15,4 @@ template-paths.txt
 .github/workflows/check.yml
 docs/pj-template.md
 .github/workflows/pj-template.yml
+requirements.txt

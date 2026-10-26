@@ -21,7 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pip install -q pyyaml jsonschema
       - run: ./pj check
         env:
           PJ_TEMPLATE_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}

@@ -38,7 +38,7 @@ def cargar(raiz, dependencia):
     try:
         import jsonschema
     except ImportError:
-        raise Invalido(["falta el módulo jsonschema (pip install jsonschema / pacman -S python-jsonschema)"])
+        raise Invalido(["falta el módulo jsonschema (corré con el python de .pj/venv: bash scripts/py.sh)"])
     esquema = json.loads((TPL / "schema/proyecto.schema.json").read_text())
     v = jsonschema.Draft202012Validator(esquema)
     for e in sorted(v.iter_errors(p), key=lambda e: list(e.absolute_path)):

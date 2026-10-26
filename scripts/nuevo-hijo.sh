@@ -76,7 +76,7 @@ Meta-repo del trío PM/WK/RV de $P (hijo de \`robert-flo/pj-template\`, modo dep
 ./pj agy        # una vez por máquina; después: agy --agent PM-$P
 \`\`\`
 
-Necesitás \`python3\` con PyYAML y jsonschema, \`gh\`, \`git\` y \`make\`.
+Necesitás \`python3\` (PyYAML y jsonschema van solos a \`.pj/venv\`), \`gh\`, \`git\` y \`make\`.
 MD
 pon .gitignore < "$T/plantillas/hijo/gitignore"
 pon pj < "$T/plantillas/hijo/pj"; chmod +x pj

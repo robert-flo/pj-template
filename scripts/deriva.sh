@@ -6,8 +6,9 @@
 # Salida: tabla markdown en stdout (y en $DERIVA_MD si está). Termina 0 aunque haya deriva;
 # escribe DERIVA=<hijos con deriva> en $GITHUB_ENV. Uso: scripts/deriva.sh [hijo…] (gh autenticado).
 set -euo pipefail
+PY="${PY:-$(bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../scripts/py.sh")}"; export PY
 T="$(cd "$(dirname "$0")/.." && pwd)"
-mapfile -t HIJOS < <(if [ $# -gt 0 ]; then printf '%s\n' "$@"; else python3 -c 'import yaml;print("\n".join(yaml.safe_load(open("'"$T"'/family.yml"))["hijos"]))'; fi)
+mapfile -t HIJOS < <(if [ $# -gt 0 ]; then printf '%s\n' "$@"; else "$PY" -c 'import yaml;print("\n".join(yaml.safe_load(open("'"$T"'/family.yml"))["hijos"]))'; fi)
 w="$(mktemp -d)"; trap 'rm -rf "$w"' EXIT
 tsha="$(git -C "$T" rev-parse --short HEAD)"
 out="$w/informe.md"; con_deriva=0
