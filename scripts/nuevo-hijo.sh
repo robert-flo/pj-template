@@ -12,14 +12,16 @@ OWNER=robert-flo; TEMPLATE="$OWNER/pj-template"; REPO="$OWNER/pj-$P"
 if [ -n "${2:-}" ]; then BASE="$2"; elif [ -d /z-drive/tries ]; then BASE=/z-drive/tries; else BASE="$PWD"; fi
 DEST="$BASE/rf-pj-$P"
 
+CREADO=0
 if gh repo view "$REPO" >/dev/null 2>&1; then echo "ya existe $REPO, no lo creo"
-else gh repo create "$REPO" --private --template "$TEMPLATE"; sleep 5; fi
+else CREADO=1; gh repo create "$REPO" --private --template "$TEMPLATE"; sleep 5; fi
 
 if [ -d "$DEST/.git" ]; then git -C "$DEST" pull --rebase --autostash -q
 else for i in 1 2 3 4 5; do gh repo clone "$REPO" "$DEST" && break; sleep 5; done; fi
 cd "$DEST"
 
-if [ "$(python3 -c 'import yaml;print(yaml.safe_load(open("proyecto.yml"))["proyecto"])')" != "$P" ]; then
+# Esqueleto solo si el repo es nuevo o falta proyecto.yml; un hijo existente conserva el suyo.
+if [ "$CREADO" = 1 ] || [ ! -f proyecto.yml ]; then
 cat > proyecto.yml <<YML
 # Datos del proyecto. Es el único archivo que llenás a mano; después: make generar.
 proyecto: "$P"                 # nombre del trío: PM-<proyecto>, WK-<proyecto>, RV-<proyecto>
