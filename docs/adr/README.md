@@ -16,6 +16,7 @@ Decisiones vigentes de los tríos PM/WK/RV, para cualquier plataforma (Cursor y 
 | [0010](0010-robert-flo-template-es-infraestructura.md) | robert-flo/Template es infraestructura | fleet 0021 |
 | [0011](0011-trabajo-sobre-la-maquina.md) | El trío también opera la máquina donde corre | fleet 0022 |
 | [0012](0012-forks-personal-y-upstream.md) | En cada fork: `personal` y espejo `upstream` | fleet 0024 |
+| [0013](0013-etiqueta-spec.md) | Etiqueta `spec` y etiquetas sincronizadas | — |
 
 Las decisiones propias de antigravity-fleet (archivado) siguen en `docs/adr-antigravity/`.
 

@@ -48,7 +48,16 @@ jobs:
           tpl=.pj-sync/tpl; [ -d "$tpl" ] || tpl=.
           bash "$tpl/scripts/ci-sync.sh" "$tpl" .pj-sync/skills
           cp "$tpl/scripts/ci-pr.sh" "$RUNNER_TEMP/ci-pr.sh"
+          cp "$tpl/scripts/etiquetas.sh" "$RUNNER_TEMP/etiquetas.sh"
+          mkdir -p "$RUNNER_TEMP/schema" && cp "$tpl/schema/etiquetas.tsv" "$RUNNER_TEMP/schema/"
           rm -rf .pj-sync
+      - name: Etiquetas
+        # No depende del PR de sync: crea las que falten en el repo que llama (needs Issues: write en el token).
+        env:
+          GH_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/scripts" && mv "$RUNNER_TEMP/etiquetas.sh" "$RUNNER_TEMP/scripts/"
+          bash "$RUNNER_TEMP/scripts/etiquetas.sh" "$GITHUB_REPOSITORY" || echo "::warning::no pude crear las etiquetas (¿el token tiene Issues: write?)"
       - name: Abrir PR si hay cambios
         env:
           GH_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}
