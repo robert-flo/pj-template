@@ -31,7 +31,11 @@ if grep -rnE '\{\{|\}\}' --include='*.md' --include='*.mdc' .agents/agents .curs
 # extras: archivos a mano propios del hijo (proyecto.yml), que el check conserva y no revisa.
 extras="$("$PY" -c 'import sys,yaml;[print(x) for x in (yaml.safe_load(open("proyecto.yml")) or {}).get("extras") or []]' 2>/dev/null || true)"
 excl=(); while IFS= read -r x; do [ -n "$x" ] && excl+=(":!$x"); done <<< "$extras"
-git grep -nIiE 'grok ?bot|robert-flo/fleet|fleet/bots' -- . ':!scripts/check.sh' ':!docs/adr-antigravity' "${excl[@]}" && mal "hay referencias a Grok Bot o fleet" || ok "sin referencias a Grok Bot ni fleet"
+# Las líneas de extras: en proyecto.yml nombran esos archivos y tampoco cuentan.
+sin_extras(){ local l x; while IFS= read -r l; do
+  for x in $extras; do [[ "$l" =~ ^proyecto\.yml:[0-9]+:[[:space:]]*-[[:space:]]*[\"\']?"$x"[\"\']?[[:space:]]*$ ]] && continue 2; done; echo "$l"; done; }
+refs="$(git grep -nIiE 'grok ?bot|robert-flo/fleet|fleet/bots' -- . ':!scripts/check.sh' ':!docs/adr-antigravity' "${excl[@]}" | sin_extras || true)"
+[ -n "$refs" ] && echo "$refs" && mal "hay referencias a Grok Bot o fleet" || ok "sin referencias a Grok Bot ni fleet"
 if [ -e .agents/grokbot.md ] && ! grep -qxF .agents/grokbot.md <<< "$extras"; then mal ".agents/grokbot.md no debe existir (salvo que esté en extras de proyecto.yml)"; fi
 
 if [ "$DEP" = 1 ]; then
