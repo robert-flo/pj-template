@@ -11,7 +11,13 @@ set -euo pipefail
 PY="${PY:-$(bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../scripts/py.sh")}"; export PY
 tpl="$(cd "$1" && pwd)"; skills="$(cd "$2" && pwd)"
 env_out="${GITHUB_ENV:-/dev/null}"
-sha="$(git -C "$tpl" rev-parse HEAD)"; skills_sha="$(git -C "$skills" rev-parse --short HEAD)"
+sha="$(git -C "$tpl" rev-parse HEAD)"
+# Etiquetas primero y sin esperar el PR de sync: corre con el ci-sync de main, así llega también a los
+# hijos con el workflow viejo. Si el token no tiene Issues: write, solo avisa.
+if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+  GH_TOKEN="${GH_TOKEN:-${PJ_TEMPLATE_TOKEN:-}}" bash "$tpl/scripts/etiquetas.sh" "$GITHUB_REPOSITORY" \
+    || echo "::warning::no pude crear las etiquetas en $GITHUB_REPOSITORY (¿el token tiene Issues: write?)"
+fi; skills_sha="$(git -C "$skills" rev-parse --short HEAD)"
 if [ -x pj ] && grep -qE '^template_ref:' proyecto.yml; then
   viejo="$(sed -nE 's/^template_ref:[[:space:]]*["'\'']?([0-9a-f]{40}).*/\1/p' proyecto.yml)"
   if [ "$viejo" != "$sha" ]; then

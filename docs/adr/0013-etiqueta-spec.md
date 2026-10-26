@@ -5,7 +5,7 @@ El spec padre se publicaba con `ready-for-agent`, la misma señal que sus ticket
 
 ## Decisión
 - El issue del spec lleva `spec` y nunca `ready-for-agent`; solo sus sub-issues llevan `ready-for-agent`.
-- Las etiquetas viven en `schema/etiquetas.tsv`. `scripts/etiquetas.sh` las crea o actualiza con `gh label create --force`, y pj-sync lo corre en cada repo que lo llama (cada hijo en cada aviso y a diario), sin esperar el merge del PR de sync.
+- Las etiquetas viven en `schema/etiquetas.tsv`. `scripts/etiquetas.sh` las crea o actualiza con `gh label create --force`, y `scripts/ci-sync.sh` (que todo sync ejecuta desde pj-template@main, también el sync en línea de los hijos) lo corre en cada repo (cada hijo en cada aviso y a diario), sin esperar el merge del PR de sync.
 
 ## Consecuencias
 - El token `PJ_TEMPLATE_TOKEN` de cada hijo necesita Issues: write; si no lo tiene, el paso deja un warning y no rompe el sync.
