@@ -58,3 +58,7 @@ Lo valida `schema/proyecto.schema.json` (JSON Schema 2020-12, con `jsonschema` d
 `PJ_TEMPLATE_TOKEN`, en pj-template y en cada hijo: PAT fine-grained de `robert-flo` con acceso a pj-template y a los hijos, permisos *Contents: read and write*, *Pull requests: read and write* y *Workflows: read and write* (el PR de sync puede tocar el caller). Hace falta porque pj-template es privado (`./pj` lo baja en CI), para disparar `repository_dispatch` en los hijos y para que el PR de sync dispare CI (con `GITHUB_TOKEN` no lo hace).
 
 El workflow del hijo (`plantillas/hijo/pj-template.yml`) corre el sync en línea, con los mismos pasos que `pj-sync.yml` (`scripts/ci-sync.sh` y `scripts/ci-pr.sh`): un hijo público no puede llamar workflows de un repo privado. Además, pj-template tiene que permitir que otros repos de `robert-flo` usen sus workflows (Settings → Actions → General → Access: «Accessible from repositories owned by the user»).
+
+## Trío en herdr (`pj-trio`)
+
+Cada meta-repo hijo tiene `.trio/` (con `.gitkeep` y `README.md`) para los handoffs del trío. Se lanza con `pj-trio <proyecto> <ticket> --repo <miembro>` (script de `robert-flo/PJ-NIRI-rf-omarchy-workstation`), que abre en herdr las pestañas `pm`/`wk`/`rv` con `agy --agent PM-/WK-/RV-<proyecto>`. Los handoffs quedan en `.trio/<ticket>/` y se commitean. El PM mergea tras el `APRUEBO <sha>` del RV, con squash, `--delete-branch` y `--match-head-commit`.
