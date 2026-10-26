@@ -1,0 +1,7 @@
+# Skills por rol (filtro sobre skills-lock.json) y tools de agy.
+# Lo mantiene robert-flo/pj-template. Un hijo agrega skills con `skills_extra` en proyecto.yml.
+skills:
+  pm: [ro-restate-goals, ask-matt, grill-with-docs, to-spec, to-tickets, triage, wayfinder, prototype, setup-matt-pocock-skills, domain-modeling]
+  wk: [ro-restate-goals, implement, implement-spec, tdd, code-review, diagnosing-bugs, pr, codebase-design]
+  rv: [ro-restate-goals, code-review, diagnosing-bugs]
+tools: [ask_custom_permission, ask_permission, ask_question, define_subagent, find_by_name, finish, generate_image, grep_search, invoke_subagent, list_dir, list_plugin_accounts, manage_subagents, manage_task, multi_replace_file_content, notebook_edit, read_url_content, replace_file_content, run_command, run_workflow, schedule, search_marketplace, search_web, send_message, view_file, wait, write_to_file]

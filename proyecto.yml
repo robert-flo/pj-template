@@ -1,0 +1,19 @@
+# Datos del proyecto. Es el único archivo que llenás a mano; después: make generar.
+proyecto: pj-template          # nombre del trío: PM-<proyecto>, WK-<proyecto>, RV-<proyecto>
+area: plantilla de tríos PM/WK/RV para Cursor y agy
+rama_base: main                # rama de los PR finales
+# Repos hijos (vacío en proyectos de un solo repo). dir = carpeta local, ignorada en .gitignore.
+repos: []
+#  - dir: rf-ejemplo
+#    repo: robert-flo/ejemplo
+#    rama: main
+#    nota: qué es este repo en una frase
+# Specs en curso (texto libre o {ref, titulo}).
+specs: []
+#  - ref: robert-flo/ejemplo#12
+#    titulo: primer trabajo
+notas: |
+  Este repo es la plantilla de los meta-repos hijos (ver family.yml). Las reglas, plantillas,
+  scripts y workflows que se cambian acá llegan a los hijos por PR.
+# Skills extra por rol, además de plantillas/roles.yml.
+skills_extra: {}

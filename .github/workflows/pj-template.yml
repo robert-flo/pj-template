@@ -1,0 +1,15 @@
+# Caller de pj-sync. Igual en pj-template y en cada hijo (lo manda pj-template).
+# - repository_dispatch: lo dispara notify-children.yml de pj-template cuando cambia el template.
+# - schedule: robert-flo/skills no avisa (no tiene token para disparar otros repos), así que se revisa a diario.
+name: pj-template sync
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [pj-template-updated]
+  schedule:
+    - cron: "17 10 * * *"   # 04:17 en El Salvador
+jobs:
+  sync:
+    uses: robert-flo/pj-template/.github/workflows/pj-sync.yml@main
+    secrets:
+      PJ_TEMPLATE_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}

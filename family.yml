@@ -1,0 +1,5 @@
+# Meta-repos hijos de pj-template. notify-children.yml les avisa cuando cambia el template.
+hijos:
+  - robert-flo/pj-ravn
+  - robert-flo/pj-omarchy
+  - robert-flo/pj-funeraria-website

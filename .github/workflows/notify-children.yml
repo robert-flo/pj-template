@@ -1,0 +1,38 @@
+# Solo en pj-template. Cuando cambia algo que manda el template, avisa a cada hijo de family.yml;
+# el caller pj-template.yml del hijo corre pj-sync y abre el PR allá.
+# Secreto requerido en pj-template: PJ_TEMPLATE_TOKEN (PAT fine-grained con Contents: read/write
+# sobre los hijos; repository_dispatch exige ese permiso).
+name: notify-children
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".agents/reglas/**"
+      - ".agents/skills/**"
+      - "skills-lock.json"
+      - "plantillas/**"
+      - "scripts/**"
+      - "clone-repos.sh"
+      - "Makefile"
+      - "template-paths.txt"
+      - ".cursor/rules/no-cursor-coauthor.mdc"
+      - ".github/workflows/pj-sync.yml"
+      - ".github/workflows/pj-template.yml"
+      - ".github/workflows/check.yml"
+      - "docs/pj-template.md"
+      - "family.yml"
+  workflow_dispatch:
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Avisar a los hijos
+        env:
+          GH_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}
+        run: |
+          python3 -c 'import yaml' || pip install pyyaml
+          for h in $(python3 -c 'import yaml;print(" ".join(yaml.safe_load(open("family.yml"))["hijos"]))'); do
+            echo "-> $h"
+            gh api "repos/$h/dispatches" -f event_type=pj-template-updated -f "client_payload[sha]=$GITHUB_SHA" || echo "::warning::no pude avisar a $h"
+          done

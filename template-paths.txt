@@ -1,0 +1,15 @@
+# Rutas que manda robert-flo/pj-template. scripts/sync-template.sh las copia tal cual a cada hijo.
+# Lo que no está acá (proyecto.yml, AGENTS.md, README.md, .gitignore fuera del bloque generado) es del hijo.
+.agents/reglas
+.agents/skills
+skills-lock.json
+plantillas
+scripts
+clone-repos.sh
+Makefile
+template-paths.txt
+.cursor/rules/no-cursor-coauthor.mdc
+.github/workflows/pj-sync.yml
+.github/workflows/check.yml
+docs/pj-template.md
+.github/workflows/pj-template.yml

@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "skills": {
+    "ask-matt": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/ask-matt/SKILL.md",
+      "computedHash": "0465990d7f616f442ee59cfd95a6d333407aa6f16b0fabf92d1831492ddc39a1"
+    },
+    "chief-of-staff": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/in-progress/chief-of-staff/SKILL.md",
+      "computedHash": "d17425ab67f1a07237a759dc3cfd50e34caef2c18eda9c94c2115042913a1214"
+    },
+    "claude-handoff": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/in-progress/claude-handoff/SKILL.md",
+      "computedHash": "ca074de6d55a02c1433dbb3fc6ca774527d6f680b9d6ae6f2709b7a3e9d1525e"
+    },
+    "code-review": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/code-review/SKILL.md",
+      "computedHash": "959cb5e0eff2fa5e2eda8b298f1d41be80db077844f703517502264568cf28a3"
+    },
+    "codebase-design": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/codebase-design/SKILL.md",
+      "computedHash": "b968af106d039b016252836c9a26f45405e0167f58b9d4f92d06fd9f580561b1"
+    },
+    "diagnosing-bugs": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/diagnosing-bugs/SKILL.md",
+      "computedHash": "f91c8c48e5c09d1cb4470a8ba58005f97fc2613a3072d8fec66c7d1b465ebb4e"
+    },
+    "domain-modeling": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/domain-modeling/SKILL.md",
+      "computedHash": "9ead6a6c1916d48f88f4f1f1ba19e323ae8037e8b70998d9fa01229f5fb84212"
+    },
+    "grill-me": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "computedHash": "711e23322fe6a33d3b81bd6005f1325b52c45306d5658151d4ccb7649ff7bc0a"
+    },
+    "grill-with-docs": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/grill-with-docs/SKILL.md",
+      "computedHash": "1c1b25b51130bd7bc09a13f04a1fa29bef83f3eafe0073c08d00dcc1d405d7cd"
+    },
+    "grilling": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/grilling/SKILL.md",
+      "computedHash": "32855f2c6029748b91ef85d16a58b7c6e01780b7919e3e143769443eeda348e9"
+    },
+    "handoff": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/handoff/SKILL.md",
+      "computedHash": "a362524dd3ef7f29f26e8d881c97ea189b53d1fa71f86b792cff99145a6aa9c2"
+    },
+    "implement": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/implement/SKILL.md",
+      "computedHash": "167bec04b3c31b21655450ec1e1a497bb517000c4c9612f99d17f396d7a6b235"
+    },
+    "implement-spec": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/implement-spec/SKILL.md",
+      "computedHash": "11ab1f54266ce854c4818d5c0145baa393e0f173f7efae979e1facbbdf4da73b"
+    },
+    "improve-codebase-architecture": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "computedHash": "b4c63d65fcc0522de93e77008c16be3c512b7a782a6a0a473d1fee4c21a40c9e"
+    },
+    "loop-me": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/in-progress/loop-me/SKILL.md",
+      "computedHash": "713af65db355d315233ddb3fcc63fe77fb6b81467a3c67e2cd862162fb442cfc"
+    },
+    "pr": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/pr/SKILL.md",
+      "computedHash": "dee4820959490638c7d3adc5609203dfa0b320a453eb6ca146a29c1bfee5e2f9"
+    },
+    "prototype": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/prototype/SKILL.md",
+      "computedHash": "9f653c42e0103b5e0181bceafbe7c6170b75d6229ddd7b9ebc2e19534ffd0c76"
+    },
+    "research": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/research/SKILL.md",
+      "computedHash": "e45255278d5affc53e4b7e84955cd5fc749a8f4a805f47fa0bb5fefbfcac09a2"
+    },
+    "retro": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/retro/SKILL.md",
+      "computedHash": "ba3e9a9575df9b1fc5d1e0bb9ccf2e07c532fec95c4b5054e73685189e5ae36d"
+    },
+    "ro-post-session-review": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/ro-post-session-review/SKILL.md",
+      "computedHash": "a94042f98c4150ef23d6f4bc72112a37598a1067aa4aaaa16c152218f3c20ef3"
+    },
+    "ro-restate-goals": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/ro-restate-goals/SKILL.md",
+      "computedHash": "baa82e1a6544760c9e8f118ab5d87f886113a2a7f3ff00a5e1561bf922cfa248"
+    },
+    "ro-show-me": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/ro-show-me/SKILL.md",
+      "computedHash": "215e77b6093b38f166821c8bb4d112ba23fdca939d0d96fcf0482655131a5b37"
+    },
+    "setup-matt-pocock-skills": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+      "computedHash": "97957fd2fec5d4abd8464c8854acc27dc30ee6db6edc31b65df68d69154557ca"
+    },
+    "setup-ts-deep-modules": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/in-progress/setup-ts-deep-modules/SKILL.md",
+      "computedHash": "d81c64adb6750a32bc156bc86290d9640e64ff175a2838dc28d39d06708d3055"
+    },
+    "tdd": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/tdd/SKILL.md",
+      "computedHash": "d321ecf64234188213d110bcf98daaabf2c2b6fb92e321af94fcf0b0df7d4f78"
+    },
+    "teach": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/teach/SKILL.md",
+      "computedHash": "0cd369304f561f281db266a3c6c5da7b8aa3df8c3a52f068cafc91664daccddc"
+    },
+    "to-questionnaire": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/to-questionnaire/SKILL.md",
+      "computedHash": "9c682ceaac966a2621768b249f5dad54c9b61c10ef839895180cf2e31579c1b5"
+    },
+    "to-spec": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/to-spec/SKILL.md",
+      "computedHash": "be2e3cc996da5b455a6630746f101bc480462c041e31d83d0912fd413ec70be5"
+    },
+    "to-tickets": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/to-tickets/SKILL.md",
+      "computedHash": "c42718a6114c5bd458a3be6af08c9d5e10910705072fddb6c0d03b5ca5035869"
+    },
+    "triage": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/triage/SKILL.md",
+      "computedHash": "15020f24ae8b29f056311e9c7e3e82d67125ba6a9ead4ab75a5a5925e57ea8ad"
+    },
+    "wait-what": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/wait-what/SKILL.md",
+      "computedHash": "c0256b1c03b9d2a0746f2a506e17e7f53a5a17ece4ff4ea8b990a62c56bcbfad"
+    },
+    "wayfinder": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/wayfinder/SKILL.md",
+      "computedHash": "fc7e417d07b87e3b6289a6c6a0f98416338cef8d0343a7abda652723658c71bb"
+    },
+    "wizard": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/engineering/wizard/SKILL.md",
+      "computedHash": "cb90c7ffa35885f7550cfc4d45d8226b13ca6afd98a38d0a18cd478d2f986ca2"
+    },
+    "writing-beats": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/in-progress/writing-beats/SKILL.md",
+      "computedHash": "a9f23f19afc84cdd7eeeac06ba20bd751d909c15cac1714304657c74ef76e60a"
+    },
+    "writing-for-agents": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/writing-for-agents/SKILL.md",
+      "computedHash": "c547369028f139f3c2380d32d07e5d8b29861bb8f665d07c3be9b029cbac33a9"
+    },
+    "writing-fragments": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/in-progress/writing-fragments/SKILL.md",
+      "computedHash": "c580dfc490f885e410cad067aa3a7eb707dc6b50bb45cd411d408cbfbba5b27a"
+    },
+    "writing-shape": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/in-progress/writing-shape/SKILL.md",
+      "computedHash": "4271cec9c443dff5cce5c14c41287c0c41f0f7b56b9ad1bd97832f6cb85537c0"
+    }
+  }
+}
