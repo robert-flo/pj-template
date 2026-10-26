@@ -1,7 +1,6 @@
 ---
 name: ro-post-session-review
 description: "Critically review a finished work session: what actually changed, what is missing, ranked next steps, what you would do differently, and bold ideas. Use at the end of a session."
-disable-model-invocation: true
 ---
 
 # Post-session review
