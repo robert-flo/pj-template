@@ -1,32 +1,57 @@
 # Cómo funciona pj-template
 
-Este archivo lo manda `robert-flo/pj-template` y llega igual a cada hijo. No lo editás en el hijo.
+Este archivo vive en `robert-flo/pj-template`. Un hijo en modo dependencia lo tiene en `.pj/tpl/docs/pj-template.md` después de `./pj`.
+
+## Modo dependencia (el de los hijos nuevos)
+El hijo versiona solo **6 archivos**: `proyecto.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj` y `.github/workflows/pj-template.yml`. Todo lo demás llega como dependencia:
+
+1. `./pj` lee `template_ref` (SHA completo de pj-template) de `proyecto.yml` y trae ese commit a `.pj/tpl` (ignorado por git; `git fetch --depth 1`, con `PJ_TEMPLATE_TOKEN` o `gh auth git-credential`).
+2. Corre `.pj/tpl/scripts/generar.py` con `PJ_RAIZ=<hijo>`: escribe las fichas y adaptadores **y copia** reglas, skills y la regla sin coautor de Cursor a `.agents/` y `.cursor/`.
+3. `./pj <target>` corre cualquier target del `Makefile` del template contra el hijo: `check`, `humo`, `clonar`, `agy`, `generar`.
+
+**¿Se versiona lo generado? No.** agy y Cursor leen `.agents/` y `.cursor/` del disco, pero las fichas citan reglas y skills que tampoco estarían al clonar: versionar solo las fichas daría un clon a medias. Un solo paso después de clonar (`./pj`) deja todo en disco, igual byte a byte en cualquier máquina porque sale de un SHA fijo. Así el hijo se queda en 6 archivos, el diff de un PR del hijo es solo lo que escribió Roberto, y actualizar el template es cambiar una línea (`template_ref`). `.gitignore` ignora `/.pj/`, `/.agents/` y `/.cursor/` (bloque generado). AGENTS.md del hijo le dice al agente que corra `./pj` si no ve `.agents/reglas/`.
 
 ## Quién manda qué
 | Qué | Dónde | Quién lo escribe |
 | --- | --- | --- |
-| Reglas comunes y de rol | `.agents/reglas/{comun,pm,wk,rv}.md` | pj-template (llegan por PR de sync) |
-| Skills | `.agents/skills/` + `skills-lock.json` | CI, desde `robert-flo/skills@personal` (engineering, productivity, in-progress) |
+| Reglas comunes y de rol | `.agents/reglas/{comun,pm,wk,rv}.md` | pj-template (al hijo lo copia `./pj`) |
+| Skills | `.agents/skills/` + `skills-lock.json` | CI de pj-template, desde `robert-flo/skills@personal` |
 | Skills por rol | `plantillas/roles.yml` (+ `skills_extra` del hijo) | pj-template / el hijo |
+| Esquema de `proyecto.yml` | `schema/proyecto.schema.json` | pj-template |
+| Archivos fijos del hijo | `plantillas/hijo/{pj,pj-template.yml,gitignore}` | pj-template (el PR de sync los actualiza) |
 | Fichas de agy | `.agents/agents/{PM,WK,RV}-<proyecto>.md` | `scripts/generar.py` |
 | Adaptadores de Cursor | `.cursor/rules/pm-<proyecto>.mdc`, `.cursor/agents/{wk,rv}-<proyecto>.md` | `scripts/generar.py` |
-| Regla sin coautor de Cursor | `.cursor/rules/no-cursor-coauthor.mdc` | pj-template |
-| Datos del proyecto | `proyecto.yml` | vos, en el hijo |
+| Datos del proyecto, con `template_ref` | `proyecto.yml` | vos, en el hijo (`template_ref` lo sube el PR de sync) |
 | Arquitectura del proyecto | `AGENTS.md`, `README.md` | vos, en el hijo |
 
-La lista exacta de lo que manda el template está en `template-paths.txt`. Nada generado se edita a mano: si querés cambiarlo, cambiá la plantilla (en pj-template) o `proyecto.yml` (en el hijo) y corré `make generar`.
+## proyecto.yml
+Lo valida `schema/proyecto.schema.json` (JSON Schema 2020-12, con `jsonschema` de Python) en `generar` y en `check`:
+- `specs` es una lista de `{ref, titulo, orden, primero}`: `ref` con forma `dueño/repo#N`, `orden` entero (se listan de menor a mayor), y si hay specs, **exactamente uno** con `primero: true`. La ficha del PM lo marca como «primer trabajo» y su «Primeros pasos» arranca por ahí. `orden` no se puede repetir.
+- Los textos van entre comillas: un `#` sin comillas en `area`, `titulo`, `nota` o `ref` corta el valor (YAML lo toma como comentario). `generar` lo detecta y falla; la forma de `ref` también delata un corte.
+- No se aceptan claves de más.
+
+`generar` falla si quedan datos del molde en un hijo: `proyecto: pj-template`, las notas de pj-template, fichas `*pj-template*` sobrantes o (en modo dependencia) falta `template_ref`.
 
 ## Motores
-- **agy**: `agy --agent PM-<proyecto>` desde la raíz del meta-repo. Antes, una vez por máquina, `make agy` (enlaza las fichas en `~/.gemini/config/agents`, porque agy interactivo solo resuelve `--agent` con los agentes globales). `skills:` del frontmatter es declarativo: agy carga todas las de `.agents/skills/`.
+- **agy**: `agy --agent PM-<proyecto>` desde la raíz del meta-repo. Antes, una vez por máquina, `./pj agy` (o `make agy` en pj-template): enlaza las fichas en `~/.gemini/config/agents`, porque agy interactivo solo resuelve `--agent` con los agentes globales. `skills:` del frontmatter es declarativo: agy carga todas las de `.agents/skills/`.
 - **Cursor**: el PM es la regla `alwaysApply`; WK y RV son subagentes en `.cursor/agents/`. Cursor carga las skills de `.agents/skills/`; no hay `.cursor/skills/`.
 
+## Prueba de humo
+`scripts/humo.py` (parte de `check`, y `./pj humo` / `make humo`):
+- Estático, siempre (también en CI, donde no hay agy): cada ficha PM/WK/RV existe, tiene `name`, `tools` y las secciones obligatorias, manda a leer `comun.md` y su regla, sus skills existen en `.agents/skills/<s>/SKILL.md`, toda ruta `.agents/…` o `.cursor/…` citada en fichas y adaptadores de Cursor existe, la regla del PM es `alwaysApply`, y el PM marca el primer trabajo.
+- Con agy (`make humo` / `./pj humo`, después de `./pj agy`): corre `agy --agent PM-<proyecto> --print …` sin interacción y exige que responda con su nombre tras leer sus reglas. Sin agy en el PATH avisa y queda solo lo estático.
+
 ## CI
-- `pj-sync.yml` (reutilizable, vive solo acá): trae lo de `template-paths.txt`, sincroniza skills, regenera, corre `scripts/check.sh` y abre un PR `pj-template/sync-<run>` si algo cambió (cierra los PR de sync viejos).
-- `pj-template.yml` (caller, igual en todos): corre `pj-sync` a diario, a mano o cuando pj-template avisa (`repository_dispatch: pj-template-updated`).
-- `notify-children.yml` (solo en pj-template): al cambiar algo del template en `main`, avisa a cada hijo de `family.yml`.
-- `check.yml`: corre `scripts/check.sh` en cada PR.
+- `pj-template.yml` del hijo (lo manda `plantillas/hijo/`): en PR y push corre `./pj check`; a diario, a mano o cuando pj-template avisa, llama a `pj-sync`.
+- `pj-sync.yml` (reutilizable, vive solo acá, lógica en `scripts/ci-sync.sh`):
+  - hijo en modo dependencia: sube `template_ref` al último `main` de pj-template, actualiza `./pj` y el caller, corre `./pj check` y abre un PR `pj-template/sync-<run>` (cierra los viejos);
+  - pj-template: sincroniza skills desde `robert-flo/skills@personal` por PR;
+  - hijo viejo (modo copia, sin `template_ref`): copia `template-paths.txt`, skills y regenera, por PR.
+- `notify-children.yml` (solo acá): al cambiar algo del template en `main`, avisa a cada hijo de `family.yml`.
+- `vigilar-hijos.yml` (solo acá, diario y a mano): hijos sin registrar o sin secreto, y **deriva** (`scripts/deriva.sh`, también `make deriva`): regenera cada hijo con el template actual y muestra en el resumen del run el % de archivos idénticos y qué cambia. Si hay problemas o deriva > 0, abre o actualiza el issue «hijos sin registrar o sin secret».
+- `check.yml` (acá): `scripts/check.sh` en cada PR; además de lo del hijo, arma un hijo de prueba en modo dependencia y verifica que `generar` rechace `#` sin comillas, dos `primero`, `orden` no entero, notas o nombre del molde, fichas sobrantes y falta de `template_ref`.
 
 ### Secreto
-`PJ_TEMPLATE_TOKEN`, en pj-template y en cada hijo: PAT fine-grained de `robert-flo` con acceso a pj-template y a los hijos, permisos *Contents: read and write* y *Pull requests: read and write*. Hace falta porque pj-template es privado (checkout cruzado), para disparar `repository_dispatch` en los hijos y para que el PR de sync dispare CI (con `GITHUB_TOKEN` no lo hace). `robert-flo/skills` es público y no necesita token; como no puede avisar sin un token propio, los hijos lo revisan a diario.
+`PJ_TEMPLATE_TOKEN`, en pj-template y en cada hijo: PAT fine-grained de `robert-flo` con acceso a pj-template y a los hijos, permisos *Contents: read and write*, *Pull requests: read and write* y *Workflows: read and write* (el PR de sync puede tocar el caller). Hace falta porque pj-template es privado (`./pj` lo baja en CI), para disparar `repository_dispatch` en los hijos y para que el PR de sync dispare CI (con `GITHUB_TOKEN` no lo hace).
 
 Además, pj-template tiene que permitir que otros repos de `robert-flo` usen sus workflows (Settings → Actions → General → Access: «Accessible from repositories owned by the user»).

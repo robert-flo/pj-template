@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/robert-flo/pj-template/schema/proyecto.schema.json",
+  "title": "proyecto.yml de un meta-repo de pj-template",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["proyecto", "area", "rama_base", "repos", "specs", "notas"],
+  "properties": {
+    "proyecto": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "area": {"type": "string", "minLength": 3},
+    "rama_base": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
+    "template_ref": {"type": "string", "pattern": "^[0-9a-f]{40}$",
+      "description": "SHA completo de robert-flo/pj-template que usa este hijo (modo dependencia)."},
+    "repos": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["dir", "repo", "rama"],
+        "properties": {
+          "dir": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+          "repo": {"type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$"},
+          "rama": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
+          "nota": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "specs": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["ref", "titulo", "orden", "primero"],
+        "properties": {
+          "ref": {"type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+#[0-9]+$"},
+          "titulo": {"type": "string", "minLength": 1},
+          "orden": {"type": "integer", "minimum": 0},
+          "primero": {"type": "boolean"}
+        }
+      },
+      "if": {"minItems": 1},
+      "then": {"contains": {"properties": {"primero": {"const": true}}, "required": ["primero"]}, "minContains": 1, "maxContains": 1}
+    },
+    "notas": {"type": "string"},
+    "skills_extra": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "pm": {"type": "array", "items": {"type": "string"}},
+        "wk": {"type": "array", "items": {"type": "string"}},
+        "rv": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@
 # agy en modo interactivo resuelve `--agent` solo con los agentes globales al arrancar; si no
 # encuentra el nombre, cae al agente default sin herramientas. Aprendido en antigravity-fleet.
 set -euo pipefail
-raiz="$(cd "$(dirname "$0")/.." && pwd)"
+raiz="${PJ_RAIZ:-$(cd "$(dirname "$0")/.." && pwd)}"
 dst="$HOME/.gemini/config/agents"
 mkdir -p "$dst"
 for a in "$raiz"/.agents/agents/*.md; do

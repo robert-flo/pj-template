@@ -10,5 +10,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python3 -c 'import yaml' || pip install pyyaml
+      - run: pip install -q pyyaml jsonschema
       - run: bash scripts/check.sh

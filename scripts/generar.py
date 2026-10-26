@@ -1,17 +1,28 @@
 #!/usr/bin/env python3
 """Genera las fichas de agy y los adaptadores de Cursor desde plantillas/ y proyecto.yml.
 
-Idempotente: con la misma entrada produce los mismos bytes. Borra lo que generó antes
-y ya no corresponde (por ejemplo, al renombrar el proyecto), usando .agents/generados.txt.
+Dos modos:
+- molde: corre dentro de pj-template (PJ_RAIZ vacío o igual a este checkout).
+- dependencia: corre desde .pj/tpl de un hijo con PJ_RAIZ=<raíz del hijo>. Además de las fichas
+  copia al hijo las reglas, las skills y la regla de Cursor que manda el template (todo ignorado por git).
+
+Idempotente: con la misma entrada produce los mismos bytes. Borra lo que generó antes y ya no
+corresponde, usando .agents/generados.txt. Falla si quedan datos del molde en un hijo.
 """
-import json, pathlib, re, sys
+import json, os, pathlib, re, sys
 import yaml
 
-RAIZ = pathlib.Path(__file__).resolve().parent.parent
+TPL = pathlib.Path(__file__).resolve().parent.parent
+RAIZ = pathlib.Path(os.environ.get("PJ_RAIZ") or TPL).resolve()
+DEP = RAIZ != TPL
 MANIFIESTO = RAIZ / ".agents/generados.txt"
+sys.path.insert(0, str(TPL / "scripts"))
+import proyecto as proyecto_mod  # noqa: E402
+
 # Marcadores del bloque generado de .gitignore; llevan el nombre del proyecto.
-# BLOQUE_RE reconoce cualquier nombre (así migra el bloque viejo "pj-template" o un renombre).
 BLOQUE_RE = r"# >>> [^\n]*: repos \(generado\) >>>.*?# <<< [^\n]*: repos \(generado\) <<<"
+# Lo que el template copia a un hijo en modo dependencia.
+COPIAS = [".agents/reglas", ".agents/skills", ".cursor/rules/no-cursor-coauthor.mdc"]
 
 
 def die(msg):
@@ -19,22 +30,10 @@ def die(msg):
 
 
 def cargar():
-    p = yaml.safe_load((RAIZ / "proyecto.yml").read_text()) or {}
-    for k in ("proyecto", "area", "rama_base"):
-        if not p.get(k):
-            die(f"proyecto.yml: falta `{k}`")
-    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", p["proyecto"]):
-        die("proyecto.yml: `proyecto` solo admite letras, números, punto, guion y guion bajo")
-    p.setdefault("repos", [])
-    p["repos"] = p["repos"] or []
-    for r in p["repos"]:
-        for k in ("dir", "repo", "rama"):
-            if not r.get(k):
-                die(f"proyecto.yml: un repo no tiene `{k}`: {r}")
-    p["specs"] = p.get("specs") or []
-    p["notas"] = (p.get("notas") or "").strip()
-    p["skills_extra"] = p.get("skills_extra") or {}
-    return p
+    try:
+        return proyecto_mod.cargar(RAIZ, DEP)
+    except proyecto_mod.Invalido as e:
+        die("proyecto.yml no es válido:\n  - " + "\n  - ".join(e.args[0]))
 
 
 def datos(p):
@@ -48,12 +47,10 @@ def datos(p):
         out.append(f"- Repo único: este mismo meta-repo, rama base `{p['rama_base']}`.")
     out.append(f"- Rama de los PR finales: `{p['rama_base']}` (salvo que el repo que tocás diga otra arriba).")
     if p["specs"]:
-        out.append("- Trabajo actual:")
+        out.append("- Trabajo actual, en orden:")
         for s in p["specs"]:
-            if isinstance(s, dict):
-                out.append(f"  - {s.get('ref', '')} — {s.get('titulo', '').strip()}".rstrip(" —"))
-            else:
-                out.append(f"  - {s}")
+            marca = " ← **primer trabajo**" if s["primero"] else ""
+            out.append(f"  {s['orden']}. {s['ref']} — {s['titulo'].strip()}{marca}")
     else:
         out.append("- Trabajo actual: sin specs abiertos.")
     if p["notas"]:
@@ -64,22 +61,41 @@ def datos(p):
     return "\n".join(out)
 
 
+def primer_trabajo(p):
+    s = next((s for s in p["specs"] if s["primero"]), None)
+    if not s:
+        return "Sin specs abiertos: esperá el pedido de Roberto."
+    return f"Empezá por **{s['ref']}** ({s['titulo'].strip()}); después seguí el orden de la lista."
+
+
 def render(plantilla, vals):
-    t = (RAIZ / plantilla).read_text()
+    t = (TPL / plantilla).read_text()
     for k, v in vals.items():
         t = t.replace("{{" + k + "}}", v)
     resto = re.findall(r"\{\{[^}]*\}\}", t)
     if resto:
         die(f"{plantilla}: marcadores sin reemplazar {sorted(set(resto))}")
-    return t if t.endswith("\n") else t + "\n"
+    return (t if t.endswith("\n") else t + "\n").encode()
+
+
+def copias():
+    """Archivos que el template copia tal cual al hijo: ruta -> (bytes, modo)."""
+    out = {}
+    for c in COPIAS:
+        src = TPL / c
+        files = [src] if src.is_file() else sorted(x for x in src.rglob("*") if x.is_file())
+        for x in files:
+            out[str(x.relative_to(TPL))] = (x.read_bytes(), 0o755 if os.access(x, os.X_OK) else 0o644)
+    return out
 
 
 def main():
     p = cargar()
-    roles = yaml.safe_load((RAIZ / "plantillas/roles.yml").read_text())
-    lock = json.loads((RAIZ / "skills-lock.json").read_text())["skills"] if (RAIZ / "skills-lock.json").exists() else {}
+    roles = yaml.safe_load((TPL / "plantillas/roles.yml").read_text())
+    lockf = TPL / "skills-lock.json"
+    lock = json.loads(lockf.read_text())["skills"] if lockf.exists() else {}
     proy, slug = p["proyecto"], p["proyecto"].lower()
-    base = {"proyecto": proy, "slug": slug, "datos": datos(p),
+    base = {"proyecto": proy, "slug": slug, "datos": datos(p), "primer_trabajo": primer_trabajo(p),
             "tools_yaml": "\n".join(f"  - {t}" for t in roles["tools"])}
     salida = {}
     for rol in ("pm", "wk", "rv"):
@@ -89,29 +105,44 @@ def main():
             die(f"skills de {rol} que no están en skills-lock.json: {faltan}")
         v = dict(base, skills_yaml="\n".join(f"  - skills/{s}" for s in skills),
                  skills_inline=", ".join(f"`{s}`" for s in skills))
-        salida[f".agents/agents/{rol.upper()}-{proy}.md"] = render(f"plantillas/agents/{rol.upper()}.md", v)
-    salida[f".cursor/rules/pm-{slug}.mdc"] = render("plantillas/cursor/pm.mdc", base)
+        salida[f".agents/agents/{rol.upper()}-{proy}.md"] = (render(f"plantillas/agents/{rol.upper()}.md", v), 0o644)
+    salida[f".cursor/rules/pm-{slug}.mdc"] = (render("plantillas/cursor/pm.mdc", base), 0o644)
     for rol in ("wk", "rv"):
-        salida[f".cursor/agents/{rol}-{slug}.md"] = render(f"plantillas/cursor/{rol}.md", base)
+        salida[f".cursor/agents/{rol}-{slug}.md"] = (render(f"plantillas/cursor/{rol}.md", base), 0o644)
+    if DEP:
+        salida.update(copias())
 
     viejos = MANIFIESTO.read_text().split() if MANIFIESTO.exists() else []
     for v in viejos:
         if v not in salida and (RAIZ / v).exists():
             (RAIZ / v).unlink()
             print(f"borrado {v}")
-    for ruta, txt in salida.items():
+    # Fichas del molde que no salen del manifiesto (por ejemplo, copiadas a mano o de un template viejo).
+    if proy != "pj-template":
+        sobras = [str(x.relative_to(RAIZ)) for d in (".agents/agents", ".cursor/agents", ".cursor/rules")
+                  for x in (RAIZ / d).glob("*pj-template*") if x.is_file()]
+        if sobras:
+            die(f"quedan fichas del molde pj-template: {sobras}; borralas (git rm) y volvé a correr")
+    for ruta, (txt, modo) in salida.items():
         f = RAIZ / ruta
         f.parent.mkdir(parents=True, exist_ok=True)
-        if not f.exists() or f.read_text() != txt:
-            f.write_text(txt)
-            print(f"escrito {ruta}")
-    MANIFIESTO.write_text("".join(f"{r}\n" for r in sorted(salida)))
+        if not f.exists() or f.read_bytes() != txt:
+            f.write_bytes(txt)
+            if not DEP or not ruta.startswith(".agents/skills/"):
+                print(f"escrito {ruta}")
+        if (f.stat().st_mode & 0o777) != modo:
+            f.chmod(modo)
+    MANIFIESTO.parent.mkdir(parents=True, exist_ok=True)
+    nuevo = "".join(f"{r}\n" for r in sorted(salida))
+    if not MANIFIESTO.exists() or MANIFIESTO.read_text() != nuevo:
+        MANIFIESTO.write_text(nuevo)
 
-    # Bloque de .gitignore con las carpetas de los repos hijos.
+    # Bloque de .gitignore: carpetas de repos hijos y, en modo dependencia, todo lo que trae el template.
     gi = RAIZ / ".gitignore"
     txt = gi.read_text() if gi.exists() else ""
-    INICIO, FIN = f"# >>> {p['proyecto']}: repos (generado) >>>", f"# <<< {p['proyecto']}: repos (generado) <<<"
-    bloque = "\n".join([INICIO, "/.pj-sync/"] + [f"/{r['dir']}/" for r in p["repos"]] + [FIN])
+    INICIO, FIN = f"# >>> {proy}: repos (generado) >>>", f"# <<< {proy}: repos (generado) <<<"
+    extra = ["/.pj/", "/.agents/", "/.cursor/"] if DEP else []
+    bloque = "\n".join([INICIO, "/.pj-sync/"] + extra + [f"/{r['dir']}/" for r in p["repos"]] + [FIN])
     if re.search(BLOQUE_RE, txt, flags=re.S):
         txt = re.sub(BLOQUE_RE, lambda _: bloque, txt, count=1, flags=re.S)
     else:

@@ -11,6 +11,7 @@ on:
       - ".agents/skills/**"
       - "skills-lock.json"
       - "plantillas/**"
+      - "schema/**"
       - "scripts/**"
       - "clone-repos.sh"
       - "Makefile"

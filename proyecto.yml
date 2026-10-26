@@ -1,4 +1,4 @@
-# Datos del proyecto. Es el único archivo que llenás a mano; después: make generar.
+# Datos del proyecto, validados por schema/proyecto.schema.json. Después: make generar (en un hijo: ./pj).
 proyecto: pj-template          # nombre del trío: PM-<proyecto>, WK-<proyecto>, RV-<proyecto>
 area: plantilla de tríos PM/WK/RV para Cursor y agy
 rama_base: main                # rama de los PR finales
@@ -8,10 +8,14 @@ repos: []
 #    repo: robert-flo/ejemplo
 #    rama: main
 #    nota: qué es este repo en una frase
-# Specs en curso (texto libre o {ref, titulo}).
+# Specs en curso, validados por schema/proyecto.schema.json. ref = dueño/repo#N; orden = entero
+# (se listan de menor a mayor); exactamente uno con primero: true (el primer trabajo del PM).
+# Los textos van entre comillas: un # sin comillas corta el valor.
 specs: []
-#  - ref: robert-flo/ejemplo#12
-#    titulo: primer trabajo
+#  - ref: "robert-flo/ejemplo#12"
+#    titulo: "primer trabajo"
+#    orden: 1
+#    primero: true
 notas: |
   Este repo es la plantilla de los meta-repos hijos (ver family.yml). Las reglas, plantillas,
   scripts y workflows que se cambian acá llegan a los hijos por PR.

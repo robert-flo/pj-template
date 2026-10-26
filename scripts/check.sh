@@ -1,35 +1,90 @@
 #!/usr/bin/env bash
-# Verifica que la generación sea idempotente, que no queden {{ }} y que todo cuadre.
+# Verifica proyecto.yml (esquema), idempotencia, que no queden {{ }}, skills y la prueba de humo.
+# En pj-template: make check. En un hijo en modo dependencia: ./pj check (PJ_RAIZ = el hijo).
 set -euo pipefail
-raiz="$(cd "$(dirname "$0")/.." && pwd)"; cd "$raiz"
+T="$(cd "$(dirname "$0")/.." && pwd)"; R="$(cd "${PJ_RAIZ:-$T}" && pwd)"; export PJ_RAIZ="$R"
+DEP=0; [ "$R" != "$T" ] && DEP=1
+cd "$R"
 fallas=0; ok(){ echo "ok   $*"; }; mal(){ echo "FALLA $*"; fallas=$((fallas+1)); }
+gen(){ python3 "$T/scripts/generar.py"; }
+tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 
-snap(){ find . -path ./.git -prune -o -path './rf-*' -prune -o -path './fo-*' -prune -o -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum; }
-python3 scripts/generar.py >/dev/null
-a="$(snap)"; python3 scripts/generar.py >/dev/null; b="$(snap)"
+python3 "$T/scripts/proyecto.py" || fallas=$((fallas+1))
+
+snap(){ find . -path ./.git -prune -o -path ./.pj -prune -o -path ./.pj-sync -prune -o -path './rf-*' -prune -o -path './fo-*' -prune -o -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum; }
+gen >/dev/null || { mal "generar.py falló"; echo "check: $fallas fallas"; exit 1; }
+a="$(snap)"; gen >/dev/null; b="$(snap)"
 [ "$a" = "$b" ] && ok "generar.py es idempotente" || { mal "generar.py cambió archivos en la segunda corrida"; diff <(echo "$a") <(echo "$b") || true; }
 
-# Idempotencia también desde cero, en una copia: borrar lo generado y regenerar da lo mismo.
-tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
-git ls-files -co --exclude-standard -z | xargs -0 -I{} cp --parents {} "$tmp" 2>/dev/null || cp -R . "$tmp"
-( cd "$tmp" && xargs rm -f < .agents/generados.txt && python3 scripts/generar.py >/dev/null )
+# Desde cero, en una copia: solo lo versionado + generar da los mismos bytes.
+git ls-files -co --exclude-standard -z | xargs -0 -I{} cp --parents {} "$tmp/" 2>/dev/null || true
+if [ "$DEP" = 1 ]; then rm -rf "$tmp/.agents" "$tmp/.cursor"; else xargs -I{} rm -f "$tmp/{}" < .agents/generados.txt; fi
+if [ "$DEP" = 1 ]; then g="$T/scripts/generar.py"; else g="$tmp/scripts/generar.py"; fi
+( cd "$tmp" && PJ_RAIZ="$tmp" python3 "$g" >/dev/null ) || mal "generar desde cero falló"
 antes=$fallas
 for f in $(cat .agents/generados.txt) .gitignore; do cmp -s "$f" "$tmp/$f" || mal "regenerar desde cero cambia $f"; done
 [ "$fallas" -eq "$antes" ] && ok "regenerar desde cero da los mismos bytes"
+rm -rf "${tmp:?}"/* "$tmp"/.[!.]* 2>/dev/null || true
 
 if grep -rnE '\{\{|\}\}' --include='*.md' --include='*.mdc' .agents/agents .cursor .gitignore; then mal "quedan {{ }} en archivos generados"; else ok "sin {{ }} en lo generado"; fi
-grep -rniE 'grok ?bot|robert-flo/fleet|fleet/bots' --exclude-dir=.git --exclude-dir='rf-*' --exclude=check.sh . && mal "hay referencias a Grok Bot o fleet" || ok "sin referencias a Grok Bot ni fleet"
+git grep -nIiE 'grok ?bot|robert-flo/fleet|fleet/bots' -- . ':!scripts/check.sh' ':!docs/adr-antigravity' && mal "hay referencias a Grok Bot o fleet" || ok "sin referencias a Grok Bot ni fleet"
 [ -e .agents/grokbot.md ] && mal ".agents/grokbot.md no debe existir" || true
 
-# Las notas del molde no pueden quedar en un hijo.
-if [ "$(python3 -c 'import yaml;print(yaml.safe_load(open("proyecto.yml"))["proyecto"])')" != pj-template ] \
-   && grep -qE 'Este repo es la plantilla de los meta-repos hijos|llegan a los hijos por PR' proyecto.yml; then
-  mal "proyecto.yml: las notas todavía tienen el texto de pj-template"
-else ok "notas de proyecto.yml propias"; fi
+if [ "$DEP" = 1 ]; then
+  # El hijo versiona solo sus archivos a mano; todo lo demás viene de pj-template.
+  permitidos=$'.github/workflows/pj-template.yml\n.gitignore\nAGENTS.md\nREADME.md\npj\nproyecto.yml'
+  extra="$(git ls-files | LC_ALL=C sort | comm -23 - <(echo "$permitidos" | LC_ALL=C sort))"
+  [ -z "$extra" ] && ok "el hijo versiona solo $(git ls-files | wc -l) archivos a mano" || mal "archivos versionados que deberían venir de pj-template: $(echo $extra)"
+  for f in $(cat .agents/generados.txt); do git ls-files --error-unmatch "$f" >/dev/null 2>&1 && mal "$f es generado y no debe versionarse"; done
+  for f in pj:pj .github/workflows/pj-template.yml:pj-template.yml; do
+    cmp -s "${f%%:*}" "$T/plantillas/hijo/${f##*:}" && ok "${f%%:*} igual al de pj-template" || mal "${f%%:*} difiere de plantillas/hijo/${f##*:} de pj-template"
+  done
+  [ -x pj ] || mal "pj no es ejecutable"
+else
+  # Pruebas del molde: un hijo de mentira en modo dependencia y casos que generar tiene que rechazar.
+  h="$tmp/hijo"; mkdir -p "$h/.github/workflows"
+  cp "$T/plantillas/hijo/pj" "$h/pj"; cp "$T/plantillas/hijo/pj-template.yml" "$h/.github/workflows/"; cp "$T/plantillas/hijo/gitignore" "$h/.gitignore"
+  cat > "$h/proyecto.yml" <<'YML'
+proyecto: "demo"
+area: "hijo de prueba del check"
+rama_base: "main"
+template_ref: "0000000000000000000000000000000000000000"
+repos: []
+specs:
+  - ref: "robert-flo/demo#2"
+    titulo: "segundo"
+    orden: 2
+    primero: false
+  - ref: "robert-flo/demo#1"
+    titulo: "uno (#1 primero)"
+    orden: 1
+    primero: true
+notas: |
+  Hijo de prueba.
+YML
+  if PJ_RAIZ="$h" python3 "$T/scripts/generar.py" >/dev/null && PJ_RAIZ="$h" python3 "$T/scripts/humo.py" >/dev/null; then
+    grep -q '1. robert-flo/demo#1 — uno (#1 primero) ← \*\*primer trabajo\*\*' "$h/.agents/agents/PM-demo.md" \
+      && [ "$(grep -n 'demo#1 —' "$h/.agents/agents/PM-demo.md" | cut -d: -f1)" -lt "$(grep -n 'demo#2 —' "$h/.agents/agents/PM-demo.md" | cut -d: -f1)" ] \
+      && ok "modo dependencia: hijo de prueba genera, ordena specs y marca el primer trabajo" || mal "modo dependencia: specs mal ordenados o sin primer trabajo"
+  else mal "modo dependencia: el hijo de prueba no genera o no pasa humo"; fi
+  rechaza(){ # $1 descripción, $2 sed sobre proyecto.yml o comando
+    cp "$h/proyecto.yml" "$h/p.bak"; eval "$2"
+    if PJ_RAIZ="$h" python3 "$T/scripts/generar.py" >/dev/null 2>&1; then mal "generar aceptó: $1"; else ok "generar rechaza: $1"; fi
+    mv "$h/p.bak" "$h/proyecto.yml"; rm -f "$h/.agents/agents/PM-pj-template.md"
+  }
+  rechaza "# sin comillas en un título" "sed -i 's|titulo: \"segundo\"|titulo: segundo #2|' '$h/proyecto.yml'"
+  rechaza "ref cortada por un # sin comillas" "sed -i 's|ref: \"robert-flo/demo#2\"|ref: robert-flo/demo #2|' '$h/proyecto.yml'"
+  rechaza "dos specs con primero: true" "sed -i 's|primero: false|primero: true|' '$h/proyecto.yml'"
+  rechaza "orden que no es entero" "sed -i 's|orden: 2|orden: \"2\"|' '$h/proyecto.yml'"
+  rechaza "notas de pj-template en un hijo" "sed -i 's|Hijo de prueba.|Este repo es la plantilla de los meta-repos hijos|' '$h/proyecto.yml'"
+  rechaza "hijo llamado pj-template" "sed -i 's|^proyecto: \"demo\"|proyecto: \"pj-template\"|' '$h/proyecto.yml'"
+  rechaza "ficha sobrante del molde" "cp '$T/.agents/agents/PM-pj-template.md' '$h/.agents/agents/'"
+  rechaza "sin template_ref" "sed -i '/^template_ref/d' '$h/proyecto.yml'"
+fi
 
-python3 - <<'PY' || fallas=$((fallas+1))
+python3 - "$T" <<'PY' || fallas=$((fallas+1))
 import json, pathlib, sys, yaml
-lock = json.load(open("skills-lock.json"))["skills"]
+lock = json.load(open(pathlib.Path(sys.argv[1]) / "skills-lock.json"))["skills"]
 d = pathlib.Path(".agents/skills")
 en_disco = {p.name for p in d.iterdir() if p.is_dir()} if d.exists() else set()
 err = []
@@ -43,7 +98,8 @@ for e in err: print("FALLA", e)
 print("ok   skills-lock, .agents/skills y fichas cuadran" if not err else "")
 sys.exit(1 if err else 0)
 PY
-for f in scripts/*.sh clone-repos.sh; do bash -n "$f" || mal "sintaxis $f"; done; ok "sintaxis bash"
-python3 -c 'import yaml,glob;[yaml.safe_load(open(f)) for f in glob.glob(".github/workflows/*.yml")+["family.yml","proyecto.yml","plantillas/roles.yml"] if __import__("os").path.exists(f)]' && ok "YAML válido" || mal "YAML inválido"
+python3 "$T/scripts/humo.py" || fallas=$((fallas+1))
+for f in "$T"/scripts/*.sh "$T"/clone-repos.sh "$T"/plantillas/hijo/pj; do bash -n "$f" || mal "sintaxis $f"; done; ok "sintaxis bash"
+python3 -c 'import yaml,glob,os;[yaml.safe_load(open(f)) for f in glob.glob(".github/workflows/*.yml")+["family.yml","proyecto.yml"] if os.path.exists(f)]' && ok "YAML válido" || mal "YAML inválido"
 
 [ "$fallas" -eq 0 ] && echo "check: todo bien" || { echo "check: $fallas fallas"; exit 1; }

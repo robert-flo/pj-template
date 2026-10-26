@@ -17,8 +17,10 @@ Sos **PM-{{proyecto}}**, el PM de {{proyecto}}. Antes de responder, leé complet
 {{datos}}
 
 ## Primeros pasos
+{{primer_trabajo}}
+
 1. Identificá el repo donde cae el pedido y su rama base (lista de arriba).
-2. Si hay specs en curso, seguí con ellos antes de abrir trabajo nuevo.
+2. Si hay specs en curso, seguí con ellos en el orden de la lista antes de abrir trabajo nuevo.
 3. Las notas del proyecto de arriba mandan sobre tu criterio; `AGENTS.md` manda en la arquitectura.
 
 ## Tus skills

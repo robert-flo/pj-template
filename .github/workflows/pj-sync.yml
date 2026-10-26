@@ -1,9 +1,9 @@
-# Workflow reutilizable de robert-flo/pj-template.
-# Trae reglas/plantillas/scripts de pj-template, sincroniza las skills desde robert-flo/skills@personal,
-# regenera fichas y adaptadores, y abre un PR en el repo que lo llama si algo cambió.
-# Secreto requerido en el repo que llama: PJ_TEMPLATE_TOKEN (PAT fine-grained de robert-flo con
-# Contents: read/write y Pull requests: read/write sobre el repo que llama, y Contents: read sobre
-# robert-flo/pj-template, que es privado).
+# Workflow reutilizable de robert-flo/pj-template. Lo llama pj-template.yml (en el molde y en cada hijo).
+# - Hijo en modo dependencia: sube `template_ref` de proyecto.yml al último main de pj-template
+#   (y actualiza ./pj y el caller) por PR. El PR corre `./pj check`.
+# - pj-template: sincroniza skills desde robert-flo/skills@personal por PR.
+# - Hijo viejo (copia): trae template-paths.txt, skills y regenera, por PR.
+# Secreto requerido en el repo que llama: PJ_TEMPLATE_TOKEN (ver docs/pj-template.md).
 name: pj-sync (reutilizable)
 on:
   workflow_call:
@@ -42,19 +42,14 @@ jobs:
           ref: ${{ inputs.skills_ref }}
           path: .pj-sync/skills
       - name: Dependencias
-        run: python3 -c 'import yaml' || pip install pyyaml
-      - name: Traer lo del template
-        if: github.repository != 'robert-flo/pj-template'
-        run: bash .pj-sync/tpl/scripts/sync-template.sh .pj-sync/tpl
-      - name: Sincronizar skills y regenerar
+        run: pip install -q pyyaml jsonschema
+      - name: Sincronizar
+        env:
+          PJ_TEMPLATE_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}
         run: |
-          bash scripts/sync-skills.sh .pj-sync/skills
-          echo "SKILLS_SHA=$(git -C .pj-sync/skills rev-parse --short HEAD)" >> "$GITHUB_ENV"
-          echo "TPL_SHA=$(git -C .pj-sync/tpl rev-parse --short HEAD 2>/dev/null || git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+          tpl=.pj-sync/tpl; [ -d "$tpl" ] || tpl=.
+          bash "$tpl/scripts/ci-sync.sh" "$tpl" .pj-sync/skills
           rm -rf .pj-sync
-          python3 scripts/generar.py
-      - name: Check
-        run: bash scripts/check.sh
       - name: Abrir PR si hay cambios
         env:
           GH_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}
@@ -66,18 +61,18 @@ jobs:
           git config user.email "25asab015@ujmd.edu.sv"
           git switch -c "$rama"
           git add -A
-          git commit -q -m "chore(pj-template): sync de reglas, plantillas y skills" \
-            -m "pj-template@${TPL_SHA} · robert-flo/skills@${SKILLS_SHA}. Generado por pj-sync; no se edita a mano." \
+          git commit -q -m "$MENSAJE" -m "Generado por pj-sync; no se edita a mano." \
             -m "agente: ci · plataforma: GitHub Actions"
           git push -q origin "$rama"
+          body="$(mktemp)"
           {
             echo "## Summary"
-            echo "Sync automático desde \`robert-flo/pj-template@${TPL_SHA}\` y \`robert-flo/skills@${SKILLS_SHA}\`."
+            echo "$MENSAJE"
             echo; echo '```'; git show --stat --format= HEAD | tail -n 40; echo '```'
-            echo; echo "## Evidence"; echo "\`scripts/check.sh\` pasó en el run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+            echo; echo "## Evidence"; echo "El check pasó en el run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
             echo; echo "## Merge Danger"; echo "Door: de dos vías (revertible). Blast radius: reglas, skills y fichas del trío de este repo."
-          } > /tmp/body.md
-          url="$(gh pr create --base "$base" --head "$rama" --title "pj-template: sync de reglas y skills" --body-file /tmp/body.md)"
+          } > "$body"
+          url="$(gh pr create --base "$base" --head "$rama" --title "$TITULO" --body-file "$body")"
           echo "PR: $url"
           gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName|startswith("pj-template/sync-")) | select(.headRefName != "'"$rama"'") | .number' |
             while read -r n; do gh pr close "$n" --delete-branch --comment "Reemplazado por $url"; done

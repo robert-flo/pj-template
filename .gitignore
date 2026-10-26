@@ -16,6 +16,7 @@ scratch-*.md
 .system_generated/
 .DS_Store
 *~
+__pycache__/
 
 # >>> pj-template: repos (generado) >>>
 /.pj-sync/

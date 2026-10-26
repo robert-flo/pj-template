@@ -1,19 +1,21 @@
 # pj-template
 
-La plantilla única de los tríos PM/WK/RV para Cursor y agy. Una sola copia de reglas, skills y plantillas; cada proyecto llena su `proyecto.yml` y genera lo suyo.
+La plantilla única de los tríos PM/WK/RV para Cursor y agy. Una sola copia de reglas, skills y plantillas; cada hijo versiona solo `proyecto.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj` y su workflow, y trae lo demás como dependencia al SHA de `template_ref`.
 
 ```bash
-gh repo create robert-flo/pj-miproyecto --private --template robert-flo/pj-template --clone
-cd pj-miproyecto
-$EDITOR proyecto.yml    # nombre, área, rama base, repos, specs, notas
-make generar            # fichas de agy y adaptadores de Cursor
-make check              # idempotente y sin {{ }}
-make nuevo-hijo P=foo   # crea robert-flo/pj-foo desde el template (necesita PJ_TEMPLATE_TOKEN)
-./clone-repos.sh        # clona los repos del proyecto al lado
+make nuevo-hijo P=foo   # crea robert-flo/pj-foo en modo dependencia (necesita PJ_TEMPLATE_TOKEN)
+make check              # esquema de proyecto.yml, idempotencia, hijo de prueba y humo estático
+make humo               # además arranca PM-<proyecto> con agy sin interacción (si está agy)
+make deriva             # % de archivos idénticos de cada hijo frente al template actual
+make generar            # fichas de agy y adaptadores de Cursor de este repo
+
+# en un hijo
+./pj                    # trae pj-template@template_ref a .pj/ y genera .agents/ y .cursor/
+./pj check | humo | clonar | agy
 ```
 
-Necesitás `python3` con PyYAML (`sudo pacman -S python-yaml`), `gh` y `git`.
+Necesitás `python3` con PyYAML y jsonschema (`sudo pacman -S python-yaml python-jsonschema`), `gh`, `git` y `make`.
 
 - Cómo crear un hijo y cambiar el template: [`AGENTS.md`](AGENTS.md).
-- Quién manda qué, los workflows y el secreto `PJ_TEMPLATE_TOKEN`: [`docs/pj-template.md`](docs/pj-template.md).
+- Modo dependencia, esquema, prueba de humo, workflows y el secreto `PJ_TEMPLATE_TOKEN`: [`docs/pj-template.md`](docs/pj-template.md).
 - Hijos: [`family.yml`](family.yml).

@@ -1,50 +1,90 @@
 #!/usr/bin/env bash
-# Crea un meta-repo hijo de pj-template: make nuevo-hijo P=<nombre> [DIR=<carpeta>]
-# Pasos: crea robert-flo/pj-<P> desde el template (si no existe), lo clona, llena proyecto.yml,
-# corre make generar + check, commit/push, carga el secreto PJ_TEMPLATE_TOKEN en el hijo y
-# abre un PR en pj-template que suma el hijo a family.yml. Se puede volver a correr.
+# Crea un meta-repo hijo de pj-template en modo dependencia: make nuevo-hijo P=<nombre> [DIR=<carpeta>]
+# Pasos: crea robert-flo/pj-<P> vacío y privado (si no existe), lo clona, escribe sus 6 archivos
+# (proyecto.yml con template_ref = main actual de pj-template, AGENTS.md, README.md, .gitignore, ./pj y
+# el caller .github/workflows/pj-template.yml), corre ./pj y ./pj check, commit/push, carga el secreto
+# PJ_TEMPLATE_TOKEN en el hijo y abre un PR en pj-template que suma el hijo a family.yml.
+# Se puede volver a correr: un hijo existente conserva sus archivos (para migrar uno viejo, PR a mano).
 # Necesita: gh autenticado y PJ_TEMPLATE_TOKEN en el entorno (nunca se imprime).
 set -euo pipefail
+T="$(cd "$(dirname "$0")/.." && pwd)"
 P="${1:-}"; [ -n "$P" ] || { echo "uso: make nuevo-hijo P=<nombre> [DIR=<carpeta>]" >&2; exit 2; }
 [[ "$P" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || { echo "nombre inválido: $P" >&2; exit 2; }
+[ "$P" != template ] || { echo "pj-template es el molde, no un hijo" >&2; exit 2; }
 [ -n "${PJ_TEMPLATE_TOKEN:-}" ] || { echo "falta PJ_TEMPLATE_TOKEN en el entorno (exportalo antes; no se imprime)" >&2; exit 1; }
 OWNER=robert-flo; TEMPLATE="$OWNER/pj-template"; REPO="$OWNER/pj-$P"
 if [ -n "${2:-}" ]; then BASE="$2"; elif [ -d /z-drive/tries ]; then BASE=/z-drive/tries; else BASE="$PWD"; fi
 DEST="$BASE/rf-pj-$P"
+SHA="$(gh api "repos/$TEMPLATE/commits/main" --jq .sha)"
 
 CREADO=0
 if gh repo view "$REPO" >/dev/null 2>&1; then echo "ya existe $REPO, no lo creo"
-else CREADO=1; gh repo create "$REPO" --private --template "$TEMPLATE"; sleep 5; fi
+else CREADO=1; gh repo create "$REPO" --private --description "Meta-repo pj-$P (hijo de pj-template)"; fi
 
-if [ -d "$DEST/.git" ]; then git -C "$DEST" pull --rebase --autostash -q
-else for i in 1 2 3 4 5; do gh repo clone "$REPO" "$DEST" && break; sleep 5; done; fi
-cd "$DEST"
+if [ -d "$DEST/.git" ]; then git -C "$DEST" pull --rebase --autostash -q 2>/dev/null || true
+else for i in 1 2 3 4 5; do gh repo clone "$REPO" "$DEST" -- -q 2>/dev/null && break; sleep 3; done; fi
+mkdir -p "$DEST"; cd "$DEST"; [ -d .git ] || git init -q -b main
+git config user.name "Roberto Flores"; git config user.email "25asab015@ujmd.edu.sv"
 
-# Esqueleto solo si el repo es nuevo o falta proyecto.yml; un hijo existente conserva el suyo.
-if [ "$CREADO" = 1 ] || [ ! -f proyecto.yml ]; then
-cat > proyecto.yml <<YML
-# Datos del proyecto. Es el único archivo que llenás a mano; después: make generar.
+pon(){ [ -e "$1" ] && return 0; mkdir -p "$(dirname "$1")"; cat > "$1"; echo "escrito $1"; }
+pon proyecto.yml <<YML
+# Datos del proyecto. Es el único archivo de datos que llenás a mano; después: ./pj
+# Lo valida schema/proyecto.schema.json de pj-template. Los textos van entre comillas (un # sin comillas corta el valor).
 proyecto: "$P"                 # nombre del trío: PM-<proyecto>, WK-<proyecto>, RV-<proyecto>
 area: "pj-$P (completá en una frase)"
 rama_base: "main"              # rama de los PR finales
+template_ref: "$SHA"   # SHA de robert-flo/pj-template; lo sube el PR de sync
 # Repos hijos (vacío en proyectos de un solo repo). dir = carpeta local, ignorada en .gitignore.
 repos: []
 #  - dir: "rf-ejemplo"
 #    repo: "robert-flo/ejemplo"
 #    rama: "main"
 #    nota: "qué es este repo en una frase"
-# Specs en curso (texto libre o {ref, titulo}).
+# Specs en curso: ref = dueño/repo#N, orden entero, exactamente uno con primero: true.
 specs: []
+#  - ref: "robert-flo/ejemplo#12"
+#    titulo: "primer trabajo"
+#    orden: 1
+#    primero: true
 notas: |
   Meta-repo de $P. Completá acá el contexto del proyecto.
-# Skills extra por rol, además de plantillas/roles.yml.
+# Skills extra por rol, además de plantillas/roles.yml de pj-template.
 skills_extra: {}
 YML
-fi
-make generar && make check
+pon AGENTS.md <<MD
+# AGENTS.md — pj-$P
+
+Meta-repo del trío PM/WK/RV de **$P** para Cursor y agy. Si sos un agente: si no existe \`.agents/reglas/\`, corré \`./pj\` antes de nada.
+
+## Qué hay acá
+- \`proyecto.yml\`: los datos del proyecto (repos, specs en orden, notas). Lo llenás vos.
+- Todo lo demás (reglas, plantillas, skills, scripts) lo trae \`./pj\` desde \`robert-flo/pj-template\` al SHA de \`template_ref\`, en \`.pj/\`, y genera \`.agents/\` y \`.cursor/\`. Nada de eso se versiona ni se edita a mano.
+
+## Arquitectura
+Completá acá cómo se arma el proyecto.
+MD
+pon README.md <<MD
+# pj-$P
+
+Meta-repo del trío PM/WK/RV de $P (hijo de \`robert-flo/pj-template\`, modo dependencia).
+
+\`\`\`bash
+./pj            # trae pj-template al template_ref y genera .agents/ y .cursor/
+./pj check      # esquema de proyecto.yml, idempotencia y prueba de humo
+./pj clonar     # clona los repos de proyecto.yml al lado
+./pj agy        # una vez por máquina; después: agy --agent PM-$P
+\`\`\`
+
+Necesitás \`python3\` con PyYAML y jsonschema, \`gh\`, \`git\` y \`make\`.
+MD
+pon .gitignore < "$T/plantillas/hijo/gitignore"
+pon pj < "$T/plantillas/hijo/pj"; chmod +x pj
+pon .github/workflows/pj-template.yml < "$T/plantillas/hijo/pj-template.yml"
+PJ_TEMPLATE_TOKEN="$PJ_TEMPLATE_TOKEN" ./pj && ./pj check
 git add -A
-git diff --cached --quiet || git commit -q -m "feat: arranque de pj-$P desde pj-template"
-git push -q origin HEAD
+git diff --cached --quiet || git commit -q -m "feat: arranque de pj-$P desde pj-template (modo dependencia)" -m "agente: nuevo-hijo · plataforma: make"
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "https://github.com/$REPO.git"
+git push -q -u origin HEAD
 
 printf '%s' "$PJ_TEMPLATE_TOKEN" | gh secret set PJ_TEMPLATE_TOKEN -R "$REPO" >/dev/null && echo "secreto PJ_TEMPLATE_TOKEN cargado en $REPO"
 
