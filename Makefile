@@ -1,4 +1,4 @@
-.PHONY: check generar skills clonar agy
+.PHONY: check generar skills clonar agy nuevo-hijo
 check:      ## Verifica idempotencia, sin {{ }} y coherencia de skills
 	bash scripts/check.sh
 generar:    ## Regenera fichas y adaptadores desde proyecto.yml
@@ -9,3 +9,5 @@ clonar:     ## Clona los repos de proyecto.yml
 	./clone-repos.sh
 agy:        ## Enlaza las fichas en ~/.gemini/config/agents
 	bash scripts/instalar-agy.sh
+nuevo-hijo: ## Crea el meta-repo hijo robert-flo/pj-<P>: make nuevo-hijo P=<nombre> [DIR=<carpeta>]
+	bash scripts/nuevo-hijo.sh "$(P)" "$(DIR)"

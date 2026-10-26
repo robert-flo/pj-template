@@ -1,4 +1,5 @@
 # Rutas que manda robert-flo/pj-template. scripts/sync-template.sh las copia tal cual a cada hijo.
+# vigilar-hijos.yml y notify-children.yml NO van acá: son solo de pj-template.
 # Lo que no está acá (proyecto.yml, AGENTS.md, README.md, .gitignore fuera del bloque generado) es del hijo.
 .agents/reglas
 .agents/skills

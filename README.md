@@ -8,6 +8,7 @@ cd pj-miproyecto
 $EDITOR proyecto.yml    # nombre, área, rama base, repos, specs, notas
 make generar            # fichas de agy y adaptadores de Cursor
 make check              # idempotente y sin {{ }}
+make nuevo-hijo P=foo   # crea robert-flo/pj-foo desde el template (necesita PJ_TEMPLATE_TOKEN)
 ./clone-repos.sh        # clona los repos del proyecto al lado
 ```
 

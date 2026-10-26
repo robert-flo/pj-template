@@ -1,0 +1,54 @@
+# Solo en pj-template (no está en template-paths.txt, así que no llega a los hijos).
+# Todos los días compara los repos creados desde este template con family.yml y revisa que cada
+# hijo tenga el secreto PJ_TEMPLATE_TOKEN. Si algo falta, abre o actualiza un único issue
+# "hijos sin registrar o sin secret"; cuando todo está bien, lo cierra.
+# Los de family.yml que no salieron del template se informan como "pendientes de migrar" sin fallar.
+name: vigilar-hijos
+on:
+  schedule:
+    - cron: "17 12 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  vigilar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Comparar hijos
+        env:
+          GH_TOKEN: ${{ secrets.PJ_TEMPLATE_TOKEN }}
+          ISSUES_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 -c 'import yaml' || pip install pyyaml
+          titulo="hijos sin registrar o sin secret"
+          familia=$(python3 -c 'import yaml;print("\n".join(sorted(yaml.safe_load(open("family.yml"))["hijos"])))')
+          desde_template=$(gh api --paginate "user/repos?per_page=100&affiliation=owner" --jq '.[] | select(.owner.login=="robert-flo") | .full_name')
+          creados=""
+          for r in $desde_template; do
+            [ "$r" = robert-flo/pj-template ] && continue
+            t=$(gh api "repos/$r" --jq '.template_repository.full_name // ""')
+            [ "$t" = robert-flo/pj-template ] && creados+="$r"$'\n'
+          done
+          creados=$(printf '%s' "$creados" | sort -u)
+          problemas=""; pendientes=""; oks=""
+          for r in $creados; do
+            grep -qx "$r" <<<"$familia" || problemas+="- [ ] \`$r\` salió del template pero no está en family.yml"$'\n'
+          done
+          for r in $familia; do
+            if ! grep -qx "$r" <<<"$creados"; then pendientes+="- \`$r\` está en family.yml pero no salió del template (pendiente de migrar)"$'\n'; continue; fi
+            if gh secret list -R "$r" --json name --jq '.[].name' | grep -qx PJ_TEMPLATE_TOKEN; then oks+="- \`$r\` ok"$'\n'
+            else problemas+="- [ ] \`$r\` no tiene el secreto PJ_TEMPLATE_TOKEN"$'\n'; fi
+          done
+          { echo "## Hijos de pj-template"; echo; echo "### Ok"; echo "${oks:-ninguno}"; echo "### Problemas"; echo "${problemas:-ninguno}"; echo "### Pendientes de migrar"; echo "${pendientes:-ninguno}"; } | tee -a "$GITHUB_STEP_SUMMARY"
+          export GH_TOKEN="$ISSUES_TOKEN"
+          n=$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "\"$titulo\" in:title" --json number,title --jq ".[] | select(.title==\"$titulo\") | .number" | head -1)
+          if [ -n "$problemas" ]; then
+            cuerpo=$(printf 'Detectado por vigilar-hijos (%s).\n\n### Problemas\n%s\n### Pendientes de migrar (informativo)\n%s\nArreglo: `make nuevo-hijo P=<nombre>` o sumá el hijo a family.yml por PR y cargá el secreto.\n' "$(date -u +%F)" "$problemas" "${pendientes:-ninguno}")
+            if [ -n "$n" ]; then gh issue edit "$n" -R "$GITHUB_REPOSITORY" --body "$cuerpo"
+            else gh issue create -R "$GITHUB_REPOSITORY" --title "$titulo" --body "$cuerpo"; fi
+          elif [ -n "$n" ]; then
+            gh issue close "$n" -R "$GITHUB_REPOSITORY" --comment "Todos los hijos registrados y con secreto."
+          fi

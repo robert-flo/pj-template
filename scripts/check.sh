@@ -21,6 +21,12 @@ if grep -rnE '\{\{|\}\}' --include='*.md' --include='*.mdc' .agents/agents .curs
 grep -rniE 'grok ?bot|robert-flo/fleet|fleet/bots' --exclude-dir=.git --exclude-dir='rf-*' --exclude=check.sh . && mal "hay referencias a Grok Bot o fleet" || ok "sin referencias a Grok Bot ni fleet"
 [ -e .agents/grokbot.md ] && mal ".agents/grokbot.md no debe existir" || true
 
+# Las notas del molde no pueden quedar en un hijo.
+if [ "$(python3 -c 'import yaml;print(yaml.safe_load(open("proyecto.yml"))["proyecto"])')" != pj-template ] \
+   && grep -qE 'Este repo es la plantilla de los meta-repos hijos|llegan a los hijos por PR' proyecto.yml; then
+  mal "proyecto.yml: las notas todavía tienen el texto de pj-template"
+else ok "notas de proyecto.yml propias"; fi
+
 python3 - <<'PY' || fallas=$((fallas+1))
 import json, pathlib, sys, yaml
 lock = json.load(open("skills-lock.json"))["skills"]

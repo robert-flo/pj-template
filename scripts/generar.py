@@ -9,7 +9,9 @@ import yaml
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 MANIFIESTO = RAIZ / ".agents/generados.txt"
-INICIO, FIN = "# >>> pj-template: repos (generado) >>>", "# <<< pj-template: repos (generado) <<<"
+# Marcadores del bloque generado de .gitignore; llevan el nombre del proyecto.
+# BLOQUE_RE reconoce cualquier nombre (así migra el bloque viejo "pj-template" o un renombre).
+BLOQUE_RE = r"# >>> [^\n]*: repos \(generado\) >>>.*?# <<< [^\n]*: repos \(generado\) <<<"
 
 
 def die(msg):
@@ -108,9 +110,10 @@ def main():
     # Bloque de .gitignore con las carpetas de los repos hijos.
     gi = RAIZ / ".gitignore"
     txt = gi.read_text() if gi.exists() else ""
+    INICIO, FIN = f"# >>> {p['proyecto']}: repos (generado) >>>", f"# <<< {p['proyecto']}: repos (generado) <<<"
     bloque = "\n".join([INICIO, "/.pj-sync/"] + [f"/{r['dir']}/" for r in p["repos"]] + [FIN])
-    if INICIO in txt:
-        txt = re.sub(re.escape(INICIO) + r".*?" + re.escape(FIN), lambda _: bloque, txt, flags=re.S)
+    if re.search(BLOQUE_RE, txt, flags=re.S):
+        txt = re.sub(BLOQUE_RE, lambda _: bloque, txt, count=1, flags=re.S)
     else:
         txt = txt.rstrip("\n") + ("\n\n" if txt else "") + bloque + "\n"
     if not gi.exists() or gi.read_text() != txt:

@@ -16,6 +16,10 @@ Plantilla única de los tríos PM/WK/RV de Roberto para **Cursor** y **agy** (An
 5. `make check` tiene que pasar. Commit y push.
 6. `./clone-repos.sh` (o `make clonar`) clona los repos de `proyecto.yml` al lado.
 7. Agregá `robert-flo/pj-<proyecto>` a `family.yml` de pj-template (por PR) y creá el secreto `PJ_TEMPLATE_TOKEN` en el hijo.
+
+Atajo: desde pj-template, con `PJ_TEMPLATE_TOKEN` exportado, `make nuevo-hijo P=<nombre> [DIR=<carpeta>]` hace los pasos 1 a 7 (crea el repo desde el template si no existe, lo clona en `/z-drive/tries/rf-pj-<nombre>` o en `./`, llena `proyecto.yml`, corre `make generar` y `make check`, pushea, carga el secreto y abre el PR de `family.yml`). Después completá `area` y `notas`: `make check` falla si las notas siguen con el texto de pj-template.
+
+Vigilancia: `vigilar-hijos.yml` (diario, solo en pj-template) compara los repos creados desde el template con `family.yml` y revisa el secreto de cada hijo. Si falta algo abre el issue «hijos sin registrar o sin secret»; si todo está bien lo cierra. Los de `family.yml` que no salieron del template aparecen como pendientes de migrar, sin fallar.
 8. agy: `make agy` una vez por máquina y `agy --agent PM-<proyecto>`. Cursor: abrí la carpeta y hablá con el PM.
 
 ## Cómo cambiar el template
