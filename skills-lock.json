@@ -134,6 +134,13 @@
       "skillPath": "skills/engineering/retro/SKILL.md",
       "computedHash": "b3ae0c27d7b59be306afd32364b1dab4c5fcf47ef8b4fae6a53a933d7fb8e09a"
     },
+    "ro-lanzar-trio": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/ro-lanzar-trio/SKILL.md",
+      "computedHash": "329c35bd0d9f3f0c38495634278a0804e154a3666f62c7b7f3bdc8402d2cce4d"
+    },
     "ro-post-session-review": {
       "source": "robert-flo/skills",
       "sourceType": "github",
