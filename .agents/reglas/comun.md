@@ -90,7 +90,7 @@ Toda herramienta nueva que nazca de git-setup (`robert-flo/pj-domina-rf-git-setu
 
 ## Git
 - Identidad de git en todo commit: `Roberto Flores <25asab015@ujmd.edu.sv>` (`git config user.name "Roberto Flores"` y `git config user.email 25asab015@ujmd.edu.sv` en cada clon y worktree, si no vienen de la config global).
-- Todo commit hecho por un agente del trío termina con el trailer `agente: <pm|wk|rv> · plataforma: <agy|Cursor>` (p. ej. `agente: wk · plataforma: agy`), en la última línea, después de cualquier otro trailer.
+- Ningún commit lleva trailer ni firma de agente: ni `agente: … · plataforma: …`, ni `Co-authored-by`, ni otra atribución a un agente o herramienta, en ningún repo (ver también `.cursor/rules/no-cursor-coauthor.mdc`).
 - Antes de cada push: `git pull --rebase --autostash`. Nunca `git push --force` (ni `--force-with-lease`).
 - Todo merge es squash y atado al commit revisado: `gh pr merge <N> --squash --delete-branch --match-head-commit <sha>`.
 - A la rama por defecto solo mergea el PM, y solo después del `APRUEBO <sha>` del RV, con `gh pr merge --squash --delete-branch --match-head-commit <sha>` ([ADR 0014](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0014-el-pm-mergea-tras-apruebo.md)). El WK y el RV nunca mergean.

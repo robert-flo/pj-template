@@ -9,8 +9,7 @@ git config user.name "Roberto Flores"
 git config user.email "25asab015@ujmd.edu.sv"
 git switch -c "$rama"
 git add -A
-git commit -q -m "$MENSAJE" -m "Generado por pj-sync; no se edita a mano." \
-  -m "agente: ci · plataforma: GitHub Actions"
+git commit -q -m "$MENSAJE" -m "Generado por pj-sync; no se edita a mano."
 git push -q origin "$rama"
 body="$(mktemp)"
 {
