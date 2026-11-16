@@ -4,6 +4,7 @@
 
 # Worktrees locales
 .wt-*/
+*-wt-*/
 *-worktree*/
 
 # Temporales y logs
