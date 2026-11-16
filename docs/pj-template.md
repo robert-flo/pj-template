@@ -61,4 +61,4 @@ El workflow del hijo (`plantillas/hijo/pj-template.yml`) corre el sync en línea
 
 ## Trío en herdr (`pj-trio`)
 
-Cada meta-repo hijo tiene `.trio/` (con `.gitkeep` y `README.md`) para los handoffs del trío. Se lanza con `pj-trio <proyecto> <ticket> --repo <miembro>` (script de `robert-flo/PJ-NIRI-rf-omarchy-workstation`), que abre en herdr las pestañas `pm`/`wk`/`rv` con `agy --agent PM-/WK-/RV-<proyecto>`. Los handoffs quedan en `.trio/<ticket>/` y se commitean. El PM mergea tras el `APRUEBO <sha>` del RV, con squash, `--delete-branch` y `--match-head-commit`.
+Cada meta-repo hijo tiene `.trio/` (con `.gitkeep` y `README.md`) para los handoffs del trío, que se commitean. Se lanza con `pj-trio <proyecto> <ticket> --repo <miembro>`, que viene del paquete `ravn-trio` de `[omarchy-personal]` (`/usr/bin/pj-trio`). La fuente de verdad del trío (pestañas, arranque del PM, handoffs, worktrees del WK y merge) es [robert-flo/ravn-trio](https://github.com/robert-flo/ravn-trio); acá no se duplica. El PM mergea tras el `APRUEBO <sha>` del RV (ADR 0014).
