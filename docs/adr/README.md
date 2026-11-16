@@ -19,6 +19,7 @@ Decisiones vigentes de los tríos PM/WK/RV, para cualquier plataforma (Cursor y 
 | [0013](0013-etiqueta-spec.md) | Etiqueta `spec` y etiquetas sincronizadas | — |
 | [0014](0014-el-pm-mergea-tras-apruebo.md) | El PM mergea tras el `APRUEBO <sha>` del RV (reemplaza el APRUEBO de 0009; el merge del PR final de 0006; el merge del flujo de código de 0011) | — |
 | [0015](0015-herramientas-propias-estilo-git-setup.md) | Las herramientas propias siguen el diseño de git-setup | — |
+| [0016](0016-el-trio-en-herdr-vive-en-ravn-trio.md) | El trío en herdr vive en robert-flo/ravn-trio; las reglas y los ADR de acá mandan si choca | — |
 
 Las decisiones propias de antigravity-fleet (archivado) siguen en `docs/adr-antigravity/`.
 
