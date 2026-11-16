@@ -83,7 +83,7 @@ pon pj < "$T/plantillas/hijo/pj"; chmod +x pj
 pon .github/workflows/pj-template.yml < "$T/plantillas/hijo/pj-template.yml"
 PJ_TEMPLATE_TOKEN="$PJ_TEMPLATE_TOKEN" ./pj && ./pj check
 git add -A
-git diff --cached --quiet || git commit -q -m "feat: arranque de pj-$P desde pj-template (modo dependencia)" -m "agente: nuevo-hijo · plataforma: make"
+git diff --cached --quiet || git commit -q -m "feat: arranque de pj-$P desde pj-template (modo dependencia)"
 git remote get-url origin >/dev/null 2>&1 || git remote add origin "https://github.com/$REPO.git"
 git push -q -u origin HEAD
 
