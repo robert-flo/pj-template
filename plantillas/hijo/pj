@@ -161,6 +161,13 @@ if [ "${1:-}" = listo ] && [ -z "${PJ_LISTO_PULL:-}" ]; then
   else echo "pj: la rama no tiene upstream; salto el pull" >&2; fi
   PJ_LISTO_PULL=1 exec "$raiz/pj" "$@"
 fi
+tpl_url="https://github.com/robert-flo/pj-template.git"
+leer_ref(){
+  local r
+  r="$(sed -nE 's/^template_ref:[[:space:]]*["'\'']?([0-9a-f]{40})["'\'']?.*$/\1/p' proyecto.yml)"
+  [ -n "$r" ] || { echo "pj: proyecto.yml no tiene template_ref (SHA de 40 caracteres de robert-flo/pj-template)" >&2; exit 1; }
+  printf '%s' "$r"
+}
 git_con_auth(){
   if [ -n "${PJ_TEMPLATE_TOKEN:-}" ]; then
     local auth
@@ -173,25 +180,24 @@ git_con_auth(){
   fi
 }
 fetch_tpl(){
-  local r="$1" url="https://github.com/robert-flo/pj-template.git"
+  local r="$1"
   tpl="$raiz/.pj/tpl"
   if [ "$(git -C "$tpl" rev-parse HEAD 2>/dev/null || true)" != "$r" ]; then
     echo "pj: trayendo robert-flo/pj-template@${r:0:12} en .pj/tpl"
     mkdir -p "$tpl"; git -C "$tpl" init -q 2>/dev/null || true
-    git_con_auth -C "$tpl" fetch -q --depth 1 "$url" "$r"
+    git_con_auth -C "$tpl" fetch -q --depth 1 "$tpl_url" "$r"
     git -C "$tpl" -c advice.detachedHead=false checkout -q --detach FETCH_HEAD
   fi
 }
 sincronizar(){ # ./pj sync: actualiza template_ref al último main de pj-template (o PJ_TEMPLATE_DIR).
   [ $# -eq 0 ] || { echo "pj: sync no acepta argumentos ($*)" >&2; exit 2; }
-  local viejo nuevo url="https://github.com/robert-flo/pj-template.git" sha_linea
-  viejo="$(sed -nE 's/^template_ref:[[:space:]]*["'\'']?([0-9a-f]{40})["'\'']?.*$/\1/p' proyecto.yml)"
-  [ -n "$viejo" ] || { echo "pj: proyecto.yml no tiene template_ref (SHA de 40 caracteres de robert-flo/pj-template)" >&2; exit 1; }
+  local viejo nuevo sha_linea
+  viejo="$(leer_ref)"
   if [ -n "${PJ_TEMPLATE_DIR:-}" ]; then
     tpl="$(cd "$PJ_TEMPLATE_DIR" && pwd)"
     nuevo="$(git -C "$tpl" rev-parse HEAD)" || { echo "pj: no pude leer HEAD de PJ_TEMPLATE_DIR=$tpl" >&2; exit 1; }
   else
-    sha_linea="$(git_con_auth ls-remote "$url" refs/heads/main)" || { echo "pj: no pude leer main de $url" >&2; exit 1; }
+    sha_linea="$(git_con_auth ls-remote "$tpl_url" refs/heads/main)" || { echo "pj: no pude leer main de $tpl_url" >&2; exit 1; }
     nuevo="${sha_linea%%[[:space:]]*}"
   fi
   [[ "$nuevo" =~ ^[0-9a-f]{40}$ ]] || { echo "pj: no obtuve un SHA válido de pj-template ($nuevo)" >&2; exit 1; }
@@ -202,7 +208,7 @@ sincronizar(){ # ./pj sync: actualiza template_ref al último main de pj-templat
     echo "pj: template_ref ya está en ${nuevo:0:12}"
   fi
   [ -n "${PJ_TEMPLATE_DIR:-}" ] || fetch_tpl "$nuevo"
-  cp "$tpl/plantillas/hijo/pj" "$raiz/pj" && chmod +x "$raiz/pj"
+  cp "$tpl/plantillas/hijo/pj" "$raiz/pj.tmp" && chmod +x "$raiz/pj.tmp" && mv -f "$raiz/pj.tmp" "$raiz/pj"
   cp "$tpl/plantillas/hijo/Makefile" "$raiz/Makefile"
   mkdir -p "$raiz/.github/workflows"
   cp "$tpl/plantillas/hijo/pj-template.yml" "$raiz/.github/workflows/pj-template.yml"
@@ -210,8 +216,7 @@ sincronizar(){ # ./pj sync: actualiza template_ref al último main de pj-templat
   "$raiz/pj" check
 }
 [ "${1:-}" = sync ] && { shift; sincronizar "$@"; exit 0; }
-ref="$(sed -nE 's/^template_ref:[[:space:]]*["'\'']?([0-9a-f]{40})["'\'']?.*$/\1/p' proyecto.yml)"
-[ -n "$ref" ] || { echo "pj: proyecto.yml no tiene template_ref (SHA de 40 caracteres de robert-flo/pj-template)" >&2; exit 1; }
+ref="$(leer_ref)"
 
 if [ -n "${PJ_TEMPLATE_DIR:-}" ]; then
   tpl="$(cd "$PJ_TEMPLATE_DIR" && pwd)"
