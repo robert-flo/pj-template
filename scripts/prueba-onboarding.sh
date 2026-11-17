@@ -5,9 +5,10 @@ set -euo pipefail
 T="$(cd "$(dirname "$0")/.." && pwd)"
 PY="${PY:-$(bash "$T/scripts/py.sh")}"
 fallas=0; ok(){ echo "ok   $*"; }; mal(){ echo "FALLA $*"; fallas=$((fallas+1)); }
+trap 'echo "FALLA prueba-onboarding: se cortó en la línea $LINENO"' ERR
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 # HOME de mentira (enlaces de agy y hooks); el python sigue viendo sus paquetes de usuario.
-PYTHONUSERBASE="$("$PY" -m site --user-base)"; export PYTHONUSERBASE
+PYTHONUSERBASE="$("$PY" -m site --user-base || true)"; export PYTHONUSERBASE   # en un venv sale con 1
 export HOME="$tmp/home" PJ_TEMPLATE_DIR="$T" PJ_SIN_GH=1 PJ_HOY=2026-01-02 PY
 export GIT_CONFIG_GLOBAL="$tmp/gitconfig" GIT_AUTHOR_NAME=prueba GIT_AUTHOR_EMAIL=p@x GIT_COMMITTER_NAME=prueba GIT_COMMITTER_EMAIL=p@x
 mkdir -p "$HOME"; git config --file "$GIT_CONFIG_GLOBAL" init.defaultBranch master
