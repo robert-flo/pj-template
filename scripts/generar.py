@@ -172,7 +172,7 @@ def main():
             "exige": bloque_rol(o, "rv", "exige", "En este proyecto exigís (onboarding):"),
             "mision_corta": punto(o["mision"]) if ob.hecho(o) else "onboarding sin hacer (`./pj onboard`)."}
     salida = {}
-    for rol in ("pm", "wk", "rv"):
+    for rol in ("pm", "wk", "rv", "os"):
         skills = list(dict.fromkeys(roles["skills"][rol] + (p["skills_extra"].get(rol) or [])))
         faltan = [s for s in skills if lock and s not in lock]
         if faltan:
@@ -181,7 +181,7 @@ def main():
                  skills_inline=", ".join(f"`{s}`" for s in skills))
         salida[f".agents/agents/{rol.upper()}-{proy}.md"] = (render(f"plantillas/agents/{rol.upper()}.md", v), 0o644)
     salida[f".cursor/rules/pm-{slug}.mdc"] = (render("plantillas/cursor/pm.mdc", base), 0o644)
-    for rol in ("wk", "rv"):
+    for rol in ("wk", "rv", "os"):
         salida[f".cursor/agents/{rol}-{slug}.md"] = (render(f"plantillas/cursor/{rol}.md", base), 0o644)
     if DEP:
         salida.update(copias())
