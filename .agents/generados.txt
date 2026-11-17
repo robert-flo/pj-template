@@ -1,6 +1,8 @@
+.agents/agents/OS-pj-template.md
 .agents/agents/PM-pj-template.md
 .agents/agents/RV-pj-template.md
 .agents/agents/WK-pj-template.md
+.cursor/agents/os-pj-template.md
 .cursor/agents/rv-pj-template.md
 .cursor/agents/wk-pj-template.md
 .cursor/rules/pm-pj-template.mdc

@@ -21,11 +21,11 @@
 #                   ignorados, worktrees, stash, commits o tags sin subir: los deja y sale con 1).
 #                   --onboarding además deja onboarding.yml y `repos:` sin hacer (se niega si tienen
 #                   cambios sin commitear). Idempotente.
-#   ./pj agy [pm|wk|rv] [args…]  ./pj listo y después abre ese agente del trío (pm por defecto) con
+#   ./pj agy [pm|wk|rv|os] [args…]  ./pj listo y después abre ese agente (pm por defecto) con
 #                   mise, igual que el wrapper agy de la workstation: MISE_MINIMUM_RELEASE_AGE=0,
 #                   `mise use -g antigravity-cli` y `mise x antigravity-cli -- agy
 #                   --dangerously-skip-permissions --agent <ROL>-<proyecto> args…`. Sin mise, el agy del
-#                   PATH. Si ./pj listo falla, no abre nada. Atajos: make agy-pm, make agy-wk, make agy-rv.
+#                   PATH. Si ./pj listo falla, no abre nada. Atajos: make agy-pm, make agy-wk, make agy-rv, make agy-os.
 #   ./pj enlazar    solo enlaza las fichas en ~/.gemini/config/agents (./pj listo ya lo hace).
 #   ./pj clonar [--dry-run|-n]  clona los repos de proyecto.yml (con --dry-run / PJ_CLONAR_DRY_RUN=1 simula).
 #   ./pj <target>   corre un target del Makefile del template: check, humo, clonar, generar…
@@ -88,7 +88,7 @@ YML
       fi
     done
   fi
-  for n in PM WK RV; do
+  for n in PM WK RV OS; do
     l="$HOME/.gemini/config/agents/$n-$proy.md"
     [ -L "$l" ] || continue
     case "$(readlink "$l")" in "$raiz"/.agents/agents/*|"$(pwd -P)"/.agents/agents/*) rm -f "$l"; echo "pj: borrado enlace de agy $l"; algo=1 ;; esac
@@ -108,8 +108,9 @@ YML
     # Lo versionado (extras) y los archivos propios (.cursor/mcp.json, notas…) se quedan.
     local gen=() propios
     [ -f .agents/generados.txt ] && mapfile -t gen < .agents/generados.txt
-    gen+=(".agents/agents/PM-$proy.md" ".agents/agents/WK-$proy.md" ".agents/agents/RV-$proy.md" ".cursor/rules/pm-$slug.mdc"
-          ".cursor/agents/wk-$slug.md" ".cursor/agents/rv-$slug.md" ".agents/generados.txt")
+    gen+=(".agents/agents/PM-$proy.md" ".agents/agents/WK-$proy.md" ".agents/agents/RV-$proy.md" ".agents/agents/OS-$proy.md"
+          ".cursor/rules/pm-$slug.mdc" ".cursor/agents/wk-$slug.md" ".cursor/agents/rv-$slug.md" ".cursor/agents/os-$slug.md"
+          ".agents/generados.txt")
     for f in "${gen[@]}"; do
       case "$f" in .agents/*|.cursor/*) ;; *) continue ;; esac
       case "/$f/" in */../*) continue ;; esac
@@ -150,7 +151,7 @@ lanzar_agy(){ # $1 = ficha (PM-x, WK-x o RV-x); el resto va a agy. Lo mismo que 
 }
 if [ "${1:-}" = agy ]; then
   shift; rol=pm
-  case "${1:-}" in pm|wk|rv|PM|WK|RV) rol="${1,,}"; shift ;; esac
+  case "${1:-}" in pm|wk|rv|os|PM|WK|RV|OS) rol="${1,,}"; shift ;; esac
   # Subproceso: el pull de listo puede traer otro ./pj o template_ref; el agente arranca sobre lo nuevo.
   "$raiz/pj" listo || { echo "pj: ./pj listo falló; no abro agy (arreglalo y volvé a correr ./pj agy)" >&2; exit 1; }
   echo "pj: abriendo ${rol^^}-$proy"
