@@ -130,8 +130,10 @@ YML
 lanzar_agy(){ # $1 = ficha (PM-x, WK-x o RV-x); el resto va a agy. Lo mismo que el wrapper agy de la workstation.
   local ficha="$1"; shift
   if command -v mise >/dev/null 2>&1; then
-    export MISE_MINIMUM_RELEASE_AGE=0
-    mise use -g --quiet antigravity-cli || { echo "pj: falló mise use -g antigravity-cli" >&2; exit 1; }
+    if ! mise which agy >/dev/null 2>&1; then
+      export MISE_MINIMUM_RELEASE_AGE=0
+      mise use -g --quiet antigravity-cli || { echo "pj: falló mise use -g antigravity-cli" >&2; exit 1; }
+    fi
     exec mise x antigravity-cli -- agy --dangerously-skip-permissions --agent "$ficha" "$@"
   fi
   if command -v agy >/dev/null 2>&1; then
