@@ -7,7 +7,7 @@ Las reglas son las mismas en todas; cambia solo esto:
 
 | Plataforma | Dónde corre | Cómo se lanza | Qué no aplica |
 | --- | --- | --- | --- |
-| `agy` | cualquier máquina, en el clon del meta-repo | `agy --agent <ROL>-<proyecto>` (antes, una vez por máquina: `scripts/instalar-agy.sh`) | — |
+| `agy` | cualquier máquina, en el clon del meta-repo | `make agy-pm` / `agy-wk` / `agy-rv` en el hijo (= `./pj agy <rol>`: pull, `./pj listo` y `agy --agent <ROL>-<proyecto>` vía mise; ADR 0020) | — |
 | `Cursor` | cualquier máquina (IDE o CLI) | regla del PM en `.cursor/rules/`; WK y RV en `.cursor/agents/` | el frontmatter y las tools de agy |
 
 ## Lo justo

@@ -5,7 +5,7 @@
 #                   .agents/ y .cursor/ (fichas, reglas, skills). Corrélo después de cada clone o pull.
 #   ./pj listo [--abrir]  todo de una después de un clone o pull: git pull --rebase --autostash,
 #                   trae el template, genera, instala los hooks, enlaza las fichas en agy, clona los
-#                   repos, corre check e imprime `agy --agent PM-<proyecto>` (--abrir lo arranca).
+#                   repos, corre check e imprime cómo arrancar (--abrir arranca el PM como ./pj agy pm).
 #   ./pj hooks      instala los hooks post-merge y post-checkout: cada `git pull` regenera solo.
 #   ./pj onboard    la entrevista del onboarding (onboarding.yml: misión, no tocar, primeros pasos,
 #                   cómo prueba el WK, qué exige el RV, repos). Idempotente: si ya está hecho, muestra
@@ -16,7 +16,13 @@
 #                   ignorados, worktrees, stash, commits o tags sin subir: los deja y sale con 1).
 #                   --onboarding además deja onboarding.yml y `repos:` sin hacer (se niega si tienen
 #                   cambios sin commitear). Idempotente.
-#   ./pj <target>   corre un target del Makefile del template: check, humo, clonar, agy, generar…
+#   ./pj agy [pm|wk|rv] [args…]  ./pj listo y después abre ese agente del trío (pm por defecto) con
+#                   mise, igual que el wrapper agy de la workstation: MISE_MINIMUM_RELEASE_AGE=0,
+#                   `mise use -g antigravity-cli` y `mise x antigravity-cli -- agy
+#                   --dangerously-skip-permissions --agent <ROL>-<proyecto> args…`. Sin mise, el agy del
+#                   PATH. Si ./pj listo falla, no abre nada. Atajos: make agy-pm, make agy-wk, make agy-rv.
+#   ./pj enlazar    solo enlaza las fichas en ~/.gemini/config/agents (./pj listo ya lo hace).
+#   ./pj <target>   corre un target del Makefile del template: check, humo, clonar, generar…
 # Auth: PJ_TEMPLATE_TOKEN si está (CI); si no, `gh auth git-credential`. PJ_TEMPLATE_DIR=<checkout>
 # usa un pj-template local en vez de bajarlo (pruebas). Python: crea .pj/venv (PyYAML + jsonschema)
 # la primera vez; PY=<python> lo reemplaza.
@@ -121,6 +127,27 @@ YML
   if [ "$algo" = 1 ]; then echo "pj: limpio. Para rehacer: ./pj listo"; else echo "pj: nada que limpiar"; fi
 }
 [ "${1:-}" = clean ] && { shift; limpiar "$@"; exit 0; }
+lanzar_agy(){ # $1 = ficha (PM-x, WK-x o RV-x); el resto va a agy. Lo mismo que el wrapper agy de la workstation.
+  local ficha="$1"; shift
+  if command -v mise >/dev/null 2>&1; then
+    export MISE_MINIMUM_RELEASE_AGE=0
+    mise use -g --quiet antigravity-cli || { echo "pj: falló mise use -g antigravity-cli" >&2; exit 1; }
+    exec mise x antigravity-cli -- agy --dangerously-skip-permissions --agent "$ficha" "$@"
+  fi
+  if command -v agy >/dev/null 2>&1; then
+    echo "pj: aviso: no hay mise; uso el agy del PATH" >&2
+    exec agy --dangerously-skip-permissions --agent "$ficha" "$@"
+  fi
+  echo "pj: no encuentro mise ni agy. Instalá mise (sudo pacman -S mise) y volvé a correr ./pj agy" >&2; exit 127
+}
+if [ "${1:-}" = agy ]; then
+  shift; rol=pm
+  case "${1:-}" in pm|wk|rv|PM|WK|RV) rol="${1,,}"; shift ;; esac
+  # Subproceso: el pull de listo puede traer otro ./pj o template_ref; el agente arranca sobre lo nuevo.
+  "$raiz/pj" listo || { echo "pj: ./pj listo falló; no abro agy (arreglalo y volvé a correr ./pj agy)" >&2; exit 1; }
+  echo "pj: abriendo ${rol^^}-$proy"
+  lanzar_agy "${rol^^}-$proy" "$@"
+fi
 if [ "${1:-}" = listo ] && [ -z "${PJ_LISTO_PULL:-}" ]; then
   # Primero el pull (puede cambiar template_ref o este mismo script); después se vuelve a ejecutar.
   if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
@@ -154,7 +181,7 @@ fi
 export PJ_RAIZ="$raiz" PJ_TPL="$tpl"
 # Python propio en .pj/venv con PyYAML y jsonschema (requirements.txt del template); nunca el del sistema.
 PY="${PY:-$(bash "$tpl/scripts/py.sh")}"; export PY
-for f in pj .github/workflows/pj-template.yml; do
+for f in pj Makefile .github/workflows/pj-template.yml; do
   cmp -s "$tpl/plantillas/hijo/$(basename "$f")" "$f" || echo "pj: aviso: $f difiere del de pj-template@${ref:0:12} (el PR de sync lo actualiza)" >&2
 done
 instalar_hooks(){
@@ -189,13 +216,14 @@ case "${1:-sync}" in
     echo
     if f="$(onboarding_hecho)" && [ -n "$f" ]; then
       echo "pj: onboarding hecho el $f (./pj onboard lo muestra o lo cambia)."
-      echo "pj: listo. Para arrancar:  agy --agent PM-$proy   (o abrí la carpeta en Cursor)"
+      echo "pj: listo. Para arrancar:  make agy-pm   (o ./pj agy pm; o abrí la carpeta en Cursor)"
     else
-      echo "pj: falta el onboarding del PM. Corré:  ./pj onboard   (después: agy --agent PM-$proy)"
+      echo "pj: falta el onboarding del PM. Corré:  ./pj onboard   (después: make agy-pm)"
     fi
-    if [ "$abrir" = 1 ]; then exec agy --agent "PM-$proy"; fi
+    if [ "$abrir" = 1 ]; then lanzar_agy "PM-$proy"; fi
     exit 0 ;;
   onboard) shift; exec "$PY" "$tpl/scripts/onboard.py" "$@" ;;
+  enlazar) exec make -s --no-print-directory -f "$tpl/Makefile" agy ;;
 esac
 "$PY" "$tpl/scripts/generar.py" >/dev/null
 exec make -s --no-print-directory -f "$tpl/Makefile" "$@"

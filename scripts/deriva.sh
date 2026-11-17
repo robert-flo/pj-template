@@ -24,9 +24,9 @@ for h in "${HIJOS[@]}"; do
     modo=dependencia
     ok=1
     ( cd "$d/hoy" && ./pj >/dev/null 2>"$d/err" ) || ok=0
-    ( cd "$d/nuevo" && cp "$T/plantillas/hijo/pj" pj && cp "$T/plantillas/hijo/pj-template.yml" .github/workflows/ \
+    ( cd "$d/nuevo" && cp "$T/plantillas/hijo/pj" pj && cp "$T/plantillas/hijo/Makefile" Makefile && cp "$T/plantillas/hijo/pj-template.yml" .github/workflows/ \
       && PJ_TEMPLATE_DIR="$T" ./pj >/dev/null 2>>"$d/err" ) || ok=0
-    lista(){ cat "$1/.agents/generados.txt" 2>/dev/null; echo pj; echo .github/workflows/pj-template.yml; echo .gitignore; }
+    lista(){ cat "$1/.agents/generados.txt" 2>/dev/null; echo pj; echo Makefile; echo .github/workflows/pj-template.yml; echo .gitignore; }
   else
     modo=copia
     ok=1
