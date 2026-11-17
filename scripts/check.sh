@@ -54,20 +54,20 @@ if [ -e .agents/grokbot.md ] && ! grep -qxF .agents/grokbot.md <<< "$extras"; th
 
 if [ "$DEP" = 1 ]; then
   # El hijo versiona solo sus archivos a mano (más .trio/, los handoffs de pj-trio); todo lo demás viene de pj-template.
-  permitidos=$'.github/workflows/pj-template.yml\n.gitignore\nAGENTS.md\nREADME.md\nonboarding.yml\npj\nproyecto.yml'
+  permitidos=$'.github/workflows/pj-template.yml\n.gitignore\nAGENTS.md\nMakefile\nREADME.md\nonboarding.yml\npj\nproyecto.yml'
   [ -n "$extras" ] && permitidos+=$'\n'"$extras"
   for x in $extras; do git ls-files --error-unmatch "$x" >/dev/null 2>&1 || mal "extras: $x no está versionado"; done
   extra="$({ git ls-files | grep -v '^\.trio/' || true; } | LC_ALL=C sort | comm -23 - <(echo "$permitidos" | LC_ALL=C sort))"
   [ -z "$extra" ] && ok "el hijo versiona solo $(git ls-files | wc -l) archivos a mano" || mal "archivos versionados que deberían venir de pj-template: $(echo $extra)"
   for f in $(cat .agents/generados.txt); do git ls-files --error-unmatch "$f" >/dev/null 2>&1 && mal "$f es generado y no debe versionarse"; done
-  for f in pj:pj .github/workflows/pj-template.yml:pj-template.yml; do
+  for f in pj:pj Makefile:Makefile .github/workflows/pj-template.yml:pj-template.yml; do
     cmp -s "${f%%:*}" "$T/plantillas/hijo/${f##*:}" && ok "${f%%:*} igual al de pj-template" || mal "${f%%:*} difiere de plantillas/hijo/${f##*:} de pj-template"
   done
   [ -x pj ] || mal "pj no es ejecutable"
 else
   # Pruebas del molde: un hijo de mentira en modo dependencia y casos que generar tiene que rechazar.
   h="$tmp/hijo"; mkdir -p "$h/.github/workflows"
-  cp "$T/plantillas/hijo/pj" "$h/pj"; cp "$T/plantillas/hijo/pj-template.yml" "$h/.github/workflows/"; cp "$T/plantillas/hijo/gitignore" "$h/.gitignore"
+  cp "$T/plantillas/hijo/pj" "$h/pj"; cp "$T/plantillas/hijo/Makefile" "$h/Makefile"; cp "$T/plantillas/hijo/pj-template.yml" "$h/.github/workflows/"; cp "$T/plantillas/hijo/gitignore" "$h/.gitignore"
   cat > "$h/proyecto.yml" <<'YML'
 proyecto: "demo"
 area: "hijo de prueba del check"
@@ -113,6 +113,8 @@ YML
   rm -f "$h/onboarding.yml"
   # Onboarding, ./pj onboard y ./pj clean de punta a punta en un hijo de prueba (sin red).
   bash "$T/scripts/prueba-onboarding.sh" || fallas=$((fallas+1))
+  # ./pj agy y make agy-pm/wk/rv (ADR 0020) con mise y agy de mentira.
+  bash "$T/scripts/prueba-agy.sh" || fallas=$((fallas+1))
 fi
 
 "$PY" - "$T" <<'PY' || fallas=$((fallas+1))

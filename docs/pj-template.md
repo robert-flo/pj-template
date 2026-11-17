@@ -3,7 +3,7 @@
 Este archivo vive en `robert-flo/pj-template`. Un hijo en modo dependencia lo tiene en `.pj/tpl/docs/pj-template.md` después de `./pj`.
 
 ## Modo dependencia (el de los hijos nuevos)
-El hijo versiona solo **7 archivos**: `proyecto.yml`, `onboarding.yml` (el alma del trío, [ADR 0017](adr/0017-onboarding-del-trio.md)), `AGENTS.md`, `README.md`, `.gitignore`, `./pj` y `.github/workflows/pj-template.yml`. Todo lo demás llega como dependencia:
+El hijo versiona solo **8 archivos**: `proyecto.yml`, `onboarding.yml` (el alma del trío, [ADR 0017](adr/0017-onboarding-del-trio.md)), `AGENTS.md`, `README.md`, `.gitignore`, `./pj`, `Makefile` (atajos a `./pj`, [ADR 0020](adr/0020-make-agy-pm.md)) y `.github/workflows/pj-template.yml`. Todo lo demás llega como dependencia:
 
 **Extras.** Si un hijo necesita conservar archivos propios a mano (por ejemplo un adaptador propio en `.agents/` que se deja intacto, o un `.code-workspace`), los lista en `extras:` de `proyecto.yml`. `./pj check` los acepta versionados y no los revisa (tampoco en la búsqueda de referencias de otras plataformas); `./pj` no los genera ni los borra. Ninguno puede ser uno de los archivos de arriba ni salir del repo.
 
@@ -13,7 +13,7 @@ El hijo versiona solo **7 archivos**: `proyecto.yml`, `onboarding.yml` (el alma 
 4. `./pj onboard` es la entrevista del onboarding (`onboarding.yml` y `repos:`): junta los hechos, propone cada campo (Enter acepta), resume y escribe con tu sí. La segunda vez dice «ya está hecho el <fecha>», muestra los datos y pregunta qué cambiar. `./pj clean [--onboarding]` deshace `./pj listo` (y el onboarding) para repetirlo; no borra clones con trabajo sin subir.
 5. `./pj <target>` corre cualquier target del `Makefile` del template contra el hijo: `check`, `humo`, `clonar`, `agy`, `generar`.
 
-**¿Se versiona lo generado? No.** agy y Cursor leen `.agents/` y `.cursor/` del disco, pero las fichas citan reglas y skills que tampoco estarían al clonar: versionar solo las fichas daría un clon a medias. Un solo paso después de clonar (`./pj`) deja todo en disco, igual byte a byte en cualquier máquina porque sale de un SHA fijo. Así el hijo se queda en 7 archivos, el diff de un PR del hijo es solo lo que escribió Roberto, y actualizar el template es cambiar una línea (`template_ref`). `.gitignore` ignora `/.pj/`, `/.agents/` y `/.cursor/` (bloque generado). AGENTS.md del hijo le dice al agente que corra `./pj` si no ve `.agents/reglas/`.
+**¿Se versiona lo generado? No.** agy y Cursor leen `.agents/` y `.cursor/` del disco, pero las fichas citan reglas y skills que tampoco estarían al clonar: versionar solo las fichas daría un clon a medias. Un solo paso después de clonar (`./pj`) deja todo en disco, igual byte a byte en cualquier máquina porque sale de un SHA fijo. Así el hijo se queda en 8 archivos, el diff de un PR del hijo es solo lo que escribió Roberto, y actualizar el template es cambiar una línea (`template_ref`). `.gitignore` ignora `/.pj/`, `/.agents/` y `/.cursor/` (bloque generado). AGENTS.md del hijo le dice al agente que corra `./pj` si no ve `.agents/reglas/`.
 
 ## Quién manda qué
 | Qué | Dónde | Quién lo escribe |
@@ -22,7 +22,7 @@ El hijo versiona solo **7 archivos**: `proyecto.yml`, `onboarding.yml` (el alma 
 | Skills | `.agents/skills/` + `skills-lock.json` | CI de pj-template, desde `robert-flo/skills@personal` |
 | Skills por rol | `plantillas/roles.yml` (+ `skills_extra` del hijo) | pj-template / el hijo |
 | Esquema de `proyecto.yml` | `schema/proyecto.schema.json` | pj-template |
-| Archivos fijos del hijo | `plantillas/hijo/{pj,pj-template.yml,gitignore}` | pj-template (el PR de sync los actualiza) |
+| Archivos fijos del hijo | `plantillas/hijo/{pj,Makefile,pj-template.yml,gitignore}` | pj-template (el PR de sync los actualiza) |
 | Fichas de agy | `.agents/agents/{PM,WK,RV}-<proyecto>.md` | `scripts/generar.py` |
 | Adaptadores de Cursor | `.cursor/rules/pm-<proyecto>.mdc`, `.cursor/agents/{wk,rv}-<proyecto>.md` | `scripts/generar.py` |
 | Datos del proyecto, con `template_ref` | `proyecto.yml` | vos, en el hijo (`template_ref` lo sube el PR de sync) |
@@ -38,13 +38,13 @@ Lo valida `schema/proyecto.schema.json` (JSON Schema 2020-12, con `jsonschema` d
 `generar` falla si quedan datos del molde en un hijo: `proyecto: pj-template`, las notas de pj-template, fichas `*pj-template*` sobrantes o (en modo dependencia) falta `template_ref`.
 
 ## Motores
-- **agy**: `agy --agent PM-<proyecto>` desde la raíz del meta-repo. Antes, una vez por máquina, `./pj agy` (o `make agy` en pj-template): enlaza las fichas en `~/.gemini/config/agents`, porque agy interactivo solo resuelve `--agent` con los agentes globales. `skills:` del frontmatter es declarativo: agy carga todas las de `.agents/skills/`.
+- **agy**: `make agy-pm` (o `agy-wk`, `agy-rv`; `ARGS="…"` para agy) desde la raíz del hijo = `./pj agy [pm|wk|rv] [args…]`: `git pull --rebase --autostash`, `./pj listo` y, si pasó, `MISE_MINIMUM_RELEASE_AGE=0 mise use -g --quiet antigravity-cli` y `exec mise x antigravity-cli -- agy --dangerously-skip-permissions --agent <ROL>-<proyecto> args…` (sin mise, el `agy` del PATH; [ADR 0020](adr/0020-make-agy-pm.md)). `./pj listo` (o solo `./pj enlazar`; `make agy` en pj-template) enlaza las fichas en `~/.gemini/config/agents`, porque agy interactivo solo resuelve `--agent` con los agentes globales. `skills:` del frontmatter es declarativo: agy carga todas las de `.agents/skills/`.
 - **Cursor**: el PM es la regla `alwaysApply`; WK y RV son subagentes en `.cursor/agents/`. Cursor carga las skills de `.agents/skills/`; no hay `.cursor/skills/`.
 
 ## Prueba de humo
 `scripts/humo.py` (parte de `check`, y `./pj humo` / `make humo`):
 - Estático, siempre (también en CI, donde no hay agy): cada ficha PM/WK/RV existe, tiene `name`, `tools` y las secciones obligatorias, manda a leer `comun.md` y su regla, sus skills existen en `.agents/skills/<s>/SKILL.md`, toda ruta `.agents/…` o `.cursor/…` citada en fichas y adaptadores de Cursor existe, la regla del PM es `alwaysApply`, y el PM marca el primer trabajo.
-- Con agy (`make humo` / `./pj humo`, después de `./pj agy`): corre `agy --agent PM-<proyecto> --print …` sin interacción y exige que responda con su nombre tras leer sus reglas. Sin agy en el PATH avisa y queda solo lo estático.
+- Con agy (`make humo` / `./pj humo`, después de `./pj listo` o `./pj enlazar`): corre `agy --agent PM-<proyecto> --print …` sin interacción y exige que responda con su nombre tras leer sus reglas. Sin agy en el PATH avisa y queda solo lo estático.
 
 ## CI
 - `pj-template.yml` del hijo (lo manda `plantillas/hijo/`): en PR y push corre `./pj check`; a diario, a mano o cuando pj-template avisa, llama a `pj-sync`.

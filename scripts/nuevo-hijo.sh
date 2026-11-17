@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Crea un meta-repo hijo de pj-template en modo dependencia: make nuevo-hijo P=<nombre> [DIR=<carpeta>]
-# Pasos: crea robert-flo/pj-<P> vacío y privado (si no existe), lo clona, escribe sus 7 archivos
+# Pasos: crea robert-flo/pj-<P> vacío y privado (si no existe), lo clona, escribe sus 8 archivos
 # (proyecto.yml con template_ref = main actual de pj-template, onboarding.yml sin hacer, AGENTS.md, README.md, .gitignore, ./pj y
 # el caller .github/workflows/pj-template.yml), corre ./pj y ./pj check, commit/push, carga el secreto
 # PJ_TEMPLATE_TOKEN en el hijo y abre un PR en pj-template que suma el hijo a family.yml.
@@ -74,18 +74,20 @@ Meta-repo del trío PM/WK/RV de $P (hijo de \`robert-flo/pj-template\`, modo dep
 
 \`\`\`bash
 ./pj listo      # todo de una: pull, template, genera, hooks, onboarding (si falta), agy, clonar, check
+make agy-pm     # pull + ./pj listo y abre el PM en agy (make agy-wk, make agy-rv; = ./pj agy pm|wk|rv)
 ./pj onboard    # la entrevista del PM (onboarding.yml); la segunda vez muestra lo que hay y pregunta qué cambiar
 ./pj clean      # deshace ./pj listo (--onboarding: también el onboarding) para volver a probar
 ./pj            # solo trae pj-template al template_ref y genera .agents/ y .cursor/
 ./pj check      # esquema de proyecto.yml, idempotencia y prueba de humo
 ./pj clonar     # clona los repos de proyecto.yml al lado
-./pj agy        # una vez por máquina; después: agy --agent PM-$P
+./pj enlazar    # solo enlaza las fichas en agy (./pj listo ya lo hace)
 \`\`\`
 
 Necesitás \`python3\` (PyYAML y jsonschema van solos a \`.pj/venv\`), \`gh\`, \`git\` y \`make\`.
 MD
 pon .gitignore < "$T/plantillas/hijo/gitignore"
 pon pj < "$T/plantillas/hijo/pj"; chmod +x pj
+pon Makefile < "$T/plantillas/hijo/Makefile"
 pon .github/workflows/pj-template.yml < "$T/plantillas/hijo/pj-template.yml"
 if [ "$NUEVO" = 1 ]; then
   pon onboarding.yml <<YML

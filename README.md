@@ -1,6 +1,6 @@
 # pj-template
 
-La plantilla única de los tríos PM/WK/RV para Cursor y agy. Una sola copia de reglas, skills y plantillas; cada hijo versiona solo `proyecto.yml`, `onboarding.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj` y su workflow, y trae lo demás como dependencia al SHA de `template_ref`.
+La plantilla única de los tríos PM/WK/RV para Cursor y agy. Una sola copia de reglas, skills y plantillas; cada hijo versiona solo `proyecto.yml`, `onboarding.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj`, su `Makefile` de atajos y su workflow, y trae lo demás como dependencia al SHA de `template_ref`.
 
 ```bash
 make nuevo-hijo P=foo   # crea robert-flo/pj-foo en modo dependencia (necesita PJ_TEMPLATE_TOKEN)
@@ -10,12 +10,14 @@ make deriva             # % de archivos idénticos de cada hijo frente al templa
 make generar            # fichas de agy y adaptadores de Cursor de este repo
 
 # en un hijo
+make agy-pm             # el de todos los días: git pull + ./pj listo y abre el PM en agy vía mise (agy-wk, agy-rv; ARGS="…")
 ./pj                    # trae pj-template@template_ref a .pj/ y genera .agents/ y .cursor/
 ./pj listo [--abrir]    # todo de una tras clonar: pull, template, genera, hooks, onboarding (si falta), agy, clonar, check
 ./pj onboard            # entrevista del PM (onboarding.yml); 2ª vez: «ya está hecho», muestra y pregunta qué cambiar
 ./pj clean [--onboarding]  # deshace ./pj listo para repetirlo (--onboarding: también el onboarding); idempotente
 ./pj hooks              # cada git pull regenera solo (lo instala ./pj listo)
-./pj check | humo | clonar | agy
+./pj agy [pm|wk|rv] [args…]  # lo mismo que make agy-pm/wk/rv
+./pj check | humo | clonar | enlazar
 ```
 
 Necesitás `python3` (con el módulo venv); PyYAML y jsonschema se instalan solos en `.pj/venv` desde `requirements.txt`, `gh`, `git` y `make`.

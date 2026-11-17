@@ -116,6 +116,6 @@ if os.environ.get("HUMO_AGY") == "1":
         espera += ["./pj onboard"]
     faltan = [e for e in espera if e.lower() not in out.lower()]
     if r is None or r.returncode != 0 or faltan:
-        print(f"FALLA humo agy: el primer mensaje de PM-{proy} no trae {faltan} (¿./pj agy? ¿agy logueado?)")
+        print(f"FALLA humo agy: el primer mensaje de PM-{proy} no trae {faltan} (¿./pj listo? ¿agy logueado?)")
         sys.exit(1)
     print(f"ok   humo agy: PM-{proy} abrió con autochequeo, §Lo primero y su primer mensaje")

@@ -20,7 +20,7 @@ printf 'check:\n\ttrue\n' > "$tmp/semilla/Makefile"; printf '#!/bin/sh\n' > "$tm
 git -C "$tmp/semilla" add -A && git -C "$tmp/semilla" commit -qm semilla && git -C "$tmp/semilla" push -q origin HEAD:master
 
 h="$tmp/hijo"; mkdir -p "$h/.github/workflows" "$h/.agents"; cd "$h"; git init -q
-cp "$T/plantillas/hijo/pj" pj; cp "$T/plantillas/hijo/pj-template.yml" .github/workflows/; cp "$T/plantillas/hijo/gitignore" .gitignore
+cp "$T/plantillas/hijo/pj" pj; cp "$T/plantillas/hijo/Makefile" Makefile; cp "$T/plantillas/hijo/pj-template.yml" .github/workflows/; cp "$T/plantillas/hijo/gitignore" .gitignore
 cat > proyecto.yml <<'YML'
 proyecto: "demo"
 area: "hijo de prueba del onboarding"
@@ -82,7 +82,7 @@ b="$(sha256sum onboarding.yml proyecto.yml; find .agents .cursor -type f -print0
 
 # clean: hooks, enlaces de agy y, por cada forma de trabajo local en un clon, que el clon se quede (sale con 1).
 git add onboarding.yml proyecto.yml && git commit -qm onboarding   # como en un hijo real: el onboarding se commitea
-./pj hooks >/dev/null; ./pj agy >/dev/null
+./pj hooks >/dev/null; ./pj enlazar >/dev/null
 se_queda(){ # $1 descripción, $2 texto esperado en el aviso; el estado ya está armado en demo-hijo
   if ./pj clean >"$tmp/c" 2>&1; then mal "clean borró o aceptó un clon que $1"
   elif [ -d demo-hijo/.git ] && grep -q "demo-hijo ($2" "$tmp/c"; then ok "clean no borra un clon que $1 y avisa"
@@ -106,7 +106,7 @@ git -C demo-hijo tag v1x0 && git -C demo-hijo push -q origin v1x0 && git -C demo
 se_queda "tiene el tag local v1.0 y el remoto solo v1x0 (sin regex)" "tiene el tag local v1.0 sin subir"; git -C demo-hijo tag -d v1.0 >/dev/null
 
 # --onboarding no pisa cambios sin commitear y, si se niega, no borra nada.
-./pj >/dev/null; ./pj hooks >/dev/null; ./pj agy >/dev/null   # los clean de arriba ya borraron lo generado
+./pj >/dev/null; ./pj hooks >/dev/null; ./pj enlazar >/dev/null   # los clean de arriba ya borraron lo generado
 echo "# nota mía sin commitear" >> onboarding.yml
 if ./pj clean --onboarding >"$tmp/c" 2>&1; then mal "clean --onboarding pisó onboarding.yml con cambios sin commitear"
 elif grep -q "nota mía sin commitear" onboarding.yml && [ -d demo-hijo ] && [ -f .agents/agents/PM-demo.md ] && grep -q "onboarding.yml tiene cambios sin commitear" "$tmp/c"
@@ -147,7 +147,7 @@ esac
 GH
 chmod +x "$tmp/bin/gh"
 git init -q --bare "$tmp/pj-viejo.git"; v="$tmp/nh/rf-pj-viejo"; git clone -q "$tmp/pj-viejo.git" "$v" 2>/dev/null
-cp pj AGENTS.md README.md .gitignore "$v/"; mkdir -p "$v/.github/workflows"; cp .github/workflows/pj-template.yml "$v/.github/workflows/"
+cp pj Makefile AGENTS.md README.md .gitignore "$v/"; mkdir -p "$v/.github/workflows"; cp .github/workflows/pj-template.yml "$v/.github/workflows/"
 sed -e 's/^proyecto: "demo"/proyecto: "viejo"/' -e '/^extras:/,$d' proyecto.yml > "$v/proyecto.yml"
 "$PY" -c "import sys; sys.path.insert(0,'$T/scripts'); import onboarding as ob, pathlib; p=pathlib.Path('$v/proyecto.yml'); p.write_text(ob.reemplazar_repos(p.read_text(), [{'dir':'demo-hijo','repo':'robert-flo/demo-hijo','rama':'master'}]))"
 git -C "$v" add -A && git -C "$v" commit -qm viejo && git -C "$v" push -q origin HEAD:master

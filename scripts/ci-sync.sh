@@ -23,7 +23,7 @@ if [ -x pj ] && grep -qE '^template_ref:' proyecto.yml; then
   if [ "$viejo" != "$sha" ]; then
     sed -i -E "s/^(template_ref:[[:space:]]*[\"']?)[0-9a-f]{40}/\1$sha/" proyecto.yml
   fi
-  cp "$tpl/plantillas/hijo/pj" pj; chmod +x pj
+  cp "$tpl/plantillas/hijo/pj" pj; chmod +x pj; cp "$tpl/plantillas/hijo/Makefile" Makefile
   mkdir -p .github/workflows; cp "$tpl/plantillas/hijo/pj-template.yml" .github/workflows/pj-template.yml
   ./pj check
   echo "TITULO=pj-template: template_ref → ${sha:0:12}" >> "$env_out"
