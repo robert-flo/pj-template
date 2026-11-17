@@ -1,11 +1,11 @@
 # 0018. Quién mergea qué es la regla de fleet
 
 Fecha: 2026-11-16 · Estado: aceptado
-Origen: [fleet `CIRCUITO.md`](https://github.com/robert-flo/fleet/blob/main/CIRCUITO.md) C5, C6, C9 y C10; [fleet ADR 0011](https://github.com/robert-flo/fleet/blob/main/docs/adr/0011-spec-branch-and-done-model.md); [fleet `templates/ficha-reviewer.md`](https://github.com/robert-flo/fleet/blob/main/templates/ficha-reviewer.md)
+Origen: fleet `CIRCUITO.md` C5, C6, C9 y C10; fleet ADR 0011; fleet `templates/ficha-reviewer.md`
 Aclara: [0006](0006-rama-del-spec-y-modelo-de-terminado.md) y [0014](0014-el-pm-mergea-tras-apruebo.md)
 
 ## Contexto
-pj-template existe para que los tríos de agy y Cursor hagan lo mismo que los tríos de Grok Bot de fleet. Al juntar todo en el `AGENTS.md` de HR-CLAVIS apareció un choque: [0014](0014-el-pm-mergea-tras-apruebo.md) y `comun.md` decían «el WK y el RV nunca mergean», pero `wk.md` paso 9 (y [0006](0006-rama-del-spec-y-modelo-de-terminado.md)) hacen que el WK mergee sus sub-issues a la rama del spec. Roberto, 2026-11-16: si un WK de Grok Bot hace A, el WK de agy no puede hacer B. La regla ya estaba decidida en fleet; acá solo se copia.
+pj-template existe para que los tríos de agy y Cursor hagan lo mismo que los tríos de fleet. Al juntar todo en el `AGENTS.md` de HR-CLAVIS apareció un choque: [0014](0014-el-pm-mergea-tras-apruebo.md) y `comun.md` decían «el WK y el RV nunca mergean», pero `wk.md` paso 9 (y [0006](0006-rama-del-spec-y-modelo-de-terminado.md)) hacen que el WK mergee sus sub-issues a la rama del spec. Roberto, 2026-11-16: si un WK de fleet hace A, el WK de agy no puede hacer B. La regla ya estaba decidida en fleet; acá solo se copia.
 
 Lo que dice fleet, textual:
 - `CIRCUITO.md` C5: «El RV publica `APRUEBO <sha>` o `BLOQUEO` en el PR sin pedirle permiso a nadie».
