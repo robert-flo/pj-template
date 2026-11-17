@@ -143,7 +143,7 @@ case "${1:-sync}" in
     instalar_hooks
     if [ -z "$(onboarding_hecho)" ] && [ -t 0 ] && [ -t 1 ]; then
       read -rp "pj: el onboarding del PM está sin hacer. ¿Lo hacemos ahora? [S/n] " r || r=n
-      case "$r" in ""|s|S|si|sí|y|Y) "$PY" "$tpl/scripts/onboard.py" || true ;; esac
+      case "$r" in ""|s|S|si|sí|y|Y) PJ_EN_LISTO=1 "$PY" "$tpl/scripts/onboard.py" || true ;; esac
     fi
     make -s --no-print-directory -f "$tpl/Makefile" agy clonar check
     echo
