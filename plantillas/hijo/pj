@@ -30,14 +30,19 @@ motivo_clon(){ # $1 = carpeta de un repo de proyecto.yml. Imprime por qué NO se
   [ -d "$d/.git" ] || { echo "no es un clon de git"; return; }
   [ -z "$(git -C "$d" status --porcelain 2>/dev/null)" ] || { echo "tiene cambios sin commitear"; return; }
   [ -z "$(git -C "$d" clean -ndX 2>/dev/null)" ] || { echo "tiene archivos ignorados (.env, builds…)"; return; }
-  [ "$(git -C "$d" worktree list --porcelain 2>/dev/null | grep -c '^worktree ')" -le 1 ] || { echo "tiene worktrees enlazados"; return; }
+  [ "$(git -C "$d" worktree list --porcelain 2>/dev/null | grep -c '^worktree ')" -le 1 ] || { echo "tiene worktrees enlazados; si ya no existen en disco, git -C $d worktree prune alcanza"; return; }
   [ -z "$(git -C "$d" stash list 2>/dev/null)" ] || { echo "tiene stash"; return; }
-  # --all incluye HEAD (commits en detached HEAD) y los tags; --not --remotes saca lo que ya está subido.
-  [ -z "$(git -C "$d" log --all --not --remotes --oneline 2>/dev/null | head -1)" ] || { echo "tiene commits sin subir (ramas, detached HEAD o tags)"; return; }
+  # --all incluye HEAD (detached) y los tags; --reflog, los commits que solo quedan en el reflog (un detached
+  # HEAD abandonado, versiones de antes de un rebase); --not --remotes saca lo que ya está subido.
+  [ -z "$(git -C "$d" rev-list --all --reflog --not --remotes 2>/dev/null | head -1)" ] || { echo "tiene commits sin subir (ramas, detached HEAD, tags o solo en el reflog; revisá git -C $d log --all --reflog --not --remotes)"; return; }
   if [ -n "$(git -C "$d" tag -l | head -1)" ]; then
     # Tags que apuntan a commits ya subidos: hay que preguntarle al remoto; si no contesta, no se borra.
     local remotos; remotos="$(timeout 20 git -C "$d" ls-remote --tags origin 2>/dev/null)" || { echo "tiene tags y no pude compararlos con origin"; return; }
-    for t in $(git -C "$d" tag -l); do grep -q "refs/tags/$t$" <<< "$remotos" || { echo "tiene el tag local $t sin subir"; return; }; done
+    # Nombres exactos (sin regex: v1.0 no es v1x0), sin el ^{} de los tags anotados.
+    remotos="$(cut -f2 <<< "$remotos" | sed 's/\^{}$//')"
+    while IFS= read -r t; do
+      grep -qxF -- "$t" <<< "$remotos" || { echo "tiene el tag local ${t#refs/tags/} sin subir"; return; }
+    done < <(git -C "$d" for-each-ref --format='%(refname)' refs/tags)
   fi
 }
 limpiar(){ # ./pj clean [--onboarding]: no necesita el template ni Python.

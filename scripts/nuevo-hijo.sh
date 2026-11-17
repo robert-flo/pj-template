@@ -105,10 +105,18 @@ rv:
 YML
 fi
 PJ_TEMPLATE_TOKEN="$PJ_TEMPLATE_TOKEN" ./pj && ./pj check
-git add -A
-git diff --cached --quiet || git commit -q -m "feat: arranque de pj-$P desde pj-template (modo dependencia)"
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "https://github.com/$REPO.git"
-git push -q -u origin HEAD
+if [ "$NUEVO" = 1 ]; then
+  # Hijo nuevo: el primer commit del repo vacío.
+  git add -A
+  git diff --cached --quiet || git commit -q -m "feat: arranque de pj-$P desde pj-template (modo dependencia)"
+  git remote get-url origin >/dev/null 2>&1 || git remote add origin "https://github.com/$REPO.git"
+  git push -q -u origin HEAD
+else
+  # Hijo existente: nada directo a la rama por defecto. No commitea ni empuja; lo que haya cambiado va por PR a mano.
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "hijo existente: no commiteo ni empujo. Cambios locales en $DEST (llevalos por PR si sirven):"; git status --short
+  else echo "hijo existente: sin cambios, no empujo nada"; fi
+fi
 
 printf '%s' "$PJ_TEMPLATE_TOKEN" | gh secret set PJ_TEMPLATE_TOKEN -R "$REPO" >/dev/null && echo "secreto PJ_TEMPLATE_TOKEN cargado en $REPO"
 

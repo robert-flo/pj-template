@@ -97,9 +97,13 @@ se_queda "tiene un worktree enlazado con trabajo en stage" "tiene worktrees enla
 git -C demo-hijo-wt-1-x diff --cached --quiet && mal "clean rompió el worktree enlazado" || true
 git -C demo-hijo worktree remove -f ../demo-hijo-wt-1-x; git -C demo-hijo branch -qD wt-1
 git -C demo-hijo checkout -q --detach; git -C demo-hijo commit -q --allow-empty -m "en detached HEAD"
-se_queda "tiene un commit en detached HEAD" "tiene commits sin subir"; git -C demo-hijo checkout -q master
+se_queda "tiene un commit en detached HEAD" "tiene commits sin subir"; git -C demo-hijo checkout -q master 2>/dev/null
+se_queda "tiene un commit de un detached HEAD abandonado (solo en el reflog)" "tiene commits sin subir"
+git -C demo-hijo reflog expire --expire-unreachable=now --all && git -C demo-hijo gc -q --prune=now
 git -C demo-hijo tag local-1
 se_queda "tiene un tag local sin subir" "tiene el tag local local-1"; git -C demo-hijo tag -d local-1 >/dev/null
+git -C demo-hijo tag v1x0 && git -C demo-hijo push -q origin v1x0 && git -C demo-hijo tag v1.0
+se_queda "tiene el tag local v1.0 y el remoto solo v1x0 (sin regex)" "tiene el tag local v1.0 sin subir"; git -C demo-hijo tag -d v1.0 >/dev/null
 
 # --onboarding no pisa cambios sin commitear y, si se niega, no borra nada.
 ./pj >/dev/null; ./pj hooks >/dev/null; ./pj agy >/dev/null   # los clean de arriba ya borraron lo generado
@@ -148,11 +152,13 @@ sed -e 's/^proyecto: "demo"/proyecto: "viejo"/' -e '/^extras:/,$d' proyecto.yml 
 "$PY" -c "import sys; sys.path.insert(0,'$T/scripts'); import onboarding as ob, pathlib; p=pathlib.Path('$v/proyecto.yml'); p.write_text(ob.reemplazar_repos(p.read_text(), [{'dir':'demo-hijo','repo':'robert-flo/demo-hijo','rama':'master'}]))"
 git -C "$v" add -A && git -C "$v" commit -qm viejo && git -C "$v" push -q origin HEAD:master
 git clone -q "$tmp/demo-hijo.git" "$v/demo-hijo"; echo local > "$v/demo-hijo/trabajo"
-antes="$(sha256sum "$v/proyecto.yml")"
+antes="$(sha256sum "$v/proyecto.yml")"; remoto_antes="$(git -C "$tmp/pj-viejo.git" rev-parse master)"
 if (cd "$tmp" && PATH="$tmp/bin:$PATH" NH_P=viejo NH_REMOTO="$tmp/pj-viejo.git" PJ_TEMPLATE_TOKEN=x bash "$T/scripts/nuevo-hijo.sh" viejo "$tmp/nh") >"$tmp/n1" 2>&1 \
   && [ ! -e "$v/onboarding.yml" ] && [ "$antes" = "$(sha256sum "$v/proyecto.yml")" ] && [ -f "$v/demo-hijo/trabajo" ]; then
   ok "nuevo-hijo sobre un hijo existente sin onboarding.yml no toca repos:, clones ni onboarding"
 else mal "nuevo-hijo sobre un hijo existente"; tail -20 "$tmp/n1"; fi
+[ "$remoto_antes" = "$(git -C "$tmp/pj-viejo.git" rev-parse master)" ] && [ "$(git -C "$v" rev-parse HEAD)" = "$remoto_antes" ] && grep -q "hijo existente: no commiteo ni empujo" "$tmp/n1" \
+  && ok "nuevo-hijo re-ejecutado sobre un hijo existente no commitea ni empuja a la rama por defecto" || { mal "nuevo-hijo empujó o commiteó en un hijo existente"; tail -5 "$tmp/n1"; }
 git init -q --bare "$tmp/pj-nuevo.git"
 if (cd "$tmp" && PATH="$tmp/bin:$PATH" NH_P=nuevo NH_REMOTO="$tmp/pj-nuevo.git" PJ_TEMPLATE_TOKEN=x bash "$T/scripts/nuevo-hijo.sh" nuevo "$tmp/nh") >"$tmp/n2" 2>&1 \
   && "$PY" -c "import sys; sys.path.insert(0,'$T/scripts'); import onboarding as ob; sys.exit(open('$tmp/nh/rf-pj-nuevo/onboarding.yml').read() != ob.volcar(ob.vacio(), 'nuevo'))"; then
