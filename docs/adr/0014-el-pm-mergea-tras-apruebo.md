@@ -10,7 +10,7 @@ Con [0009](0009-rv-en-el-pr-final.md), tras el `APRUEBO` el PM ponía `ready-to-
 - Tras el comentario `APRUEBO <sha>` del RV, el PM mergea sin esperar orden de Roberto: `gh pr merge <M> --squash --delete-branch --match-head-commit <sha>`, con el SHA que nombró el RV.
 - Si la cabeza del PR cambió después del `APRUEBO`, el PM no mergea y pide otra revisión.
 - El PM confirma el merge y le pasa a Roberto el link del PR, el del veredicto, el SHA del merge y los pasos de validación manual.
-- El WK y el RV siguen sin mergear. El resto de [0009](0009-rv-en-el-pr-final.md) (quién revisa, BLOQUEO) sigue vigente.
+- El RV sigue sin mergear y el WK nunca mergea a la rama por defecto; el WK sí mergea sus sub-issues a la rama del spec ([0006](0006-rama-del-spec-y-modelo-de-terminado.md), aclarado en [0018](0018-el-merge-es-el-de-fleet.md)). El resto de [0009](0009-rv-en-el-pr-final.md) (quién revisa, BLOQUEO) sigue vigente.
 
 ## Consecuencias
 - Reglas en `.agents/reglas/pm.md` paso 8 y `comun.md` (PR #11).
