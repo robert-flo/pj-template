@@ -215,7 +215,7 @@ def main():
     gi = RAIZ / ".gitignore"
     txt = gi.read_text() if gi.exists() else ""
     INICIO, FIN = f"# >>> {proy}: repos (generado) >>>", f"# <<< {proy}: repos (generado) <<<"
-    extra = ["/.pj/", "/.agents/", "/.cursor/"] if DEP else []
+    extra = ["/.pj/", "/.agents/", "/.cursor/", "/.bares/", "/repos/"] if DEP else []
     bloque = "\n".join([INICIO, "/.pj-sync/"] + extra + [f"/{r['dir']}/" for r in p["repos"]] + [FIN])
     if re.search(BLOQUE_RE, txt, flags=re.S):
         txt = re.sub(BLOQUE_RE, lambda _: bloque, txt, count=1, flags=re.S)
