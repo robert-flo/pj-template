@@ -25,7 +25,8 @@ import onboarding as ob  # noqa: E402
 
 SECCIONES = {"PM": ["## Cargás", "## Tus datos", "## El proyecto", "## Primeros pasos", "## Primer mensaje", "## Tus skills"],
              "WK": ["## Cargás", "## Tus datos", "## El proyecto", "## Al empezar", "## Tus skills"],
-             "RV": ["## Cargás", "## Tus datos", "## El proyecto", "## Lo que exigís en este proyecto", "## Tus skills"]}
+             "RV": ["## Cargás", "## Tus datos", "## El proyecto", "## Lo que exigís en este proyecto", "## Tus skills"],
+             "OS": ["## Cargás", "## Tus datos", "## El proyecto", "## Al empezar", "## Tus skills"]}
 RUTA = re.compile(r"`(\.(?:agents|cursor)/[^`*<>{} ]+)`")
 err = []
 
@@ -46,7 +47,7 @@ def rutas(f, cuerpo):
 
 p = proyecto_mod.cargar(RAIZ, RAIZ != TPL)
 o = ob.cargar(RAIZ)
-ALMA = {"PM": ["primeros_pasos"], "WK": ["wk.como_probar"], "RV": ["rv.exige"]}
+ALMA = {"PM": ["primeros_pasos"], "WK": ["wk.como_probar"], "RV": ["rv.exige"], "OS": ["wk.como_probar"]}
 proy, slug = p["proyecto"], p["proyecto"].lower()
 for rol, secs in SECCIONES.items():
     f = RAIZ / f".agents/agents/{rol}-{proy}.md"
@@ -84,18 +85,18 @@ else:
     fm, cuerpo = frontmatter(mdc)
     if fm.get("alwaysApply") is not True: err.append(f"{mdc.name}: no es alwaysApply")
     rutas(mdc, cuerpo)
-for rol in ("wk", "rv"):
+for rol in ("wk", "rv", "os"):
     f = RAIZ / f".cursor/agents/{rol}-{slug}.md"
     if not f.exists(): err.append(f"falta {f.relative_to(RAIZ)}"); continue
     fm, cuerpo = frontmatter(f)
     if fm.get("name") != f"{rol}-{slug}": err.append(f"{f.name}: name={fm.get('name')!r}")
     rutas(f, cuerpo)
-for r in ("logs", "comun", "pm", "wk", "rv"):
+for r in ("logs", "comun", "pm", "wk", "rv", "os"):
     if not (RAIZ / f".agents/reglas/{r}.md").exists(): err.append(f"falta .agents/reglas/{r}.md")
 
 for e in err: print("FALLA humo:", e)
 if err: sys.exit(1)
-print(f"ok   humo estático: PM/WK/RV-{proy} encuentran reglas, skills y adaptadores de Cursor")
+print(f"ok   humo estático: PM/WK/RV/OS-{proy} encuentran reglas, skills y adaptadores de Cursor")
 
 if os.environ.get("HUMO_AGY") == "1":
     agy = shutil.which("agy")

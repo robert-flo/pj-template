@@ -51,7 +51,8 @@
       "properties": {
         "pm": {"type": "array", "items": {"type": "string"}},
         "wk": {"type": "array", "items": {"type": "string"}},
-        "rv": {"type": "array", "items": {"type": "string"}}
+        "rv": {"type": "array", "items": {"type": "string"}},
+        "os": {"type": "array", "items": {"type": "string"}}
       }
     }
   }

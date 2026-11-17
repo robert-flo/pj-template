@@ -74,11 +74,13 @@ a="$(snap)"
 corre "$tmp/bin" make agy-pm && [ "$(cat "$log")" = "$primera" ] && [ "$a" = "$(snap)" ] \
   && ok "make agy-pm dos veces: misma llamada y mismos bytes" || { mal "make agy-pm no es idempotente"; cat "$log"; }
 
-# 3) Rol y argumentos: wk/rv y lo que sobra va tal cual a agy.
+# 3) Rol y argumentos: wk/rv/os y lo que sobra va tal cual a agy.
 corre "$tmp/bin" make agy-wk ARGS="'--print hola'" && grep -qx "exec agy --dangerously-skip-permissions --agent WK-demo --print hola · pull=si · ficha=si" "$log" \
   && ok "make agy-wk ARGS=…: WK-demo con los argumentos" || { mal "make agy-wk"; cat "$log" "$tmp/out"; }
 corre "$tmp/bin" ./pj agy rv --modelo "dos palabras" && grep -qx "exec agy --dangerously-skip-permissions --agent RV-demo --modelo dos palabras · pull=si · ficha=si" "$log" \
   && ok "./pj agy rv args…: RV-demo con los argumentos" || { mal "./pj agy rv"; cat "$log"; }
+corre "$tmp/bin" make agy-os ARGS="'--print hola'" && grep -qx "exec agy --dangerously-skip-permissions --agent OS-demo --print hola · pull=si · ficha=si" "$log" \
+  && ok "make agy-os ARGS=…: OS-demo con los argumentos" || { mal "make agy-os"; cat "$log" "$tmp/out"; }
 corre "$tmp/bin" ./pj agy --print x && grep -qx "exec agy --dangerously-skip-permissions --agent PM-demo --print x · pull=si · ficha=si" "$log" \
   && ok "./pj agy sin rol: PM por defecto y pasa los argumentos" || { mal "./pj agy sin rol"; cat "$log"; }
 
