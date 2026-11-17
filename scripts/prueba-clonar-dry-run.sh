@@ -52,14 +52,22 @@ git add -A && git commit -qm inicial && git push -q origin HEAD:master 2>/dev/nu
 
 esperar_dry_run(){
   local desc="$1" out="$2"
-  if grep -qF '[dry-run] clonaría robert-flo/repo-uno en rf-uno (rama main)' "$out" \
-     && grep -qF '[dry-run] verificaría/actualizaría rf-dos (robert-flo/repo-dos -> master)' "$out"; then
+  if grep -qF '[dry-run] clonaría robert-flo/repo-uno en .bares/repo-uno.git y repos/repo-uno (rama main)' "$out" \
+     && grep -qF '[dry-run] verificaría/actualizaría rf-dos (robert-flo/repo-dos -> master); sugeriría limpiar clon viejo con ./pj clean' "$out"; then
     ok "$desc"
   else
     mal "$desc"
     cat "$out"
   fi
 }
+
+# 0) .gitignore generado en el hijo incluye /.bares/ y /repos/
+if grep -qxF '/.bares/' "$h/.gitignore" && grep -qxF '/repos/' "$h/.gitignore"; then
+  ok ".gitignore generado del hijo incluye /.bares/ y /repos/"
+else
+  mal ".gitignore generado del hijo no incluye /.bares/ y /repos/"
+  cat "$h/.gitignore"
+fi
 
 # 1) clone-repos.sh --dry-run, -n, PJ_CLONAR_DRY_RUN=1
 PJ_RAIZ="$h" bash "$T/clone-repos.sh" --dry-run >"$tmp/o1" 2>&1
@@ -110,6 +118,41 @@ if grep -q "worktree detectado" "$tmp/o9" && grep -q "check: todo bien" "$tmp/o9
 else
   mal "worktree (.git archivo): ./pj listo no avisó o falló check"
   cat "$tmp/o9"
+fi
+
+# 6) Stub de ravn-git-bare-clone con PJ_CLONAR_CMD: verifica BARE_HOME, WORKTREES_HOME, aviso de clon viejo y sin borrarlo
+cat > "$tmp/bin/stub-bare" <<'STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "CALL BARE_HOME=$BARE_HOME WORKTREES_HOME=$WORKTREES_HOME ARGS=$*" >> "$STUB_LOG"
+repo="${2##*/}"
+mkdir -p "$BARE_HOME/$repo.git" "$WORKTREES_HOME/$repo"
+STUB
+chmod +x "$tmp/bin/stub-bare"
+export STUB_LOG="$tmp/stub.log"
+: > "$STUB_LOG"
+PJ_RAIZ="$h" PJ_CLONAR_CMD="$tmp/bin/stub-bare" bash "$T/clone-repos.sh" >"$tmp/o10" 2>&1
+if grep -qxF "CALL BARE_HOME=$h/.bares WORKTREES_HOME=$h/repos ARGS=clone robert-flo/repo-uno" "$STUB_LOG" \
+   && grep -qxF "CALL BARE_HOME=$h/.bares WORKTREES_HOME=$h/repos ARGS=clone robert-flo/repo-dos" "$STUB_LOG" \
+   && grep -qF "Aviso: existe un clon viejo en 'rf-dos/.git'" "$tmp/o10" \
+   && grep -qF "./pj clean" "$tmp/o10" \
+   && [ -d "$h/rf-dos/.git" ] \
+   && [ -d "$h/.bares/repo-uno.git" ] \
+   && [ -d "$h/repos/repo-uno" ]; then
+  ok "stub ravn-git-bare-clone usa .bares/ y repos/, avisa clon viejo sin borrarlo"
+else
+  mal "stub ravn-git-bare-clone"
+  cat "$STUB_LOG"
+  cat "$tmp/o10"
+fi
+
+# 7) dry-run cuando ya existe .bares/repo-uno.git
+PJ_RAIZ="$h" bash "$T/clone-repos.sh" --dry-run >"$tmp/o11" 2>&1
+if grep -qF "[dry-run] verificaría/actualizaría robert-flo/repo-uno en .bares/repo-uno.git y repos/repo-uno (rama main)" "$tmp/o11"; then
+  ok "--dry-run detecta .bares/repo-uno.git existente"
+else
+  mal "--dry-run no detectó .bares/repo-uno.git existente"
+  cat "$tmp/o11"
 fi
 
 [ "$fallas" -eq 0 ] || exit 1
