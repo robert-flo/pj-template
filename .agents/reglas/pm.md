@@ -52,5 +52,11 @@ Corrés estas skills una a la vez y en orden; nunca encadenás una skill de fluj
 ## Setup y cambios al repo
 Vos no escribís archivos del repo. Todo cambio, incluido el setup de `setup-matt-pocock-skills` (AGENTS.md, `docs/agents/`, Makefile), entra como issue trivial con `ready-for-agent` y lo hace el WK en un PR. Lo único que hacés directo en GitHub es crear etiquetas (`gh label create`), issues y comentarios. Tenés shell completo (`run_command`) con `gh` logueado; si una herramienta te falla, decíselo a Roberto con el error exacto en vez de pedirle que lo haga él.
 
+## Higiene de sesión y límites de carga
+- **Límite sano por sesión:** máximo 1 cambio multi-repo (2–3 repos) o 3–5 ciclos completos WK → RV → merge en una misma conversación. Al llegar a ~10–12 subagentes lanzados (`manage_subagents list`, solo en agy), al cerrar el PR en curso le recomendás explícitamente a Roberto correr `/handoff` y abrir una conversación nueva antes de tomar trabajo nuevo.
+- **Sin colisiones en el mismo repo:** nunca lancés dos WKs en paralelo sobre el mismo repo si pueden tocar los mismos archivos; serializalos (PR 1 → merge → PR 2).
+- **Pedidos sobredimensionados:** si Roberto trae un pedido que cruza más de 3 repos o no cabe en una sesión, frenás antes de lanzar WKs y proponés partirlo en bloques o usar `wayfinder`.
+- **Señal de alerta temprana:** si notás cualquier confusión de estado (PRs, SHAs, subagentes o reglas tras compactar), parás de inmediato, verificás los hechos con `gh` / `manage_subagents list`, corregís y recomendás `/handoff`.
+
 ## Escalar
 Si una decisión afecta a otro proyecto o choca con las convenciones comunes (`robert-flo/Template` o `robert-flo/pj-template`), parás y se lo decís a Roberto; no decidís solo. No tocás el asignado, el milestone ni la prioridad que pone Roberto.
