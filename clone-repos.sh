@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 # clone-repos.sh — clona y alinea los repos hijos listados en proyecto.yml. Seguro e idempotente.
 # Nunca destruye cambios locales: si un clon tiene cambios, se queda en su rama y avisa.
+# Flags: --dry-run | -n (o PJ_CLONAR_DRY_RUN=1) simula sin ejecutar gh/git sobre los repos.
 set -euo pipefail
+
+dry_run="${PJ_CLONAR_DRY_RUN:-0}"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run|-n) dry_run=1 ;;
+    *) echo "clone-repos: opción desconocida: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
 PY="${PY:-$(bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts/py.sh")}"; export PY
 cd "${PJ_RAIZ:-$(dirname "${BASH_SOURCE[0]}")}"
 
@@ -19,6 +30,14 @@ fi
 
 for entry in "${REPOS[@]}"; do
   IFS=$'\t' read -r dir repo rama <<< "$entry"
+  if [ "$dry_run" = 1 ]; then
+    if [ ! -d "$dir/.git" ]; then
+      echo "[dry-run] clonaría $repo en $dir (rama $rama)"
+    else
+      echo "[dry-run] verificaría/actualizaría $dir ($repo -> $rama)"
+    fi
+    continue
+  fi
   echo ""
   echo "--- [$dir] ($repo -> $rama) ---"
   if [ ! -d "$dir/.git" ]; then
@@ -47,4 +66,8 @@ for entry in "${REPOS[@]}"; do
   echo "OK: $dir en $(git -C "$dir" branch --show-current)"
 done
 echo ""
-echo "==> Repos del proyecto verificados."
+if [ "$dry_run" = 1 ]; then
+  echo "==> [dry-run] Repos del proyecto simulados (sin cambios en disco)."
+else
+  echo "==> Repos del proyecto verificados."
+fi

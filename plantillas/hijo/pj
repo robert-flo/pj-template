@@ -6,9 +6,11 @@
 #   ./pj sync       actualiza `template_ref` en proyecto.yml al último `main` de pj-template (o HEAD de
 #                   PJ_TEMPLATE_DIR), copia pj, Makefile y pj-template.yml del molde, regenera y corre
 #                   ./pj check sin hacer commit automático. Atajo: make sync.
-#   ./pj listo [--abrir]  todo de una después de un clone o pull: git pull --rebase --autostash,
-#                   trae el template, genera, instala los hooks, enlaza las fichas en agy, clona los
-#                   repos, corre check e imprime cómo arrancar (--abrir arranca el PM como ./pj agy pm).
+#   ./pj listo [--abrir] [--dry-run] [--no-clonar]  todo de una después de un clone o pull:
+#                   git pull --rebase --autostash, trae el template, genera, instala los hooks,
+#                   enlaza las fichas en agy, clona los repos (salvo --no-clonar / PJ_SIN_CLONAR=1;
+#                   en worktree con .git archivo corre en --dry-run salvo PJ_CLONAR=1), corre
+#                   check e imprime cómo arrancar (--abrir arranca el PM como ./pj agy pm).
 #   ./pj hooks      instala los hooks post-merge y post-checkout: cada `git pull` regenera solo.
 #   ./pj onboard    la entrevista del onboarding (onboarding.yml: misión, no tocar, primeros pasos,
 #                   cómo prueba el WK, qué exige el RV, repos). Idempotente: si ya está hecho, muestra
@@ -25,6 +27,7 @@
 #                   --dangerously-skip-permissions --agent <ROL>-<proyecto> args…`. Sin mise, el agy del
 #                   PATH. Si ./pj listo falla, no abre nada. Atajos: make agy-pm, make agy-wk, make agy-rv.
 #   ./pj enlazar    solo enlaza las fichas en ~/.gemini/config/agents (./pj listo ya lo hace).
+#   ./pj clonar [--dry-run|-n]  clona los repos de proyecto.yml (con --dry-run / PJ_CLONAR_DRY_RUN=1 simula).
 #   ./pj <target>   corre un target del Makefile del template: check, humo, clonar, generar…
 # Auth: PJ_TEMPLATE_TOKEN si está (CI); si no, `gh auth git-credential`. PJ_TEMPLATE_DIR=<checkout>
 # usa un pj-template local en vez de bajarlo (pruebas). Python: crea .pj/venv (PyYAML + jsonschema)
@@ -250,14 +253,31 @@ case "${1:-}" in
   "") exec "$PY" "$tpl/scripts/generar.py" ;;
   hooks) instalar_hooks; exit 0 ;;
   listo)
-    shift; abrir=0; for a in "$@"; do case "$a" in --abrir) abrir=1 ;; *) echo "pj: listo no conoce $a" >&2; exit 2 ;; esac; done
+    shift; abrir=0; dry_run="${PJ_CLONAR_DRY_RUN:-0}"; no_clonar="${PJ_SIN_CLONAR:-0}"
+    for a in "$@"; do
+      case "$a" in
+        --abrir) abrir=1 ;;
+        --dry-run|-n) dry_run=1 ;;
+        --no-clonar) no_clonar=1 ;;
+        *) echo "pj: listo no conoce $a" >&2; exit 2 ;;
+      esac
+    done
     "$PY" "$tpl/scripts/generar.py"
     instalar_hooks
     if [ -z "$(onboarding_hecho)" ] && [ -t 0 ] && [ -t 1 ]; then
       read -rp "pj: el onboarding del PM está sin hacer. ¿Lo hacemos ahora? [S/n] " r || r=n
       case "$r" in ""|s|S|si|sí|y|Y) PJ_EN_LISTO=1 "$PY" "$tpl/scripts/onboard.py" || true ;; esac
     fi
-    make -s --no-print-directory -f "$tpl/Makefile" agy clonar check
+    if [ "$no_clonar" = 1 ]; then
+      echo "pj: salto clonar (--no-clonar / PJ_SIN_CLONAR=1)"
+      make -s --no-print-directory -f "$tpl/Makefile" agy check
+    else
+      if [ -f "$raiz/.git" ] && [ "${PJ_CLONAR:-0}" != 1 ] && [ "$dry_run" != 1 ]; then
+        echo "pj: aviso: worktree detectado (.git es archivo); corro clonar en --dry-run (usá PJ_CLONAR=1 para clonar igual)"
+        dry_run=1
+      fi
+      PJ_CLONAR_DRY_RUN="$dry_run" make -s --no-print-directory -f "$tpl/Makefile" agy clonar check
+    fi
     echo
     if f="$(onboarding_hecho)" && [ -n "$f" ]; then
       echo "pj: onboarding hecho el $f (./pj onboard lo muestra o lo cambia)."
@@ -267,6 +287,16 @@ case "${1:-}" in
     fi
     if [ "$abrir" = 1 ]; then lanzar_agy "PM-$proy"; fi
     exit 0 ;;
+  clonar)
+    shift
+    for a in "$@"; do
+      case "$a" in
+        --dry-run|-n) export PJ_CLONAR_DRY_RUN=1 ;;
+        *) echo "pj: clonar no conoce $a" >&2; exit 2 ;;
+      esac
+    done
+    "$PY" "$tpl/scripts/generar.py" >/dev/null
+    exec make -s --no-print-directory -f "$tpl/Makefile" clonar ;;
   onboard) shift; exec "$PY" "$tpl/scripts/onboard.py" "$@" ;;
   enlazar) exec make -s --no-print-directory -f "$tpl/Makefile" agy ;;
 esac
