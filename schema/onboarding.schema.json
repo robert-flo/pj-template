@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/robert-flo/pj-template/schema/onboarding.schema.json",
+  "title": "onboarding.yml de un meta-repo de pj-template: lo propio del proyecto para el PM, el WK y el RV",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "hecho", "mision", "no_tocar", "reglas_proyecto", "primeros_pasos", "wk", "rv"],
+  "properties": {
+    "version": {"const": 1},
+    "hecho": {"type": "string", "pattern": "^(|[0-9]{4}-[0-9]{2}-[0-9]{2})$",
+      "description": "Fecha del onboarding (AAAA-MM-DD). Vacío = sin hacer: ./pj onboard lo hace."},
+    "mision": {"type": "string", "description": "Qué es el proyecto y para qué está el trío, en una o dos frases."},
+    "no_tocar": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "reglas_proyecto": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "primeros_pasos": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "wk": {
+      "type": "object", "additionalProperties": false, "required": ["como_probar"],
+      "properties": {"como_probar": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}}
+    },
+    "rv": {
+      "type": "object", "additionalProperties": false, "required": ["exige"],
+      "properties": {"exige": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}}
+    }
+  },
+  "if": {"properties": {"hecho": {"minLength": 1}}},
+  "then": {"properties": {
+    "mision": {"minLength": 10},
+    "primeros_pasos": {"minItems": 1},
+    "wk": {"properties": {"como_probar": {"minItems": 1}}},
+    "rv": {"properties": {"exige": {"minItems": 1}}}
+  }}
+}

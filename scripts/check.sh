@@ -11,6 +11,20 @@ gen(){ "$PY" "$T/scripts/generar.py"; }
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 
 "$PY" "$T/scripts/proyecto.py" || fallas=$((fallas+1))
+# onboarding.yml (ADR 0017): si falta o está sin hacer, aviso (los hijos viejos lo reciben con ./pj onboard);
+# si existe y no cumple el esquema, falla.
+"$PY" - "$T" <<'PY' || fallas=$((fallas+1))
+import sys; sys.path.insert(0, sys.argv[1] + "/scripts")
+import onboarding as ob
+try:
+    o = ob.cargar(".")
+except ob.Invalido as e:
+    for x in e.args[0]: print(f"FALLA onboarding.yml: {x}")
+    sys.exit(1)
+if o is None: print("aviso onboarding.yml no existe: el PM arranca sin alma; corré ./pj onboard")
+elif not ob.hecho(o): print("aviso onboarding sin hacer (hecho vacío): corré ./pj onboard")
+else: print(f"ok   onboarding.yml cumple schema/onboarding.schema.json (hecho el {o['hecho']})")
+PY
 
 snap(){ find . -path ./.git -prune -o -path ./.pj -prune -o -path ./.pj-sync -prune -o -path './rf-*' -prune -o -path './fo-*' -prune -o -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum; }
 gen >/dev/null || { mal "generar.py falló"; echo "check: $fallas fallas"; exit 1; }
@@ -40,10 +54,10 @@ if [ -e .agents/grokbot.md ] && ! grep -qxF .agents/grokbot.md <<< "$extras"; th
 
 if [ "$DEP" = 1 ]; then
   # El hijo versiona solo sus archivos a mano (más .trio/, los handoffs de pj-trio); todo lo demás viene de pj-template.
-  permitidos=$'.github/workflows/pj-template.yml\n.gitignore\nAGENTS.md\nREADME.md\npj\nproyecto.yml'
+  permitidos=$'.github/workflows/pj-template.yml\n.gitignore\nAGENTS.md\nREADME.md\nonboarding.yml\npj\nproyecto.yml'
   [ -n "$extras" ] && permitidos+=$'\n'"$extras"
   for x in $extras; do git ls-files --error-unmatch "$x" >/dev/null 2>&1 || mal "extras: $x no está versionado"; done
-  extra="$(git ls-files | grep -v '^\.trio/' | LC_ALL=C sort | comm -23 - <(echo "$permitidos" | LC_ALL=C sort))"
+  extra="$({ git ls-files | grep -v '^\.trio/' || true; } | LC_ALL=C sort | comm -23 - <(echo "$permitidos" | LC_ALL=C sort))"
   [ -z "$extra" ] && ok "el hijo versiona solo $(git ls-files | wc -l) archivos a mano" || mal "archivos versionados que deberían venir de pj-template: $(echo $extra)"
   for f in $(cat .agents/generados.txt); do git ls-files --error-unmatch "$f" >/dev/null 2>&1 && mal "$f es generado y no debe versionarse"; done
   for f in pj:pj .github/workflows/pj-template.yml:pj-template.yml; do
@@ -94,6 +108,11 @@ YML
   rechaza "extras que pisa un archivo del hijo" "sed -i 's|\".agents/grokbot.md\"|\"pj\"|' '$h/proyecto.yml'"
   rechaza "extras con .." "sed -i 's|\".agents/grokbot.md\"|\"../x\"|' '$h/proyecto.yml'"
   rechaza "sin template_ref" "sed -i '/^template_ref/d' '$h/proyecto.yml'"
+  rechaza "onboarding hecho sin misión" "printf 'version: 1\nhecho: \"2026-01-01\"\nmision: \"\"\nno_tocar: []\nreglas_proyecto: []\nprimeros_pasos: [a]\nwk: {como_probar: [a]}\nrv: {exige: [a]}\n' > '$h/onboarding.yml'"
+  rechaza "onboarding con clave desconocida" "printf 'version: 1\nhecho: \"\"\nmision: \"\"\nno_tocar: []\nreglas_proyecto: []\nprimeros_pasos: []\nwk: {como_probar: []}\nrv: {exige: []}\nalma: x\n' > '$h/onboarding.yml'"
+  rm -f "$h/onboarding.yml"
+  # Onboarding, ./pj onboard y ./pj clean de punta a punta en un hijo de prueba (sin red).
+  bash "$T/scripts/prueba-onboarding.sh" || fallas=$((fallas+1))
 fi
 
 "$PY" - "$T" <<'PY' || fallas=$((fallas+1))

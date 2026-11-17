@@ -9,15 +9,15 @@ Plantilla única de los tríos PM/WK/RV de Roberto para **Cursor** y **agy** (An
 - Lo que va en este repo se lee en `docs/pj-template.md` («Quién manda qué»). Los archivos generados no se tocan a mano.
 
 ## Cómo crear un hijo
-Un hijo nuevo va en **modo dependencia**: versiona 6 archivos (`proyecto.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj`, `.github/workflows/pj-template.yml`) y trae todo lo demás de este repo al SHA de `template_ref`. Archivos propios a conservar (p. ej. un adaptador propio en `.agents/`) van en `extras:` de `proyecto.yml`. Detalle y por qué no se versiona lo generado: `docs/pj-template.md`.
+Un hijo nuevo va en **modo dependencia**: versiona 7 archivos (`proyecto.yml`, `onboarding.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj`, `.github/workflows/pj-template.yml`) y trae todo lo demás de este repo al SHA de `template_ref`. Archivos propios a conservar (p. ej. un adaptador propio en `.agents/`) van en `extras:` de `proyecto.yml`. Detalle y por qué no se versiona lo generado: `docs/pj-template.md`.
 
-1. Desde pj-template, con `PJ_TEMPLATE_TOKEN` exportado: `make nuevo-hijo P=<nombre> [DIR=<carpeta>]`. Crea `robert-flo/pj-<nombre>` vacío y privado (si no existe), lo clona en `/z-drive/tries/rf-pj-<nombre>` o en `./`, escribe los 6 archivos con `template_ref` = `main` actual, corre `./pj` y `./pj check`, pushea, carga el secreto y abre el PR de `family.yml`.
-2. Completá `area`, `repos`, `specs` y `notas` de `proyecto.yml` y la arquitectura en `AGENTS.md` y `README.md`. `./pj` falla si quedan datos del molde.
+1. Desde pj-template, con `PJ_TEMPLATE_TOKEN` exportado: `make nuevo-hijo P=<nombre> [DIR=<carpeta>]`. Crea `robert-flo/pj-<nombre>` vacío y privado (si no existe), lo clona en `/z-drive/tries/rf-pj-<nombre>` o en `./`, escribe los 7 archivos con `template_ref` = `main` actual (`onboarding.yml` sin hacer), corre `./pj` y `./pj check`, pushea, carga el secreto y abre el PR de `family.yml`.
+2. `./pj onboard`: la entrevista del PM llena `repos` y `onboarding.yml` (misión, no tocar, reglas, primeros pasos, cómo prueba el WK, qué exige el RV; [ADR 0017](docs/adr/0017-onboarding-del-trio.md)). Completá `area`, `specs` y `notas` de `proyecto.yml` y la arquitectura en `AGENTS.md` y `README.md`. `./pj` falla si quedan datos del molde.
 3. `./pj check` tiene que pasar. Commit y push (o PR).
 4. `./pj clonar` clona los repos de `proyecto.yml` al lado.
 5. agy: `./pj agy` una vez por máquina y `agy --agent PM-<proyecto>`. Cursor: abrí la carpeta y hablá con el PM. `./pj humo` confirma que el PM arranca y lee sus reglas.
 
-Después de cada `git clone` de un hijo, un solo comando: `./pj listo` (pull, trae el template, genera, instala los hooks, enlaza las fichas en agy, clona los repos, corre check e imprime `agy --agent PM-<proyecto>`; con `--abrir` lo arranca). Instala los hooks `post-merge` y `post-checkout` (`./pj hooks`), así que cada `git pull` posterior regenera solo. `./pj` a secas sigue regenerando sin más.
+Después de cada `git clone` de un hijo, un solo comando: `./pj listo` (pull, trae el template, genera, instala los hooks, ofrece `./pj onboard` si falta, enlaza las fichas en agy, clona los repos, corre check e imprime `agy --agent PM-<proyecto>`; con `--abrir` lo arranca). Instala los hooks `post-merge` y `post-checkout` (`./pj hooks`), así que cada `git pull` posterior regenera solo. `./pj` a secas sigue regenerando sin más. Para repetir todo desde cero: `./pj clean` (y `--onboarding` para rehacer también la entrevista).
 
 Hijos viejos (creados con «Use this template», modo copia): se migran por PR dejando solo los 6 archivos, agregando `template_ref` y llevando `specs` al formato nuevo (ejemplo: `robert-flo/pj-ravn`). Mientras tanto siguen recibiendo PR de sync en modo copia.
 

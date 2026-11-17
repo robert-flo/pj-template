@@ -18,6 +18,7 @@ DEP = RAIZ != TPL
 MANIFIESTO = RAIZ / ".agents/generados.txt"
 sys.path.insert(0, str(TPL / "scripts"))
 import proyecto as proyecto_mod  # noqa: E402
+import onboarding as ob  # noqa: E402
 
 # Marcadores del bloque generado de .gitignore; llevan el nombre del proyecto.
 BLOQUE_RE = r"# >>> [^\n]*: repos \(generado\) >>>.*?# <<< [^\n]*: repos \(generado\) <<<"
@@ -61,6 +62,74 @@ def datos(p):
     return "\n".join(out)
 
 
+def cargar_onboarding():
+    try:
+        return ob.cargar(RAIZ)
+    except ob.Invalido as e:
+        die("onboarding.yml no es válido:\n  - " + "\n  - ".join(e.args[0]))
+
+
+def punto(t):
+    t = t.strip()
+    return t if t[-1:] in ".!?" else t + "."
+
+
+def vinetas(xs, sangria=""):
+    return "\n".join(f"{sangria}- {x}" for x in xs)
+
+
+def alma(p, o):
+    """Bloque «El proyecto» que reciben las tres fichas (ADR 0017)."""
+    if not ob.hecho(o):
+        return ("## El proyecto\n- Onboarding: **sin hacer**. Faltan la misión, lo que no tocás, los primeros pasos, "
+                "cómo prueba el WK y lo que exige el RV; Roberto los completa con `./pj onboard` en la terminal del meta-repo.")
+    out = [f"## El proyecto (onboarding del {o['hecho']}, `onboarding.yml`)", f"- Misión: {punto(o['mision'])}"]
+    if o["no_tocar"]:
+        out += ["- Lo que no tocás nunca:", vinetas(o["no_tocar"], "  ")]
+    if o["reglas_proyecto"]:
+        out += ["- Reglas del proyecto (mandan sobre tu criterio; `AGENTS.md` manda en la arquitectura):",
+                vinetas(o["reglas_proyecto"], "  ")]
+    return "\n".join(out)
+
+
+GENERICOS = ["Identificá el repo donde cae el pedido y su rama base (lista de arriba).",
+             "Si hay specs en curso, seguí con ellos en el orden de la lista antes de abrir trabajo nuevo.",
+             "Las notas y las reglas del proyecto de arriba mandan sobre tu criterio; `AGENTS.md` manda en la arquitectura."]
+
+
+def primeros_pasos(o):
+    pasos = [punto(x[:1].upper() + x[1:]) for x in (o["primeros_pasos"] if ob.hecho(o) else [])] + GENERICOS
+    return "\n".join(f"{n}. {x}" for n, x in enumerate(pasos, 1))
+
+
+def repos_txt(p):
+    if not p["repos"]:
+        return "Trabajo sobre este mismo repo."
+    return "Superviso " + ", ".join(f"`{r['repo']}`" for r in p["repos"]) + "."
+
+
+def primer_mensaje(p, o):
+    proy = p["proyecto"]
+    if ob.hecho(o):
+        paso = o["primeros_pasos"][0].strip().rstrip(".")
+        paso = paso[:1].lower() + paso[1:]
+        mision, falta = f" Mi misión acá: {punto(o['mision'])}", "[FALTA]"
+    else:
+        paso, mision = "leer `README.md` y `AGENTS.md` de este meta-repo", ""
+        falta = "Falta el onboarding del proyecto: corré `./pj onboard` en la terminal del meta-repo y volvé a abrirme."
+    return (f"> Hola Roberto, soy PM-{proy}, el PM de {p['area'].strip()} en {proy}. Convierto lo que me pedís en specs y "
+            f"tickets `ready-for-agent` con el flujo de Matt, sigo cada spec hasta su PR final a `{p['rama_base']}` y lo "
+            f"mergeo yo cuando el RV publica `APRUEBO` sobre el head exacto.{mision} {repos_txt(p)}\n>\n"
+            f"> Para arrancar, voy a {paso} y a leer el repo para aprender las buenas prácticas de su stack y seguirlas "
+            f"en cada spec. {falta}")
+
+
+def bloque_rol(o, rol, clave, titulo):
+    """Viñetas del onboarding para la sección de un rol, o vacío si no hay onboarding."""
+    xs = ((o or {}).get(rol) or {}).get(clave) if ob.hecho(o) else None
+    return f"{titulo}\n{vinetas(xs)}\n\n" if xs else ""
+
+
 def primer_trabajo(p):
     s = next((s for s in p["specs"] if s["primero"]), None)
     if not s:
@@ -95,8 +164,13 @@ def main():
     lockf = TPL / "skills-lock.json"
     lock = json.loads(lockf.read_text())["skills"] if lockf.exists() else {}
     proy, slug = p["proyecto"], p["proyecto"].lower()
+    o = cargar_onboarding()
     base = {"proyecto": proy, "slug": slug, "datos": datos(p), "primer_trabajo": primer_trabajo(p),
-            "tools_yaml": "\n".join(f"  - {t}" for t in roles["tools"])}
+            "tools_yaml": "\n".join(f"  - {t}" for t in roles["tools"]),
+            "alma": alma(p, o), "primeros_pasos": primeros_pasos(o), "primer_mensaje": primer_mensaje(p, o),
+            "como_probar": bloque_rol(o, "wk", "como_probar", "Cómo probás en este proyecto (onboarding):"),
+            "exige": bloque_rol(o, "rv", "exige", "En este proyecto exigís (onboarding):"),
+            "mision_corta": punto(o["mision"]) if ob.hecho(o) else "onboarding sin hacer (`./pj onboard`)."}
     salida = {}
     for rol in ("pm", "wk", "rv"):
         skills = list(dict.fromkeys(roles["skills"][rol] + (p["skills_extra"].get(rol) or [])))

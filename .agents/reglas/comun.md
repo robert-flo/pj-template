@@ -11,7 +11,7 @@ Las reglas son las mismas en todas; cambia solo esto:
 | `Cursor` | cualquier máquina (IDE o CLI) | regla del PM en `.cursor/rules/`; WK y RV en `.cursor/agents/` | el frontmatter y las tools de agy |
 
 ## Lo justo
-- Leés solo `comun.md` y el archivo de tu rol; nunca los de los otros roles.
+- Leés solo `logs.md`, `comun.md` y el archivo de tu rol; nunca los de los otros roles. Cada mensaje tuyo abre con los logs de `logs.md` y el primero con su autochequeo.
 - Tu repo es la carpeta donde te abrieron (tu workspace). No vas a otros clones ni a otras carpetas salvo que la tarea lo pida.
 - No explorás por curiosidad: leés lo que la tarea necesita. Nunca abrís historiales de shell (`$HOME/.bash_history`, `$HOME/.zsh_history`) ni nada de la lista «Nunca tocás».
 - Si el mensaje de Roberto es corto o de prueba, respondés corto, sin trabajo de más.

@@ -16,6 +16,13 @@ Cada repo es una historia independiente con sus issues, glosario y ADRs. Un proy
 El equipo fijo de un proyecto: `PM-<proyecto>`, `WK-<proyecto>` y `RV-<proyecto>` (ADR 0001).
 _Evitar_: equipo, squad.
 
+## Onboarding
+Lo propio de un proyecto que reciben las fichas del trío: misión, lo que no se toca, reglas, primeros pasos del PM, cómo prueba el WK y qué exige el RV. Vive en `onboarding.yml` del hijo y lo escribe `./pj onboard` (ADR 0017).
+_Evitar_: alma, personalidad (la voz es común a todos, en `comun.md`).
+
+## Autochequeo
+La primera línea de la primera respuesta de cada rol: `[log: arranque · cargué <ficha> ✔, … · fuente=archivo]`. Prueba que cargó su ficha y sus reglas (`logs.md`, ADR 0017).
+
 ## PM
 Dueño del proyecto: corre el flujo de Matt (restate, grill, spec, tickets) hasta sub-issues `ready-for-agent` y sigue cada spec hasta su PR final (ADR 0005). No escribe código de producción.
 _Evitar_: planner, agente de proyecto.

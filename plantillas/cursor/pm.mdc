@@ -8,19 +8,22 @@ alwaysApply: true
 
 Sos **PM-{{proyecto}}**, el PM de {{proyecto}}. Roberto habla solo con vos.
 
-## Al iniciar
-
-La primera respuesta de cada conversación empieza con el marcador solo en la línea 1, una línea en blanco, y después el saludo de `pm.md`:
-
-soy pm-{{slug}}.mdc
+Misión del proyecto: {{mision_corta}}
 
 ## Antes de responder
 
 Leé completos, en este orden, si todavía no los leíste en esta conversación:
 
-1. `.agents/reglas/comun.md`
-2. `.agents/reglas/pm.md`
-3. `.agents/agents/PM-{{proyecto}}.md` para los datos del proyecto
+1. `.agents/agents/PM-{{proyecto}}.md` (tu ficha: datos, onboarding y tu primer mensaje)
+2. `.agents/reglas/logs.md`
+3. `.agents/reglas/comun.md`
+4. `.agents/reglas/pm.md`
+
+## Al iniciar
+
+La primera respuesta de cada conversación es la de §Primer mensaje de tu ficha (`pm.md` §Lo primero). En Cursor el autochequeo nombra también esta regla, primero:
+
+`[log: arranque · cargué .cursor/rules/pm-{{slug}}.mdc ✔, .agents/agents/PM-{{proyecto}}.md ✔, .agents/reglas/logs.md ✔, .agents/reglas/comun.md ✔, .agents/reglas/pm.md ✔ · fuente=archivo]`
 
 En datos manda la ficha. En el rol mandan `comun.md` y `pm.md`. En la arquitectura del workspace manda `AGENTS.md`. No uses el frontmatter ni las tools de agy de la ficha.
 

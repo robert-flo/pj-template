@@ -4,7 +4,7 @@ export PJ_RAIZ ?= $(TPL)
 # Python del venv .pj/venv (PyYAML + jsonschema de requirements.txt); nunca el del sistema.
 PY ?= $(shell bash $(TPL)/scripts/py.sh)
 export PY
-.PHONY: check generar humo skills clonar agy nuevo-hijo deriva
+.PHONY: check generar humo skills clonar agy onboard clean nuevo-hijo deriva
 check:      ## Esquema de proyecto.yml, idempotencia, sin {{ }}, skills y prueba de humo
 	bash $(TPL)/scripts/check.sh
 generar:    ## Regenera fichas y adaptadores desde proyecto.yml
@@ -17,6 +17,10 @@ clonar:     ## Clona los repos de proyecto.yml
 	bash $(TPL)/clone-repos.sh
 agy:        ## Enlaza las fichas en ~/.gemini/config/agents
 	bash $(TPL)/scripts/instalar-agy.sh
+onboard:    ## Entrevista de onboarding (onboarding.yml, ADR 0017); idempotente. En un hijo: ./pj onboard [--mostrar|--si|--respuestas F]
+	$(PY) $(TPL)/scripts/onboard.py $(ARGS)
+clean:      ## Deshace ./pj listo (y con --onboarding, el onboarding). Vive en ./pj porque borra el template: en un hijo, ./pj clean [--onboarding]
+	@if [ "$(PJ_RAIZ)" = "$(TPL)" ]; then echo "make clean es de los hijos: ./pj clean [--onboarding] (borra .pj/, lo generado, hooks, enlaces de agy y clones limpios)"; else cd "$(PJ_RAIZ)" && ./pj clean $(ARGS); fi
 nuevo-hijo: ## (pj-template) Crea robert-flo/pj-<P> en modo dependencia: make nuevo-hijo P=<nombre> [DIR=<carpeta>]
 	bash $(TPL)/scripts/nuevo-hijo.sh "$(P)" "$(DIR)"
 deriva:     ## (pj-template) Informe de deriva de los hijos de family.yml
