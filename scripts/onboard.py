@@ -111,7 +111,8 @@ def archivos_de(r):
         mk = (d / "Makefile").read_text() if (d / "Makefile").exists() else ""
         return nombres, mk
     js = gh("api", f"repos/{r['repo']}/contents?ref={r['rama']}", "--jq", ".[].name")
-    nombres = js.split() if js else []
+    if js is None:
+        return None, ""  # ni clon ni gh: no se puede leer el stack
     mk = gh("api", f"repos/{r['repo']}/contents/Makefile?ref={r['rama']}", "-H", "Accept: application/vnd.github.raw") if "Makefile" in nombres else ""
     return nombres, mk or ""
 
@@ -174,9 +175,11 @@ def recomendaciones(p, actual):
         rec["primeros_pasos"] = ["leer `README.md` y `AGENTS.md` de este meta-repo",
                                  "revisar los issues abiertos (`gh issue list`) y proponerte por cuál empezar"]
     # WK y RV: según lo que hay en cada repo.
-    probar, exige = ["en el meta-repo: `./pj check` da «todo bien»"], []
+    probar, exige, sin_stack = ["en el meta-repo: `./pj check` da «todo bien»"], [], []
     for r in rec["repos"]:
         nombres, mk = archivos_de(r)
+        if nombres is None:
+            sin_stack.append(r["dir"]); continue
         a, b = stack(nombres, mk, f"`{r['dir']}`")
         probar += a; exige += b
     probar.append("cada criterio de aceptación con su prueba corrida de verdad en esta máquina y la salida o captura en el PR")
@@ -184,6 +187,7 @@ def recomendaciones(p, actual):
         exige.append("ningún commit con `Co-authored-by` ni firma o trailer de agente")
     exige.append("que lo de «cómo prueba el WK» esté corrido de verdad en el PR; si no, BLOQUEO")
     rec["wk.como_probar"], rec["rv.exige"] = probar, exige
+    rec["sin_stack"] = sin_stack
     if ob.hecho(actual):  # lo ya decidido gana sobre lo recomendado
         for k, _, _ in CAMPOS[1:]:
             rec[k] = obtener(actual, k)
@@ -206,6 +210,13 @@ def poner(o, k, v):
 
 def fmt_repo(r):
     return f"`{r['dir']}` → {r['repo']} ({r['rama']})" + (f" — {r['nota']}" if r.get("nota") else "")
+
+
+def aviso_stack(rec):
+    if rec.get("sin_stack"):
+        print(f"  aviso: sin las líneas de stack (Makefile, chezmoi, npm…) de {', '.join(rec['sin_stack'])}: no están "
+              "clonados y gh no respondió. Las recomendaciones de «cómo prueba el WK» y «lo que exige el RV» quedan más "
+              "pobres; para completarlas: ./pj clonar y después ./pj onboard → probar / exige.")
 
 
 def resumen(o, repos, titulo):
@@ -375,6 +386,7 @@ def main():
             v = obtener(resp, k)
             poner(o, k, v if v is not None else rec[k])
         resumen(o, repos, f"onboarding de {proy} (sin preguntas):")
+        aviso_stack(rec)
         escribir(o, repos, p)
         return 0
 
@@ -388,6 +400,8 @@ def main():
             poner(o, k, editar(k, t, tipo, obtener(o, k) if ob.hecho(actual) else rec[k], p, n, len(elegidos)))
     print()
     resumen(o, repos, "Resumen:")
+    if not ob.hecho(actual) or any(c[0] in ("wk.como_probar", "rv.exige") for c in elegidos):
+        aviso_stack(rec)
     r = preguntar("\n¿Lo escribo? [S/n] > ").strip().lower()
     if r not in ("", "s", "si", "sí", "y", "yes"):
         print("no escribí nada.")

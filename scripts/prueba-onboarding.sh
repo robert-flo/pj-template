@@ -80,20 +80,83 @@ b="$(sha256sum onboarding.yml proyecto.yml; find .agents .cursor -type f -print0
 ./pj onboard --si --rehacer >/dev/null 2>&1 && [ "$a" = "$(sha256sum onboarding.yml proyecto.yml; find .agents .cursor -type f -print0 | sort -z | xargs -0 sha256sum)" ] \
   && ok "onboard --rehacer con las mismas respuestas da los mismos bytes" || mal "onboard --rehacer cambió bytes"
 
-# clean: hooks, enlaces de agy, clon sucio (se queda) y clon limpio (se borra).
+# clean: hooks, enlaces de agy y, por cada forma de trabajo local en un clon, que el clon se quede (sale con 1).
+git add onboarding.yml proyecto.yml && git commit -qm onboarding   # como en un hijo real: el onboarding se commitea
 ./pj hooks >/dev/null; ./pj agy >/dev/null
-echo x > demo-hijo/sucio
-if ./pj clean >"$tmp/c1" 2>&1; then mal "clean borró o aceptó un clon con cambios"; else
-  [ -d demo-hijo ] && grep -q "demo-hijo (tiene cambios sin commitear)" "$tmp/c1" && ok "clean no borra un clon con cambios y avisa" || mal "clean con clon sucio: $(cat "$tmp/c1")"; fi
-rm demo-hijo/sucio
+se_queda(){ # $1 descripción, $2 texto esperado en el aviso; el estado ya está armado en demo-hijo
+  if ./pj clean >"$tmp/c" 2>&1; then mal "clean borró o aceptó un clon que $1"
+  elif [ -d demo-hijo/.git ] && grep -q "demo-hijo ($2" "$tmp/c"; then ok "clean no borra un clon que $1 y avisa"
+  else mal "clean con un clon que $1: $(cat "$tmp/c")"; fi
+}
+echo x > demo-hijo/sucio;                                       se_queda "tiene cambios sin commitear" "tiene cambios sin commitear"; rm demo-hijo/sucio
+echo .env >> demo-hijo/.git/info/exclude; echo SECRETO=1 > demo-hijo/.env
+se_queda "tiene archivos ignorados (.env)" "tiene archivos ignorados"
+[ -f demo-hijo/.env ] || mal "clean borró el .env ignorado"; rm demo-hijo/.env
+git -C demo-hijo worktree add -q ../demo-hijo-wt-1-x -b wt-1 2>/dev/null; echo y > demo-hijo-wt-1-x/en-stage; git -C demo-hijo-wt-1-x add en-stage
+se_queda "tiene un worktree enlazado con trabajo en stage" "tiene worktrees enlazados"
+git -C demo-hijo-wt-1-x diff --cached --quiet && mal "clean rompió el worktree enlazado" || true
+git -C demo-hijo worktree remove -f ../demo-hijo-wt-1-x; git -C demo-hijo branch -qD wt-1
+git -C demo-hijo checkout -q --detach; git -C demo-hijo commit -q --allow-empty -m "en detached HEAD"
+se_queda "tiene un commit en detached HEAD" "tiene commits sin subir"; git -C demo-hijo checkout -q master
+git -C demo-hijo tag local-1
+se_queda "tiene un tag local sin subir" "tiene el tag local local-1"; git -C demo-hijo tag -d local-1 >/dev/null
+
+# --onboarding no pisa cambios sin commitear y, si se niega, no borra nada.
+./pj >/dev/null; ./pj hooks >/dev/null; ./pj agy >/dev/null   # los clean de arriba ya borraron lo generado
+echo "# nota mía sin commitear" >> onboarding.yml
+if ./pj clean --onboarding >"$tmp/c" 2>&1; then mal "clean --onboarding pisó onboarding.yml con cambios sin commitear"
+elif grep -q "nota mía sin commitear" onboarding.yml && [ -d demo-hijo ] && [ -f .agents/agents/PM-demo.md ] && grep -q "onboarding.yml tiene cambios sin commitear" "$tmp/c"
+then ok "clean --onboarding se niega si onboarding.yml tiene cambios sin commitear, sin borrar nada"
+else mal "clean --onboarding con onboarding.yml modificado: $(cat "$tmp/c")"; fi
+git checkout -q -- onboarding.yml
+
+# Lo propio en .cursor/ y .agents/ (ignorado por git, fuera del manifiesto) se queda.
+echo '{}' > .cursor/mcp.json; echo notas > .agents/mis-notas.md
 ./pj clean --onboarding >"$tmp/c2" 2>&1 || { mal "clean --onboarding falló"; cat "$tmp/c2"; }
-[ ! -e demo-hijo ] && [ ! -e .pj ] && [ ! -e .agents/agents ] && [ ! -e .cursor ] && [ -f .agents/propio.md ] \
+[ ! -e demo-hijo ] && [ ! -e .pj ] && [ ! -e .agents/agents ] && [ ! -e .cursor/rules ] && [ -f .agents/propio.md ] \
   && [ -z "$(ls "$HOME/.gemini/config/agents")" ] && [ ! -e .git/hooks/post-merge ] \
   && ok "clean borra .pj, lo generado, hooks, enlaces de agy y el clon limpio; deja los extras" || { mal "clean dejó cosas"; cat "$tmp/c2"; ls -a . .agents; }
+[ -f .cursor/mcp.json ] && [ -f .agents/mis-notas.md ] && grep -q "dejé 2 archivos propios" "$tmp/c2" \
+  && ok "clean deja los archivos propios de .cursor/ y .agents/ y avisa" || { mal "clean y archivos propios"; cat "$tmp/c2"; }
 "$PY" -c "import sys; sys.path.insert(0,'$T/scripts'); import onboarding as ob; sys.exit(open('onboarding.yml').read() != ob.volcar(ob.vacio(), 'demo'))" \
   && grep -qx 'repos: \[\]' proyecto.yml && grep -q '^#  - dir: "ejemplo"' proyecto.yml \
   && ok "clean --onboarding deja onboarding.yml y repos: sin hacer (mismos bytes que onboard.py)" || { mal "clean --onboarding: estado sin hacer"; cat onboarding.yml; }
-./pj clean --onboarding 2>&1 | grep -qx "pj: nada que limpiar" && ok "clean por segunda vez: nada que limpiar" || mal "clean no es idempotente"
+./pj clean --onboarding 2>&1 | grep -qx "pj: nada que limpiar" && ok "clean por segunda vez: nada que limpiar (ya sin hacer, no se niega)" || mal "clean no es idempotente"
 git diff --quiet -- AGENTS.md README.md && ok "clean no toca los archivos versionados de mano" || mal "clean tocó archivos versionados"
+# Sin clon y sin gh, el resumen avisa que faltan las líneas de stack.
+./pj onboard --si >"$tmp/o4" 2>&1 && grep -q "aviso: sin las líneas de stack (Makefile, chezmoi, npm…) de demo-hijo" "$tmp/o4" \
+  && ok "onboard avisa en el resumen cuando no pudo leer el stack (sin clon ni gh)" || { mal "onboard sin stack no avisa"; cat "$tmp/o4"; }
+
+# nuevo-hijo con un gh de mentira: sobre un hijo existente sin onboarding.yml no toca repos ni clones; uno nuevo
+# recibe onboarding.yml «sin hacer».
+mkdir -p "$tmp/bin" "$tmp/nh"
+cat > "$tmp/bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$1 $2" in
+  "api repos/robert-flo/pj-template/commits/main") echo 0000000000000000000000000000000000000000 ;;
+  "repo view") exit 0 ;;
+  "secret set") cat >/dev/null ;;
+  "api repos/robert-flo/pj-template/contents/family.yml") printf '  - robert-flo/pj-%s\n' "$NH_P" | base64 -w0; echo ;;
+  "repo clone") git clone -q "$NH_REMOTO" "$4" ;;
+  *) echo "gh de mentira: $*" >&2; exit 1 ;;
+esac
+GH
+chmod +x "$tmp/bin/gh"
+git init -q --bare "$tmp/pj-viejo.git"; v="$tmp/nh/rf-pj-viejo"; git clone -q "$tmp/pj-viejo.git" "$v" 2>/dev/null
+cp pj AGENTS.md README.md .gitignore "$v/"; mkdir -p "$v/.github/workflows"; cp .github/workflows/pj-template.yml "$v/.github/workflows/"
+sed -e 's/^proyecto: "demo"/proyecto: "viejo"/' -e '/^extras:/,$d' proyecto.yml > "$v/proyecto.yml"
+"$PY" -c "import sys; sys.path.insert(0,'$T/scripts'); import onboarding as ob, pathlib; p=pathlib.Path('$v/proyecto.yml'); p.write_text(ob.reemplazar_repos(p.read_text(), [{'dir':'demo-hijo','repo':'robert-flo/demo-hijo','rama':'master'}]))"
+git -C "$v" add -A && git -C "$v" commit -qm viejo && git -C "$v" push -q origin HEAD:master
+git clone -q "$tmp/demo-hijo.git" "$v/demo-hijo"; echo local > "$v/demo-hijo/trabajo"
+antes="$(sha256sum "$v/proyecto.yml")"
+if (cd "$tmp" && PATH="$tmp/bin:$PATH" NH_P=viejo NH_REMOTO="$tmp/pj-viejo.git" PJ_TEMPLATE_TOKEN=x bash "$T/scripts/nuevo-hijo.sh" viejo "$tmp/nh") >"$tmp/n1" 2>&1 \
+  && [ ! -e "$v/onboarding.yml" ] && [ "$antes" = "$(sha256sum "$v/proyecto.yml")" ] && [ -f "$v/demo-hijo/trabajo" ]; then
+  ok "nuevo-hijo sobre un hijo existente sin onboarding.yml no toca repos:, clones ni onboarding"
+else mal "nuevo-hijo sobre un hijo existente"; tail -20 "$tmp/n1"; fi
+git init -q --bare "$tmp/pj-nuevo.git"
+if (cd "$tmp" && PATH="$tmp/bin:$PATH" NH_P=nuevo NH_REMOTO="$tmp/pj-nuevo.git" PJ_TEMPLATE_TOKEN=x bash "$T/scripts/nuevo-hijo.sh" nuevo "$tmp/nh") >"$tmp/n2" 2>&1 \
+  && "$PY" -c "import sys; sys.path.insert(0,'$T/scripts'); import onboarding as ob; sys.exit(open('$tmp/nh/rf-pj-nuevo/onboarding.yml').read() != ob.volcar(ob.vacio(), 'nuevo'))"; then
+  ok "nuevo-hijo crea onboarding.yml «sin hacer» en un hijo nuevo (sin llamar a clean)"
+else mal "nuevo-hijo en un hijo nuevo"; grep -E "FALLA|rror" "$tmp/n2"; fi
 
 [ "$fallas" -eq 0 ] || exit 1

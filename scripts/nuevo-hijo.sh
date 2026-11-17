@@ -27,6 +27,9 @@ mkdir -p "$DEST"; cd "$DEST"; [ -d .git ] || git init -q -b main
 git config user.name "Roberto Flores"; git config user.email "25asab015@ujmd.edu.sv"
 
 pon(){ [ -e "$1" ] && return 0; mkdir -p "$(dirname "$1")"; cat > "$1"; echo "escrito $1"; }
+# Hijo nuevo = todavía no tiene proyecto.yml. Un hijo existente nunca recibe onboarding.yml desde acá (lo hace
+# ./pj onboard en su clon) y nunca se llama a ./pj clean: no se tocan sus repos, clones ni .pj/.
+NUEVO=0; [ -e proyecto.yml ] || NUEVO=1
 pon proyecto.yml <<YML
 # Datos del proyecto. Es el único archivo de datos que llenás a mano; después: ./pj
 # Lo valida schema/proyecto.schema.json de pj-template. Los textos van entre comillas (un # sin comillas corta el valor).
@@ -84,7 +87,23 @@ MD
 pon .gitignore < "$T/plantillas/hijo/gitignore"
 pon pj < "$T/plantillas/hijo/pj"; chmod +x pj
 pon .github/workflows/pj-template.yml < "$T/plantillas/hijo/pj-template.yml"
-[ -e onboarding.yml ] || { ./pj clean --onboarding >/dev/null; echo "escrito onboarding.yml (sin hacer: ./pj onboard)"; }
+if [ "$NUEVO" = 1 ]; then
+  pon onboarding.yml <<YML
+# Onboarding del trío de $P: lo propio del proyecto que reciben PM, WK y RV en su ficha.
+# Lo escribe \`./pj onboard\` (entrevista); se puede editar a mano y correr \`./pj\`.
+# hecho vacío = onboarding sin hacer. Esquema: schema/onboarding.schema.json de pj-template.
+version: 1
+hecho: ""
+mision: ""
+no_tocar: []
+reglas_proyecto: []
+primeros_pasos: []
+wk:
+  como_probar: []
+rv:
+  exige: []
+YML
+fi
 PJ_TEMPLATE_TOKEN="$PJ_TEMPLATE_TOKEN" ./pj && ./pj check
 git add -A
 git diff --cached --quiet || git commit -q -m "feat: arranque de pj-$P desde pj-template (modo dependencia)"
