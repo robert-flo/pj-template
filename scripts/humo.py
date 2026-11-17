@@ -8,8 +8,11 @@ Estático (siempre, también en CI):
 - toda ruta `.agents/...` o `.cursor/...` citada en fichas y adaptadores de Cursor existe;
 - la regla del PM en Cursor es alwaysApply y los subagentes wk/rv tienen el name que lanza el PM;
 - si hay specs, la ficha del PM marca el primer trabajo.
-Con HUMO_AGY=1 y `agy` en el PATH (make humo): corre `agy --agent PM-<p> --print` sin interacción
-y exige que responda con el marcador de la primera línea de su regla. Sin agy, lo avisa y sigue.
+- cada ficha manda a cargar logs.md, comun.md y su rol; la del PM trae su primer mensaje armado y, con
+  onboarding hecho (ADR 0017), las tres fichas llevan la misión y cada rol su bloque (pasos, pruebas, exige).
+Con HUMO_AGY=1 y `agy` en el PATH (make humo / ./pj humo): abre PM-<p> con «hola» (`agy --print`, sin
+interacción) y exige el primer mensaje: autochequeo, log de §Lo primero, «soy PM-<p>» y, con onboarding,
+la misión y el primer paso. Sin agy, lo avisa y sigue.
 """
 import os, pathlib, re, shutil, subprocess, sys
 import yaml
@@ -18,10 +21,11 @@ TPL = pathlib.Path(__file__).resolve().parent.parent
 RAIZ = pathlib.Path(os.environ.get("PJ_RAIZ") or TPL).resolve()
 sys.path.insert(0, str(TPL / "scripts"))
 import proyecto as proyecto_mod  # noqa: E402
+import onboarding as ob  # noqa: E402
 
-SECCIONES = {"PM": ["## Tus datos", "## Primeros pasos", "## Tus skills"],
-             "WK": ["## Tus datos", "## Al empezar", "## Tus skills"],
-             "RV": ["## Tus datos", "## Tus skills"]}
+SECCIONES = {"PM": ["## Cargás", "## Tus datos", "## El proyecto", "## Primeros pasos", "## Primer mensaje", "## Tus skills"],
+             "WK": ["## Cargás", "## Tus datos", "## El proyecto", "## Al empezar", "## Tus skills"],
+             "RV": ["## Cargás", "## Tus datos", "## El proyecto", "## Lo que exigís en este proyecto", "## Tus skills"]}
 RUTA = re.compile(r"`(\.(?:agents|cursor)/[^`*<>{} ]+)`")
 err = []
 
@@ -41,6 +45,8 @@ def rutas(f, cuerpo):
 
 
 p = proyecto_mod.cargar(RAIZ, RAIZ != TPL)
+o = ob.cargar(RAIZ)
+ALMA = {"PM": ["primeros_pasos"], "WK": ["wk.como_probar"], "RV": ["rv.exige"]}
 proy, slug = p["proyecto"], p["proyecto"].lower()
 for rol, secs in SECCIONES.items():
     f = RAIZ / f".agents/agents/{rol}-{proy}.md"
@@ -54,7 +60,17 @@ for rol, secs in SECCIONES.items():
         if not (RAIZ / ".agents" / s / "SKILL.md").exists(): err.append(f"{f.name}: skill {s} sin .agents/{s}/SKILL.md")
     for s in secs:
         if s not in cuerpo: err.append(f"{f.name}: falta la sección «{s}»")
-    for r in (".agents/reglas/comun.md", f".agents/reglas/{rol.lower()}.md"):
+    if ob.hecho(o):
+        if o["mision"].strip()[:40] not in cuerpo: err.append(f"{f.name}: no trae la misión del onboarding")
+        for k in ALMA[rol]:
+            a, _, b = k.partition(".")
+            xs = (o[a][b] if b else o[a]) or []
+            if xs and xs[0].strip()[1:30] not in cuerpo: err.append(f"{f.name}: no trae {k} del onboarding")
+    elif "Onboarding: **sin hacer**" not in cuerpo:
+        err.append(f"{f.name}: sin onboarding y no lo dice")
+    if rol == "PM" and f"Hola Roberto, soy PM-{proy}" not in cuerpo: err.append(f"{f.name}: sin primer mensaje armado")
+    if f"[log: arranque · cargué .agents/agents/{rol}-{proy}.md ✔" not in cuerpo: err.append(f"{f.name}: sin la línea de autochequeo")
+    for r in (".agents/reglas/logs.md", ".agents/reglas/comun.md", f".agents/reglas/{rol.lower()}.md"):
         if f"`{r}`" not in cuerpo: err.append(f"{f.name}: no manda a leer {r}")
     rutas(f, cuerpo)
     if rol == "PM" and p["specs"]:
@@ -74,7 +90,7 @@ for rol in ("wk", "rv"):
     fm, cuerpo = frontmatter(f)
     if fm.get("name") != f"{rol}-{slug}": err.append(f"{f.name}: name={fm.get('name')!r}")
     rutas(f, cuerpo)
-for r in ("comun", "pm", "wk", "rv"):
+for r in ("logs", "comun", "pm", "wk", "rv"):
     if not (RAIZ / f".agents/reglas/{r}.md").exists(): err.append(f"falta .agents/reglas/{r}.md")
 
 for e in err: print("FALLA humo:", e)
@@ -85,16 +101,21 @@ if os.environ.get("HUMO_AGY") == "1":
     agy = shutil.which("agy")
     if not agy:
         print("aviso humo: agy no está en el PATH; solo corrió la parte estática"); sys.exit(0)
-    pedido = ("Prueba de humo. Leé .agents/reglas/pm.md y respondé SOLO con tu nombre de agente "
-              "y la ruta de la primera regla que leíste, en una línea.")
+    pedido = os.environ.get("HUMO_PEDIDO", "hola")
     try:
-        r = subprocess.run([agy, "--agent", f"PM-{proy}", "--print", pedido, "--print-timeout", "240s"],
-                           cwd=RAIZ, capture_output=True, text=True, timeout=300)
+        r = subprocess.run([agy, "--agent", f"PM-{proy}", "--print", pedido, "--print-timeout", "300s"],
+                           cwd=RAIZ, capture_output=True, text=True, timeout=360)
         out = (r.stdout + r.stderr).strip()
     except subprocess.TimeoutExpired:
         out, r = "(timeout)", None
-    print("agy dijo:", out[-400:])
-    if r is None or r.returncode != 0 or f"pm-{slug}" not in out.lower():
-        print(f"FALLA humo agy: PM-{proy} no respondió con su nombre (¿corriste `./pj agy` / `make agy`? ¿agy logueado?)")
+    print("agy dijo:\n" + out[-2500:])
+    espera = ["[log: arranque · cargué", "pm.md §Lo primero", f"soy PM-{proy}"]
+    if ob.hecho(o):
+        espera += [o["mision"].strip()[:40], o["primeros_pasos"][0].strip()[1:30]]
+    else:
+        espera += ["./pj onboard"]
+    faltan = [e for e in espera if e.lower() not in out.lower()]
+    if r is None or r.returncode != 0 or faltan:
+        print(f"FALLA humo agy: el primer mensaje de PM-{proy} no trae {faltan} (¿./pj agy? ¿agy logueado?)")
         sys.exit(1)
-    print(f"ok   humo agy: PM-{proy} arrancó y respondió")
+    print(f"ok   humo agy: PM-{proy} abrió con autochequeo, §Lo primero y su primer mensaje")

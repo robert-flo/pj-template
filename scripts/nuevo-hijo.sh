@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Crea un meta-repo hijo de pj-template en modo dependencia: make nuevo-hijo P=<nombre> [DIR=<carpeta>]
-# Pasos: crea robert-flo/pj-<P> vacío y privado (si no existe), lo clona, escribe sus 6 archivos
-# (proyecto.yml con template_ref = main actual de pj-template, AGENTS.md, README.md, .gitignore, ./pj y
+# Pasos: crea robert-flo/pj-<P> vacío y privado (si no existe), lo clona, escribe sus 7 archivos
+# (proyecto.yml con template_ref = main actual de pj-template, onboarding.yml sin hacer, AGENTS.md, README.md, .gitignore, ./pj y
 # el caller .github/workflows/pj-template.yml), corre ./pj y ./pj check, commit/push, carga el secreto
 # PJ_TEMPLATE_TOKEN en el hijo y abre un PR en pj-template que suma el hijo a family.yml.
 # Se puede volver a correr: un hijo existente conserva sus archivos (para migrar uno viejo, PR a mano).
@@ -58,6 +58,7 @@ Meta-repo del trío PM/WK/RV de **$P** para Cursor y agy. Si sos un agente: si n
 
 ## Qué hay acá
 - \`proyecto.yml\`: los datos del proyecto (repos, specs en orden, notas). Lo llenás vos.
+- \`onboarding.yml\`: lo propio del proyecto para el PM, el WK y el RV (misión, lo que no tocan, primeros pasos, cómo se prueba, qué exige el RV). Lo escribe \`./pj onboard\`.
 - Todo lo demás (reglas, plantillas, skills, scripts) lo trae \`./pj\` desde \`robert-flo/pj-template\` al SHA de \`template_ref\`, en \`.pj/\`, y genera \`.agents/\` y \`.cursor/\`. Nada de eso se versiona ni se edita a mano.
 
 ## Arquitectura
@@ -69,7 +70,9 @@ pon README.md <<MD
 Meta-repo del trío PM/WK/RV de $P (hijo de \`robert-flo/pj-template\`, modo dependencia).
 
 \`\`\`bash
-./pj listo      # todo de una: pull, template, genera, hooks, agy, clonar, check
+./pj listo      # todo de una: pull, template, genera, hooks, onboarding (si falta), agy, clonar, check
+./pj onboard    # la entrevista del PM (onboarding.yml); la segunda vez muestra lo que hay y pregunta qué cambiar
+./pj clean      # deshace ./pj listo (--onboarding: también el onboarding) para volver a probar
 ./pj            # solo trae pj-template al template_ref y genera .agents/ y .cursor/
 ./pj check      # esquema de proyecto.yml, idempotencia y prueba de humo
 ./pj clonar     # clona los repos de proyecto.yml al lado
@@ -81,6 +84,7 @@ MD
 pon .gitignore < "$T/plantillas/hijo/gitignore"
 pon pj < "$T/plantillas/hijo/pj"; chmod +x pj
 pon .github/workflows/pj-template.yml < "$T/plantillas/hijo/pj-template.yml"
+[ -e onboarding.yml ] || { ./pj clean --onboarding >/dev/null; echo "escrito onboarding.yml (sin hacer: ./pj onboard)"; }
 PJ_TEMPLATE_TOKEN="$PJ_TEMPLATE_TOKEN" ./pj && ./pj check
 git add -A
 git diff --cached --quiet || git commit -q -m "feat: arranque de pj-$P desde pj-template (modo dependencia)"

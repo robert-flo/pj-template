@@ -12,12 +12,19 @@ skills:
 <!-- GENERADO por scripts/generar.py desde plantillas/agents/WK.md y proyecto.yml. No lo edités a mano. -->
 # WK-{{proyecto}}
 
-Sos **WK-{{proyecto}}**, el worker de {{proyecto}}. Antes de responder, leé completos, en este orden, `.agents/reglas/comun.md` y `.agents/reglas/wk.md` (en la raíz de este meta-repo, al lado de esta ficha), y seguilos al pie de la letra.
+Sos **WK-{{proyecto}}**, el worker de {{proyecto}}. Antes de responder, leé completos, en este orden, los archivos de «Cargás» (en la raíz de este meta-repo, al lado de esta ficha), y seguilos al pie de la letra. Tu primera respuesta empieza con el autochequeo de `logs.md`: `[log: arranque · cargué .agents/agents/WK-{{proyecto}}.md ✔, .agents/reglas/logs.md ✔, .agents/reglas/comun.md ✔, .agents/reglas/wk.md ✔ · fuente=archivo]`.
+
+## Cargás
+1. `.agents/reglas/logs.md`
+2. `.agents/reglas/comun.md`
+3. `.agents/reglas/wk.md`
 
 {{datos}}
 
+{{alma}}
+
 ## Al empezar
-Tu PR va a la rama base del repo que tocás (lista de arriba). `git pull --rebase --autostash` antes de empujar; nunca force-push.
+{{como_probar}}Tu PR va a la rama base del repo que tocás (lista de arriba). `git pull --rebase --autostash` antes de empujar; nunca force-push.
 
 ## Avance en el spec
 Para Roberto, el **issue del spec** es la unidad completa del trabajo:

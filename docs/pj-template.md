@@ -3,21 +3,22 @@
 Este archivo vive en `robert-flo/pj-template`. Un hijo en modo dependencia lo tiene en `.pj/tpl/docs/pj-template.md` después de `./pj`.
 
 ## Modo dependencia (el de los hijos nuevos)
-El hijo versiona solo **6 archivos**: `proyecto.yml`, `AGENTS.md`, `README.md`, `.gitignore`, `./pj` y `.github/workflows/pj-template.yml`. Todo lo demás llega como dependencia:
+El hijo versiona solo **7 archivos**: `proyecto.yml`, `onboarding.yml` (el alma del trío, [ADR 0017](adr/0017-onboarding-del-trio.md)), `AGENTS.md`, `README.md`, `.gitignore`, `./pj` y `.github/workflows/pj-template.yml`. Todo lo demás llega como dependencia:
 
-**Extras.** Si un hijo necesita conservar archivos propios a mano (por ejemplo un adaptador propio en `.agents/` que se deja intacto, o un `.code-workspace`), los lista en `extras:` de `proyecto.yml`. `./pj check` los acepta versionados y no los revisa (tampoco en la búsqueda de referencias de otras plataformas); `./pj` no los genera ni los borra. Ninguno puede ser uno de los 6 archivos ni salir del repo.
+**Extras.** Si un hijo necesita conservar archivos propios a mano (por ejemplo un adaptador propio en `.agents/` que se deja intacto, o un `.code-workspace`), los lista en `extras:` de `proyecto.yml`. `./pj check` los acepta versionados y no los revisa (tampoco en la búsqueda de referencias de otras plataformas); `./pj` no los genera ni los borra. Ninguno puede ser uno de los archivos de arriba ni salir del repo.
 
 1. `./pj` lee `template_ref` (SHA completo de pj-template) de `proyecto.yml` y trae ese commit a `.pj/tpl` (ignorado por git; `git fetch --depth 1`, con `PJ_TEMPLATE_TOKEN` o `gh auth git-credential`).
 2. Corre `.pj/tpl/scripts/generar.py` con `PJ_RAIZ=<hijo>`: escribe las fichas y adaptadores **y copia** reglas, skills y la regla sin coautor de Cursor a `.agents/` y `.cursor/`.
-3. `./pj listo [--abrir]` es el paso único tras un clone: `git pull --rebase --autostash`, trae el template, genera, `./pj hooks` (hooks `post-merge` y `post-checkout` que corren `./pj` tras cada pull o cambio de rama; no pisa hooks propios), `agy`, `clonar`, `check`, e imprime `agy --agent PM-<proyecto>` (`--abrir` lo arranca).
-4. `./pj <target>` corre cualquier target del `Makefile` del template contra el hijo: `check`, `humo`, `clonar`, `agy`, `generar`.
+3. `./pj listo [--abrir]` es el paso único tras un clone: `git pull --rebase --autostash`, trae el template, genera, `./pj hooks` (hooks `post-merge` y `post-checkout` que corren `./pj` tras cada pull o cambio de rama; no pisa hooks propios), `./pj onboard` si falta el onboarding y hay terminal (si no, imprime el comando), `agy`, `clonar`, `check`, e imprime `agy --agent PM-<proyecto>` (`--abrir` lo arranca).
+4. `./pj onboard` es la entrevista del onboarding (`onboarding.yml` y `repos:`): junta los hechos, propone cada campo (Enter acepta), resume y escribe con tu sí. La segunda vez dice «ya está hecho el <fecha>», muestra los datos y pregunta qué cambiar. `./pj clean [--onboarding]` deshace `./pj listo` (y el onboarding) para repetirlo; no borra clones con trabajo sin subir.
+5. `./pj <target>` corre cualquier target del `Makefile` del template contra el hijo: `check`, `humo`, `clonar`, `agy`, `generar`.
 
-**¿Se versiona lo generado? No.** agy y Cursor leen `.agents/` y `.cursor/` del disco, pero las fichas citan reglas y skills que tampoco estarían al clonar: versionar solo las fichas daría un clon a medias. Un solo paso después de clonar (`./pj`) deja todo en disco, igual byte a byte en cualquier máquina porque sale de un SHA fijo. Así el hijo se queda en 6 archivos, el diff de un PR del hijo es solo lo que escribió Roberto, y actualizar el template es cambiar una línea (`template_ref`). `.gitignore` ignora `/.pj/`, `/.agents/` y `/.cursor/` (bloque generado). AGENTS.md del hijo le dice al agente que corra `./pj` si no ve `.agents/reglas/`.
+**¿Se versiona lo generado? No.** agy y Cursor leen `.agents/` y `.cursor/` del disco, pero las fichas citan reglas y skills que tampoco estarían al clonar: versionar solo las fichas daría un clon a medias. Un solo paso después de clonar (`./pj`) deja todo en disco, igual byte a byte en cualquier máquina porque sale de un SHA fijo. Así el hijo se queda en 7 archivos, el diff de un PR del hijo es solo lo que escribió Roberto, y actualizar el template es cambiar una línea (`template_ref`). `.gitignore` ignora `/.pj/`, `/.agents/` y `/.cursor/` (bloque generado). AGENTS.md del hijo le dice al agente que corra `./pj` si no ve `.agents/reglas/`.
 
 ## Quién manda qué
 | Qué | Dónde | Quién lo escribe |
 | --- | --- | --- |
-| Reglas comunes y de rol | `.agents/reglas/{comun,pm,wk,rv}.md` | pj-template (al hijo lo copia `./pj`) |
+| Reglas comunes, de rol y de logs | `.agents/reglas/{logs,comun,pm,wk,rv}.md` | pj-template (al hijo lo copia `./pj`) |
 | Skills | `.agents/skills/` + `skills-lock.json` | CI de pj-template, desde `robert-flo/skills@personal` |
 | Skills por rol | `plantillas/roles.yml` (+ `skills_extra` del hijo) | pj-template / el hijo |
 | Esquema de `proyecto.yml` | `schema/proyecto.schema.json` | pj-template |
@@ -25,6 +26,7 @@ El hijo versiona solo **6 archivos**: `proyecto.yml`, `AGENTS.md`, `README.md`, 
 | Fichas de agy | `.agents/agents/{PM,WK,RV}-<proyecto>.md` | `scripts/generar.py` |
 | Adaptadores de Cursor | `.cursor/rules/pm-<proyecto>.mdc`, `.cursor/agents/{wk,rv}-<proyecto>.md` | `scripts/generar.py` |
 | Datos del proyecto, con `template_ref` | `proyecto.yml` | vos, en el hijo (`template_ref` lo sube el PR de sync) |
+| Alma del trío (misión, no tocar, reglas, primeros pasos, cómo prueba el WK, qué exige el RV) | `onboarding.yml` (esquema `schema/onboarding.schema.json`) | `./pj onboard`, en el hijo |
 | Arquitectura del proyecto | `AGENTS.md`, `README.md` | vos, en el hijo |
 
 ## proyecto.yml
