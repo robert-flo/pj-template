@@ -27,11 +27,17 @@ Roberto Flores, ingeniero de software en America/El_Salvador (UTC-6), usuario av
 - **Primero reformulá:** ante un pedido nuevo con respuesta abierta, corrés la skill `ro-restate-goals` (2–3 frases con su objetivo y el problema) y parás con «¿es eso?». Se salta en una elección cerrada, un gracias o si Roberto lo pide.
 
 ## El trío
-- Cada repo tiene tres agentes: **PM** (convierte pedidos en specs y tickets), **WK** (los programa) y **RV** (revisa el PR final). **Roberto solo habla con el PM** (`agy --agent PM-<proyecto>`).
-- El PM lanza al WK y al RV como subagentes con `invoke_subagent` (solo existe en agy; fuera de agy el encargo queda en GitHub y el otro rol lo toma de ahí), pasándoles en el prompt el número de issue o PR y la rama. Cada subagente trabaja hasta el final y le devuelve al PM un reporte corto (qué hizo, links, veredicto o bloqueo). El PM espera el resultado y sigue con el paso siguiente; nunca le pide a Roberto que abra otro agente.
-- El WK y el RV también se pueden abrir solos (`mainAgent: true`) si Roberto lo quiere; en ese caso le hablan a él directamente.
-- GitHub sigue siendo el registro: todo lo que pasa (issue, rama, PR, veredicto) queda escrito en issues, PRs y comentarios, aunque el aviso viaje por el subagente.
-- Un proyecto tiene un solo trío, que vive en su meta-repo (`.agents/agents/`), con una sola fuente de reglas (`.agents/reglas/`) y de skills (`.agents/skills/`). Todo eso viene de `robert-flo/pj-template`.
+- Cada repo tiene su equipo de agentes: **PM** (convierte pedidos en specs y tickets), **WK** (los programa), **RV** (revisa el PR final) y **OS** (oneshot: toma tickets triviales de punta a punta con Merge Gate). **Roberto solo habla con el PM** (`agy --agent PM-<proyecto>`).
+- **Despacho visible en `herdr`:**
+  - Engineering vía `pj-trio <proyecto> <ticket> [--repo <miembro>] [--base <rama>]` (abre un workspace en herdr con pestañas visibles para `pm`, `wk`, `rv`).
+  - Trivial vía `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro>]` (workspace visible de 1 pestaña con el agente `OS`) o `make agy-os` para side-tasks directos.
+  - **Evitar `invoke_subagent` para trabajo largo:** `invoke_subagent` corre en segundo plano a ciegas, no genera pestañas en herdr y bloquea la visibilidad para Roberto además de gastar contexto del PM. Para tareas de desarrollo o ejecución larga se despacha siempre en herdr vía `pj-trio`.
+- **Supervisión de flota con 0 tokens:**
+  - Ningún agente hace polling activo en bucle ni gasta tokens esperando trabajo de otros agentes.
+  - `pj-trio watch <PROYECTO>`: observa pasivamente el estado de la flota (`.trio/*/status.json`) y despierta solo ante eventos accionables (`hecho`, `needs-roberto`, `blocked`, `unknown`).
+  - `pj-trio fleet <PROYECTO>`: genera reportes consolidados bajo demanda (`--activos` para ver los tríos en curso).
+- GitHub sigue siendo el registro: todo lo que pasa (issue, rama, PR, veredicto) queda escrito en issues, PRs y comentarios, y el estado de los tríos en `.trio/<clave>/status.json`.
+- Un proyecto tiene un solo trío/equipo fijo, que vive en su meta-repo (`.agents/agents/`), con una sola fuente de reglas (`.agents/reglas/`) y de skills (`.agents/skills/`). Todo eso viene de `robert-flo/pj-template`.
 
 ## El tablero: GitHub Issues
 No hay TickTick. El estado vive en las etiquetas y en el estado del issue o PR, con los roles de triage de `robert-flo/Template` (`docs/agents/triage-labels.md`):
@@ -95,12 +101,16 @@ Toda herramienta nueva que nazca de git-setup (`robert-flo/pj-domina-rf-git-setu
 - Todo merge es squash y atado al commit revisado: `gh pr merge <N> --squash --delete-branch --match-head-commit <sha>`.
 - Quién mergea qué ([ADR 0018](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0018-el-merge-es-el-de-fleet.md)); no hay otra regla:
   - **PR de un sub-issue → rama del spec:** lo mergea el **WK**, con CI verde y `code-review` limpio, sin pasar por el RV.
-  - **PR final (rama del spec → rama por defecto) y PR de un trivial:** lo revisa el RV y lo mergea el **PM**, solo tras el `APRUEBO <sha>` sobre el head exacto y sin esperar orden de Roberto ([ADR 0014](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0014-el-pm-mergea-tras-apruebo.md)). Si el head se movió, vuelve a revisión.
+  - **PR final (rama del spec → rama por defecto) y PR de un trivial con RV:** lo revisa el RV y lo mergea el **PM**, solo tras el `APRUEBO <sha>` sobre el head exacto y sin esperar orden de Roberto ([ADR 0014](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0014-el-pm-mergea-tras-apruebo.md)). Si el head se movió, vuelve a revisión.
+  - **Trivial ejecutado por OS (oneshot):** ejecuta su propio merge solo si cumple el Merge Gate (`Door: two-way` + `Blast Radius: Low` + CI verde + `code-review` limpio + prueba real). Si no cumple el gate de riesgo, lo deja con `ready-to-merge` y `needs-roberto` para merge humano.
   - **El RV nunca mergea.** El WK nunca mergea a la rama por defecto.
 - Nunca commits directos a la rama por defecto ni a la rama de un spec: todo entra por PR.
 - El clon del meta-repo y los clones de `./pj clonar` (bares en `.bares/<repo>.git` y worktrees en `repos/<repo>/` dentro del Home Repo) los comparten los tres agentes y Roberto, y son para leer. Todo worktree de trabajo sale de `ravn-git-bare-clone` (ADR 0019): bare en `/z/bare/<repo>.git` (o `.bares/<repo>.git` en el Home Repo), worktrees en `/z/repos/<repo>/<número>-<slug>` (o `repos/<repo>/<número>-<slug>`, rama `issue/<número>-<slug>`). Nunca `git worktree add` a mano.
 - Las capturas y videos de prueba de un PR van al repo público `robert-flo/assets`, en `<repo>/pr-<número>/<archivo>` (push directo a `main`, solo agregar), y se embeben en el body con `https://raw.githubusercontent.com/robert-flo/assets/main/<repo>/pr-<número>/<archivo>`. Nunca imágenes commiteadas en el repo del código.
 - Al abrir cualquier PR, el body se redacta siempre con la skill `pr` (`/pr`: `## Summary`, `## Evidence` y `## Merge Danger`).
+- **Política de `Merge Danger` (Merge Gate):**
+  - **Auto-merge:** solo si `## Merge Danger` es exactamente `**Door:** two-way` y `**Blast Radius:** Low` (además de CI verde, `code-review` limpio, rama mergeable y pruebas reales pasadas).
+  - **Merge humano:** si el PR es `**Door:** one-way` o `**Blast Radius:**` distinto de `Low`, ningún agente auto-mergea: se deja el PR abierto con etiquetas `ready-to-merge` y `needs-roberto` para que Roberto revise el impacto y mergee manualmente.
 
 ## Nunca
 - No hablás con agentes fuera de tu trío.

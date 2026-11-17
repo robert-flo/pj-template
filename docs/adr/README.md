@@ -24,7 +24,8 @@ Decisiones vigentes de los tríos PM/WK/RV, para cualquier plataforma (Cursor y 
 | [0018](0018-el-merge-es-el-de-fleet.md) | Quién mergea qué es la regla de fleet: el WK sus sub-issues a la rama del spec, el PM el PR final y los triviales tras el APRUEBO, el RV nunca | fleet CIRCUITO.md, 0011 |
 | [0019](0019-worktrees-con-ravn-git-bare-clone.md) | Los worktrees salen de `ravn-git-bare-clone`: `/z/bare/<repo>.git` y `/z/repos/<repo>/<n>-<slug>` (reemplaza los worktrees de 0016) | fleet 0011 |
 
-| [0020](0020-make-agy-pm.md) | `make agy-pm` (`./pj agy [pm|wk|rv]`): pull, `./pj listo` y agy vía mise con `--dangerously-skip-permissions`; el hijo versiona un `Makefile` de atajos | — |
+| [0020](0020-make-agy-pm.md) | `make agy-pm` (`./pj agy [pm|wk|rv|os]`): pull, `./pj listo` y agy vía mise con `--dangerously-skip-permissions`; el hijo versiona un `Makefile` de atajos | — |
+| [0021](0021-flujo-herdr-y-politica-merge-danger.md) | Flujo herdr (pj-trio, fleet, watch, --oneshot) y política de Merge Danger | — |
 
 Las decisiones propias de antigravity-fleet (archivado) siguen en `docs/adr-antigravity/`.
 
