@@ -21,6 +21,8 @@ Decisiones vigentes de los tríos PM/WK/RV, para cualquier plataforma (Cursor y 
 | [0015](0015-herramientas-propias-estilo-git-setup.md) | Las herramientas propias siguen el diseño de git-setup | — |
 | [0016](0016-el-trio-en-herdr-vive-en-ravn-trio.md) | El trío en herdr vive en robert-flo/ravn-trio; las reglas y los ADR de acá mandan si choca | — |
 | [0017](0017-onboarding-del-trio.md) | El onboarding del trío: `onboarding.yml`, autochequeo de logs y `./pj clean` | — |
+| [0018](0018-el-merge-es-el-de-fleet.md) | Quién mergea qué es la regla de fleet: el WK sus sub-issues a la rama del spec, el PM el PR final y los triviales tras el APRUEBO, el RV nunca | fleet CIRCUITO.md, 0011 |
+| [0019](0019-worktrees-con-ravn-git-bare-clone.md) | Los worktrees salen de `ravn-git-bare-clone`: `/z/bare/<repo>.git` y `/z/repos/<repo>/<n>-<slug>` (reemplaza los worktrees de 0016) | fleet 0011 |
 
 Las decisiones propias de antigravity-fleet (archivado) siguen en `docs/adr-antigravity/`.
 

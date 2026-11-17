@@ -35,7 +35,7 @@ _Evitar_: executor, worker como bot desechable.
 Revisa solo el PR final a la rama por defecto y comenta `BLOQUEO` o `APRUEBO` (ADR 0009).
 
 ## Rama del spec
-La rama de integración de un spec, creada por el PM desde la rama por defecto al publicar el spec. Los PRs del WK se mergean a ella; su único PR final lo mergea el PM tras el `APRUEBO` del RV (ADR 0006, ADR 0014).
+La rama de integración de un spec, creada por el PM desde la rama por defecto al publicar el spec. Los PRs del WK se mergean a ella y los mergea el propio WK, sin RV; su único PR final lo mergea el PM tras el `APRUEBO` del RV (ADR 0006, ADR 0014).
 _Evitar_: feature branch.
 
 ## Listo para mergear

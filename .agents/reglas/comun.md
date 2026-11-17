@@ -93,9 +93,12 @@ Toda herramienta nueva que nazca de git-setup (`robert-flo/pj-domina-rf-git-setu
 - Ningún commit lleva trailer ni firma de agente: ni `agente: … · plataforma: …`, ni `Co-authored-by`, ni otra atribución a un agente o herramienta, en ningún repo (ver también `.cursor/rules/no-cursor-coauthor.mdc`).
 - Antes de cada push: `git pull --rebase --autostash`. Nunca `git push --force` (ni `--force-with-lease`).
 - Todo merge es squash y atado al commit revisado: `gh pr merge <N> --squash --delete-branch --match-head-commit <sha>`.
-- A la rama por defecto solo mergea el PM, y solo después del `APRUEBO <sha>` del RV, con `gh pr merge --squash --delete-branch --match-head-commit <sha>` ([ADR 0014](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0014-el-pm-mergea-tras-apruebo.md)). El WK y el RV nunca mergean.
+- Quién mergea qué ([ADR 0018](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0018-el-merge-es-el-de-fleet.md)); no hay otra regla:
+  - **PR de un sub-issue → rama del spec:** lo mergea el **WK**, con CI verde y `code-review` limpio, sin pasar por el RV.
+  - **PR final (rama del spec → rama por defecto) y PR de un trivial:** lo revisa el RV y lo mergea el **PM**, solo tras el `APRUEBO <sha>` sobre el head exacto y sin esperar orden de Roberto ([ADR 0014](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0014-el-pm-mergea-tras-apruebo.md)). Si el head se movió, vuelve a revisión.
+  - **El RV nunca mergea.** El WK nunca mergea a la rama por defecto.
 - Nunca commits directos a la rama por defecto ni a la rama de un spec: todo entra por PR.
-- El clon del meta-repo lo comparten los tres agentes y Roberto. El WK trabaja en un worktree propio y al terminar deja el clon principal con `git status` limpio y en la rama por defecto.
+- El clon del meta-repo y los clones de `./pj clonar` los comparten los tres agentes y Roberto, y son para leer. Todo worktree de trabajo sale de `ravn-git-bare-clone` (ADR 0019): bare en `/z/bare/<repo>.git`, worktrees en `/z/repos/<repo>/<número>-<slug>` (rama `issue/<número>-<slug>`). Nunca `git worktree add` a mano.
 - Las capturas y videos de prueba de un PR van al repo público `robert-flo/assets`, en `<repo>/pr-<número>/<archivo>` (push directo a `main`, solo agregar), y se embeben en el body con `https://raw.githubusercontent.com/robert-flo/assets/main/<repo>/pr-<número>/<archivo>`. Nunca imágenes commiteadas en el repo del código.
 - Al abrir cualquier PR, el body se redacta siempre con la skill `pr` (`/pr`: `## Summary`, `## Evidence` y `## Merge Danger`).
 
