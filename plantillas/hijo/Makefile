@@ -2,9 +2,13 @@
 # (plantillas/hijo/Makefile); no lo edités en el hijo (./pj check lo compara).
 # Argumentos extra: make agy-pm ARGS="--print hola"
 .DEFAULT_GOAL := help
-.PHONY: help agy-pm agy-wk agy-rv agy-os listo onboard clean sync check
+.PHONY: help pm os agy-pm agy-wk agy-rv agy-os listo onboard clean sync check
 help:   ## Lista los atajos
 	@grep -E '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | sed -E 's/:.*## /\t/'
+pm:     ## Abre el PM al instante sin re-correr pull ni listo (rápido)
+	@./pj agy pm --solo $(ARGS)
+os:     ## Abre el rol OS (oneshot) al instante sin re-correr pull ni listo
+	@./pj agy os --solo $(ARGS)
 agy-pm: ## git pull + ./pj listo y abre el PM en agy (mise, --dangerously-skip-permissions)
 	@./pj agy pm $(ARGS)
 agy-wk: ## Igual, con el WK
