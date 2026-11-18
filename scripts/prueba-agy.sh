@@ -81,6 +81,16 @@ corre "$tmp/bin" ./pj agy rv --modelo "dos palabras" && grep -qx "exec agy --dan
   && ok "./pj agy rv args…: RV-demo con los argumentos" || { mal "./pj agy rv"; cat "$log"; }
 corre "$tmp/bin" make agy-os ARGS="'--print hola'" && grep -qx "exec agy --dangerously-skip-permissions --agent OS-demo --print hola · pull=si · ficha=si" "$log" \
   && ok "make agy-os ARGS=…: OS-demo con los argumentos" || { mal "make agy-os"; cat "$log" "$tmp/out"; }
+
+# 3b) Atajos rápidos make pm / make os y flag --solo: no corren pull ni listo.
+echo "cambio remoto pendiente" >> "$tmp/otro/README.md" && git -C "$tmp/otro" add -A && git -C "$tmp/otro" commit -qm "remoto pendiente" && git -C "$tmp/otro" push -q 2>/dev/null
+corre "$tmp/bin" make pm && grep -qx "exec agy --dangerously-skip-permissions --agent PM-demo · pull=si · ficha=si" "$log" \
+  && ! grep -q "check: todo bien" "$tmp/out" && ! grep -q "cambio remoto pendiente" README.md \
+  && ok "make pm: abre PM-demo al instante sin pull ni listo" || { mal "make pm falló"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" make os ARGS="'--print rápido'" && grep -qx "exec agy --dangerously-skip-permissions --agent OS-demo --print rápido · pull=si · ficha=si" "$log" \
+  && ! grep -q "check: todo bien" "$tmp/out" \
+  && ok "make os ARGS=…: abre OS-demo al instante sin pull ni listo" || { mal "make os falló"; cat "$log" "$tmp/out"; }
+
 corre "$tmp/bin" ./pj agy --print x && grep -qx "exec agy --dangerously-skip-permissions --agent PM-demo --print x · pull=si · ficha=si" "$log" \
   && ok "./pj agy sin rol: PM por defecto y pasa los argumentos" || { mal "./pj agy sin rol"; cat "$log"; }
 
