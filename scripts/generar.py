@@ -46,6 +46,11 @@ def datos(p):
             out.append(f"  - `{r['dir']}` → `{r['repo']}`, rama base `{r['rama']}`{nota}")
     else:
         out.append(f"- Repo único: este mismo meta-repo, rama base `{p['rama_base']}`.")
+    if p["repos_externos"]:
+        out.append("- Repos externos (referencia, clonados al lado, solo lectura):")
+        for r in p["repos_externos"]:
+            nota = f" — {r['nota'].strip()}" if r.get("nota") else ""
+            out.append(f"  - `{r['dir']}` → `{r['repo']}`, rama `{r['rama']}`{nota}")
     out.append(f"- Rama de los PR finales: `{p['rama_base']}` (salvo que el repo que tocás diga otra arriba).")
     if p["specs"]:
         out.append("- Trabajo actual, en orden:")
@@ -81,15 +86,22 @@ def vinetas(xs, sangria=""):
 def alma(p, o):
     """Bloque «El proyecto» que reciben las tres fichas (ADR 0017)."""
     if not ob.hecho(o):
-        return ("## El proyecto\n- Onboarding: **sin hacer**. Faltan la misión, lo que no tocás, los primeros pasos, "
-                "cómo prueba el WK y lo que exige el RV; Roberto los completa con `./pj onboard` en la terminal del meta-repo.")
-    out = [f"## El proyecto (onboarding del {o['hecho']}, `onboarding.yml`)", f"- Misión: {punto(o['mision'])}"]
-    if o["no_tocar"]:
-        out += ["- Lo que no tocás nunca:", vinetas(o["no_tocar"], "  ")]
-    if o["reglas_proyecto"]:
-        out += ["- Reglas del proyecto (mandan sobre tu criterio; `AGENTS.md` manda en la arquitectura):",
-                vinetas(o["reglas_proyecto"], "  ")]
-    return "\n".join(out)
+        out = ("## El proyecto\n- Onboarding: **sin hacer**. Faltan la misión, lo que no tocás, los primeros pasos, "
+               "cómo prueba el WK y lo que exige el RV; Roberto los completa con `./pj onboard` en la terminal del meta-repo.")
+    else:
+        out = [f"## El proyecto (onboarding del {o['hecho']}, `onboarding.yml`)", f"- Misión: {punto(o['mision'])}"]
+        if o["no_tocar"]:
+            out += ["- Lo que no tocás nunca:", vinetas(o["no_tocar"], "  ")]
+        if o["reglas_proyecto"]:
+            out += ["- Reglas del proyecto (mandan sobre tu criterio; `AGENTS.md` manda en la arquitectura):",
+                    vinetas(o["reglas_proyecto"], "  ")]
+        out = "\n".join(out)
+    # Reglas duras de los repos de terceros: las fija el template, no el onboarding.
+    if p["repos_externos"]:
+        out += "\n- Repos externos de referencia (solo lectura):"
+        for r in p["repos_externos"]:
+            out += f"\n  - Nunca empujar a `{r['repo']}`. Nunca abrir PRs hacia upstream `{r['repo']}`."
+    return out
 
 
 GENERICOS = ["Identificá el repo donde cae el pedido y su rama base (lista de arriba).",
@@ -216,7 +228,7 @@ def main():
     txt = gi.read_text() if gi.exists() else ""
     INICIO, FIN = f"# >>> {proy}: repos (generado) >>>", f"# <<< {proy}: repos (generado) <<<"
     extra = ["/.pj/", "/.agents/", "/.cursor/", "/.bares/", "/repos/"] if DEP else []
-    bloque = "\n".join([INICIO, "/.pj-sync/"] + extra + [f"/{r['dir']}/" for r in p["repos"]] + [FIN])
+    bloque = "\n".join([INICIO, "/.pj-sync/"] + extra + [f"/{r['dir']}/" for r in p["repos"]] + [f"/{r['dir']}/" for r in p["repos_externos"]] + [FIN])
     if re.search(BLOQUE_RE, txt, flags=re.S):
         txt = re.sub(BLOQUE_RE, lambda _: bloque, txt, count=1, flags=re.S)
     else:
