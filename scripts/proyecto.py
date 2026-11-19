@@ -58,6 +58,7 @@ def cargar(raiz, dependencia):
     if err:
         raise Invalido(err)
     p["repos"] = p.get("repos") or []
+    p["repos_externos"] = p.get("repos_externos") or []
     p["specs"] = sorted(specs, key=lambda s: s["orden"])
     p["notas"] = (p.get("notas") or "").strip()
     p["skills_extra"] = p.get("skills_extra") or {}

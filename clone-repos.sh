@@ -19,7 +19,7 @@ cd "${PJ_RAIZ:-$(dirname "${BASH_SOURCE[0]}")}"
 mapfile -t REPOS < <("$PY" -c '
 import yaml
 p = yaml.safe_load(open("proyecto.yml")) or {}
-for r in p.get("repos") or []:
+for r in (p.get("repos") or []) + (p.get("repos_externos") or []):
     print(r["dir"], r["repo"], r["rama"], sep="\t")
 ')
 

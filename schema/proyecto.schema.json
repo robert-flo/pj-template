@@ -4,55 +4,163 @@
   "title": "proyecto.yml de un meta-repo de pj-template",
   "type": "object",
   "additionalProperties": false,
-  "required": ["proyecto", "area", "rama_base", "repos", "specs", "notas"],
+  "required": [
+    "proyecto",
+    "area",
+    "rama_base",
+    "repos",
+    "specs",
+    "notas"
+  ],
   "properties": {
-    "proyecto": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
-    "area": {"type": "string", "minLength": 3},
-    "rama_base": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
-    "template_ref": {"type": "string", "pattern": "^[0-9a-f]{40}$",
-      "description": "SHA completo de robert-flo/pj-template que usa este hijo (modo dependencia)."},
+    "proyecto": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "area": {
+      "type": "string",
+      "minLength": 3
+    },
+    "rama_base": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._/-]+$"
+    },
+    "template_ref": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "SHA completo de robert-flo/pj-template que usa este hijo (modo dependencia)."
+    },
     "repos": {
       "type": "array",
       "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["dir", "repo", "rama"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dir",
+          "repo",
+          "rama"
+        ],
         "properties": {
-          "dir": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
-          "repo": {"type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$"},
-          "rama": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
-          "nota": {"type": "string", "minLength": 1}
+          "dir": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$"
+          },
+          "rama": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._/-]+$"
+          },
+          "nota": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
+    },
+    "repos_externos": {
+      "description": "Repos de terceros usados como referencia: se clonan en el Home Repo como los demás, pero son de solo lectura (nunca empujar a ellos, nunca abrir PRs hacia upstream).",
+      "$ref": "#/properties/repos"
     },
     "specs": {
       "type": "array",
       "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["ref", "titulo", "orden", "primero"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ref",
+          "titulo",
+          "orden",
+          "primero"
+        ],
         "properties": {
-          "ref": {"type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+#[0-9]+$"},
-          "titulo": {"type": "string", "minLength": 1},
-          "orden": {"type": "integer", "minimum": 0},
-          "primero": {"type": "boolean"}
+          "ref": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+#[0-9]+$"
+          },
+          "titulo": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orden": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "primero": {
+            "type": "boolean"
+          }
         }
       },
-      "if": {"minItems": 1},
-      "then": {"contains": {"properties": {"primero": {"const": true}}, "required": ["primero"]}, "minContains": 1, "maxContains": 1}
+      "if": {
+        "minItems": 1
+      },
+      "then": {
+        "contains": {
+          "properties": {
+            "primero": {
+              "const": true
+            }
+          },
+          "required": [
+            "primero"
+          ]
+        },
+        "minContains": 1,
+        "maxContains": 1
+      }
     },
-    "notas": {"type": "string"},
+    "notas": {
+      "type": "string"
+    },
     "extras": {
-      "type": "array", "uniqueItems": true,
+      "type": "array",
+      "uniqueItems": true,
       "description": "Archivos a mano propios del hijo, además de los 6 (por ejemplo un adaptador propio en .agents/, que se conserva intacto). ./pj check no los borra ni los revisa.",
-      "items": {"type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[A-Za-z0-9._/-]+$",
-        "not": {"enum": ["proyecto.yml", "AGENTS.md", "README.md", ".gitignore", "pj", ".github/workflows/pj-template.yml"]}}
+      "items": {
+        "type": "string",
+        "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[A-Za-z0-9._/-]+$",
+        "not": {
+          "enum": [
+            "proyecto.yml",
+            "AGENTS.md",
+            "README.md",
+            ".gitignore",
+            "pj",
+            ".github/workflows/pj-template.yml"
+          ]
+        }
+      }
     },
     "skills_extra": {
-      "type": "object", "additionalProperties": false,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "pm": {"type": "array", "items": {"type": "string"}},
-        "wk": {"type": "array", "items": {"type": "string"}},
-        "rv": {"type": "array", "items": {"type": "string"}},
-        "os": {"type": "array", "items": {"type": "string"}}
+        "pm": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "wk": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "os": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     }
   }

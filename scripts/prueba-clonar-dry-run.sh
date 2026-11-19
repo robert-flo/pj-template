@@ -41,6 +41,10 @@ repos:
   - dir: rf-dos
     repo: robert-flo/repo-dos
     rama: master
+repos_externos:
+  - dir: omarchy-ext
+    repo: omacom/omarchy-pkgs
+    rama: master
 specs: []
 notas: |
   Hijo de prueba.
@@ -153,6 +157,25 @@ if grep -qF "[dry-run] verificaría/actualizaría robert-flo/repo-uno en .bares/
 else
   mal "--dry-run no detectó .bares/repo-uno.git existente"
   cat "$tmp/o11"
+fi
+
+# 8) repos_externos: se clonan como los demás y generan reglas duras de solo lectura
+PJ_RAIZ="$h" bash "$T/clone-repos.sh" --dry-run >"$tmp/o12" 2>&1
+if grep -qF '[dry-run] verificaría/actualizaría omacom/omarchy-pkgs en .bares/omarchy-pkgs.git y repos/omarchy-pkgs (rama master)' "$tmp/o12" \
+   && grep -qxF "CALL BARE_HOME=$h/.bares WORKTREES_HOME=$h/repos ARGS=clone omacom/omarchy-pkgs" "$STUB_LOG"; then
+  ok "clone-repos --dry-run incluye los repos_externos"
+else
+  mal "clone-repos --dry-run no incluye los repos_externos"
+  cat "$tmp/o12"
+fi
+f="$h/.agents/agents/PM-demo.md"
+if grep -qF 'Nunca empujar a `omacom/omarchy-pkgs`' "$f" \
+   && grep -qF 'Nunca abrir PRs hacia upstream `omacom/omarchy-pkgs`' "$f" \
+   && grep -qF 'solo lectura' "$f"; then
+  ok "generar mete las reglas duras de solo lectura de los repos externos en las fichas"
+else
+  mal "generar no metió las reglas duras de los repos externos en las fichas"
+  grep -n "omarchy\|upstream\|externo" "$f" || echo "(sin rastros en la ficha)"
 fi
 
 [ "$fallas" -eq 0 ] || exit 1
