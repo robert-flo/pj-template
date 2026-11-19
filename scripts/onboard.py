@@ -113,6 +113,7 @@ def archivos_de(r):
     js = gh("api", f"repos/{r['repo']}/contents?ref={r['rama']}", "--jq", ".[].name")
     if js is None:
         return None, ""  # ni clon ni gh: no se puede leer el stack
+    nombres = js.splitlines()
     mk = gh("api", f"repos/{r['repo']}/contents/Makefile?ref={r['rama']}", "-H", "Accept: application/vnd.github.raw") if "Makefile" in nombres else ""
     return nombres, mk or ""
 
