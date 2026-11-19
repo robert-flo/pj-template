@@ -165,4 +165,25 @@ if (cd "$tmp" && PATH="$tmp/bin:$PATH" NH_P=nuevo NH_REMOTO="$tmp/pj-nuevo.git" 
   ok "nuevo-hijo crea onboarding.yml «sin hacer» en un hijo nuevo (sin llamar a clean)"
 else mal "nuevo-hijo en un hijo nuevo"; grep -E "FALLA|rror" "$tmp/n2"; fi
 
+
+# Sin clon pero CON gh de mentira: el stack debe venir de GitHub, no reventar por una variable sin asignar.
+git checkout -q -- onboarding.yml proyecto.yml
+./pj clean --onboarding >/dev/null 2>&1
+mkdir -p "$tmp/bin2"
+cat > "$tmp/bin2/gh" <<'GH'
+#!/usr/bin/env bash
+case "$*" in
+  *"repos/robert-flo/demo-hijo/contents/Makefile"*) printf 'check:\n\ttrue\n' ;;
+  *"repos/robert-flo/demo-hijo/contents"*) printf 'AGENTS.md\nMakefile\nx.sh\n' ;;
+  *"repo view"*) printf '{"defaultBranchRef":{"name":"master"}}' ;;
+  *) echo "gh de mentira: $*" >&2; exit 1 ;;
+esac
+GH
+chmod +x "$tmp/bin2/gh"
+if env -u PJ_SIN_GH PATH="$tmp/bin2:$PATH" ./pj onboard --si >"$tmp/o5" 2>&1 \
+  && grep -q 'repo: "robert-flo/demo-hijo"' proyecto.yml \
+  && grep -q '`make check`' onboarding.yml; then
+  ok "onboard con gh de mentira: lee el stack del repo remoto (sin clon) y llena las pruebas del Makefile"
+else mal "onboard con gh de mentira (repo remoto sin clon)"; cat "$tmp/o5"; fi
+
 [ "$fallas" -eq 0 ] || exit 1
