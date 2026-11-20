@@ -136,18 +136,30 @@ YML
   if [ "$algo" = 1 ]; then echo "pj: limpio. Para rehacer: ./pj listo"; else echo "pj: nada que limpiar"; fi
 }
 [ "${1:-}" = clean ] && { shift; limpiar "$@"; exit 0; }
-lanzar_agy(){ # $1 = ficha (PM-x, WK-x o RV-x); el resto va a agy. Lo mismo que el wrapper agy de la workstation.
-  local ficha="$1"; shift
+lanzar_agy(){ # $1 = ficha (PM-x, WK-x, RV-x o OS-x); el resto va a agy. Lo mismo que el wrapper agy de la workstation.
+  local ficha="$1" term_theme="" extra_args=(); shift
+  case "${RF_TERM_THEME:-}" in
+    light|dark) term_theme="$RF_TERM_THEME" ;;
+    *)
+      if command -v rf-term-theme >/dev/null 2>&1; then
+        case "$(rf-term-theme 2>/dev/null || true)" in
+          light) term_theme="light" ;;
+          dark) term_theme="dark" ;;
+        esac
+      fi
+      ;;
+  esac
+  [ -n "$term_theme" ] && extra_args=(--settings "{\"colorScheme\": \"$term_theme\"}")
   if command -v mise >/dev/null 2>&1; then
     if ! mise which agy >/dev/null 2>&1; then
       export MISE_MINIMUM_RELEASE_AGE=0
       mise use -g --quiet antigravity-cli || { echo "pj: falló mise use -g antigravity-cli" >&2; exit 1; }
     fi
-    exec mise x antigravity-cli -- agy --dangerously-skip-permissions --agent "$ficha" "$@"
+    exec mise x antigravity-cli -- agy --dangerously-skip-permissions --agent "$ficha" "${extra_args[@]}" "$@"
   fi
   if command -v agy >/dev/null 2>&1; then
     echo "pj: aviso: no hay mise; uso el agy del PATH" >&2
-    exec agy --dangerously-skip-permissions --agent "$ficha" "$@"
+    exec agy --dangerously-skip-permissions --agent "$ficha" "${extra_args[@]}" "$@"
   fi
   echo "pj: no encuentro mise ni agy. Instalá mise (sudo pacman -S mise) y volvé a correr ./pj agy" >&2; exit 127
 }
