@@ -13,7 +13,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/in-progress/chief-of-staff/SKILL.md",
-      "computedHash": "799c6465e69a0ca9cc39f82febfcd6a571ef28b64c4ea450bab12af8e4b31ce4"
+      "computedHash": "5967bbce30f8285a5d3ca050e699d51cb12d64eeeefb8cac34a9fd468b6be1c8"
     },
     "claude-handoff": {
       "source": "robert-flo/skills",
@@ -27,14 +27,14 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/code-review/SKILL.md",
-      "computedHash": "959cb5e0eff2fa5e2eda8b298f1d41be80db077844f703517502264568cf28a3"
+      "computedHash": "c5d1a9afb7af81ad0f74d82389659755bd0da0c986d661e1abade7271dd15e1c"
     },
     "codebase-design": {
       "source": "robert-flo/skills",
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/codebase-design/SKILL.md",
-      "computedHash": "b968af106d039b016252836c9a26f45405e0167f58b9d4f92d06fd9f580561b1"
+      "computedHash": "1a2df94b155e4afb4f511cd294ab6977d71311f6d0435b47ac854cf73cef8169"
     },
     "diagnosing-bugs": {
       "source": "robert-flo/skills",
@@ -69,7 +69,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/productivity/grilling/SKILL.md",
-      "computedHash": "32855f2c6029748b91ef85d16a58b7c6e01780b7919e3e143769443eeda348e9"
+      "computedHash": "8fa6d93e271c79e99eed13ee79b37623533e6b9716565f9cfb33c587149e96a5"
     },
     "handoff": {
       "source": "robert-flo/skills",
@@ -90,14 +90,14 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/implement-spec/SKILL.md",
-      "computedHash": "29dbc659afbdb842f018350513da26785ec8adfa679b284830eb52a346f1e75a"
+      "computedHash": "3152528f940e8db1d7884d1f34f7561193e4437abf1e261a0d9fdaac8599e289"
     },
     "improve-codebase-architecture": {
       "source": "robert-flo/skills",
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
-      "computedHash": "dc581f2256768a6237481ffe4e3d6e2334b75b7fc20b8d55cf0913a45d022731"
+      "computedHash": "f5755d896f504d5ca3db85d25b4d65192814c3aca74d19f2d0ecc5b3a2d53e80"
     },
     "loop-me": {
       "source": "robert-flo/skills",
@@ -125,7 +125,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/research/SKILL.md",
-      "computedHash": "e45255278d5affc53e4b7e84955cd5fc749a8f4a805f47fa0bb5fefbfcac09a2"
+      "computedHash": "2562c9179327a780674e597a3d500300abb0d6fb94584a19a8f8052a84949104"
     },
     "retro": {
       "source": "robert-flo/skills",
@@ -133,6 +133,13 @@
       "ref": "personal",
       "skillPath": "skills/engineering/retro/SKILL.md",
       "computedHash": "b3ae0c27d7b59be306afd32364b1dab4c5fcf47ef8b4fae6a53a933d7fb8e09a"
+    },
+    "ro-lanzar-trio": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/productivity/ro-lanzar-trio/SKILL.md",
+      "computedHash": "329c35bd0d9f3f0c38495634278a0804e154a3666f62c7b7f3bdc8402d2cce4d"
     },
     "ro-post-session-review": {
       "source": "robert-flo/skills",
@@ -160,7 +167,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
-      "computedHash": "907ba95017186bbd9c54b534ea49c6ae6de451f6b4ffbf6b42775ffa4e4d2e35"
+      "computedHash": "1ed783f5cc51cc01439999ceeba712709ab2d023c8c5e6b8ad906e4a631b8217"
     },
     "setup-ts-deep-modules": {
       "source": "robert-flo/skills",
@@ -168,6 +175,13 @@
       "ref": "personal",
       "skillPath": "skills/in-progress/setup-ts-deep-modules/SKILL.md",
       "computedHash": "f626ef526a8dae56a312fc59e275d0e09d65f0d62b25b189b4d45190eeab891d"
+    },
+    "software-factory": {
+      "source": "robert-flo/skills",
+      "sourceType": "github",
+      "ref": "personal",
+      "skillPath": "skills/in-progress/software-factory/SKILL.md",
+      "computedHash": "cb3daef890296481a72eec90e09e687311abc2a2574ce8781d2451d81d878452"
     },
     "tdd": {
       "source": "robert-flo/skills",
@@ -223,7 +237,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/wayfinder/SKILL.md",
-      "computedHash": "8748a366b005dd87d7e4711e19a1720b2aa51b1f2ba8bce2bb0f6cbe15a670b7"
+      "computedHash": "c2acb15be764f044d82d6b507e392cb02600f7ee5d2722db5bcff0db9bad50bc"
     },
     "wizard": {
       "source": "robert-flo/skills",
