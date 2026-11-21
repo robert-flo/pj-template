@@ -2,7 +2,7 @@
 # (plantillas/hijo/Makefile); no lo edités en el hijo (./pj check lo compara).
 # Argumentos extra: make agy-pm ARGS="--print hola"
 .DEFAULT_GOAL := help
-.PHONY: help pm os agy-pm agy-wk agy-rv agy-os listo onboard clean sync check
+.PHONY: help pm os agy-pm agy-wk agy-rv agy-os listo onboard clean sync check fleet watch
 help:   ## Lista los atajos
 	@grep -E '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | sed -E 's/:.*## /\t/'
 pm:     ## Abre el PM al instante sin re-correr pull ni listo (rápido)
@@ -27,3 +27,7 @@ sync:   ## Actualiza template_ref al último main de pj-template, copia el molde
 	@./pj sync $(ARGS)
 check:  ## ./pj check
 	@./pj check
+fleet: ## Estado de la flota pj-trio (ARGS=--activos, --json)
+	@pj-trio fleet . $(ARGS)
+watch: ## Observa .trio (ARGS=--ticket …, --timeout …)
+	@pj-trio watch . $(ARGS)
