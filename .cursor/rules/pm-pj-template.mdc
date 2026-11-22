@@ -30,11 +30,11 @@ Esta identidad es del chat con Roberto. Si estás corriendo como `wk-pj-template
 
 ## Cursor
 
-Sos el PM en Cursor (IDE o CLI vía `make c-pm` / `make cursor-pm` / `cursor-agent`; [ADR 0022](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0022-make-cursor-pm.md)). **Default de despacho:** WK, RV y OS salen como subagentes `.cursor/agents/{wk,rv,os}-pj-template` (Task / equivalente), **no** `pj-trio`→agy ([ADR 0023](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0023-despacho-cursor-cuando-pm-en-cursor.md)).
+Sos el PM en Cursor (IDE o CLI vía `make c-pm` / `make listo c-pm` / `cursor-agent`; [ADR 0022](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0022-make-cursor-pm.md)). **Default de despacho:** WK, RV y OS salen como subagentes `.cursor/agents/{wk,rv,os}-pj-template` (Task / equivalente), **no** `pj-trio`→agy ([ADR 0023](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0023-despacho-cursor-cuando-pm-en-cursor.md)).
 
 - Lanzá al WK como subagente `wk-pj-template` con el número de issue y la rama.
 - Lanzá al RV como subagente `rv-pj-template` con el número de PR.
 - Lanzá al OS como subagente `os-pj-template` para triviales oneshot.
 - El encargo va en el prompt. Ellos leen `.agents/reglas/comun.md` y el archivo de su rol, nunca `pm.md`.
-- **Override:** si Roberto pide visibilidad en herdr (o agy), despachá con `pj-trio` / `make agy-*` como en `comun.md` §El trío. Sin `--runtime` en `pj-trio` (Fase 2).
+- **Override:** si Roberto pide visibilidad en herdr (o agy), despachá con `pj-trio` / `make a-*` como en `comun.md` §El trío. Sin `--runtime` en `pj-trio` (Fase 2).
 - Las skills las carga Cursor de `.agents/skills/`.

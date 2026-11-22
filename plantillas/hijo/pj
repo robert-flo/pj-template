@@ -26,15 +26,14 @@
 #                   `mise use -g antigravity-cli` y `mise x antigravity-cli -- agy
 #                   --dangerously-skip-permissions --agent <ROL>-<proyecto> args…`. Sin mise, el agy del
 #                   PATH. Si ./pj listo falla, no abre nada. Con --solo (o --sin-listo) salta pull y listo
-#                   para arrancar al instante. Atajos: make agy-pm, make agy-wk, make agy-rv, make agy-os,
-#                   make pm, make os.
+#                   para arrancar al instante. Atajos: make a-pm, make a-wk, make a-rv, make a-os (--solo)
+#                   y make listo a-pm (actualiza antes).
 #   ./pj cursor [pm|wk|rv|os] [--solo] [args…]  espejo de ./pj agy para Cursor CLI: ./pj listo (salvo
 #                   --solo) y mise (`cursor-agent`): MISE_MINIMUM_RELEASE_AGE=0, `mise use -g
 #                   cursor-agent` y `mise x cursor-agent -- cursor-agent --yolo --trust --workspace
 #                   <raiz> args… @.cursor/rules/<rol>-<slug>.mdc` (pm, wk, rv y os). Sin mise, el
-#                   cursor-agent del PATH. Sin ninguno, exit 127. Atajos: make cursor-pm|wk|rv|os
-#                   (completo) y make c-pm|… (rápido con --solo). make pm / make agy-* siguen = agy
-#                   (ADR 0022).
+#                   cursor-agent del PATH. Sin ninguno, exit 127. Atajos: make c-pm, make c-wk,
+#                   make c-rv, make c-os (--solo) y make listo c-pm (actualiza antes).
 #   ./pj enlazar    solo enlaza las fichas en ~/.gemini/config/agents (./pj listo ya lo hace).
 #   ./pj clonar [--dry-run|-n]  clona los repos de proyecto.yml (con --dry-run / PJ_CLONAR_DRY_RUN=1 simula).
 #   ./pj <target>   corre un target del Makefile del template: check, humo, clonar, generar…
@@ -350,9 +349,9 @@ case "${1:-}" in
     echo
     if f="$(onboarding_hecho)" && [ -n "$f" ]; then
       echo "pj: onboarding hecho el $f (./pj onboard lo muestra o lo cambia)."
-      echo "pj: listo. Para arrancar:  make agy-pm   (o make cursor-pm / ./pj cursor pm; o abrí la carpeta en Cursor)"
+      echo "pj: listo. Para arrancar:  make a-pm   (o make c-pm para Cursor CLI; o abrí la carpeta en Cursor)"
     else
-      echo "pj: falta el onboarding del PM. Corré:  ./pj onboard   (después: make agy-pm o make cursor-pm)"
+      echo "pj: falta el onboarding del PM. Corré:  ./pj onboard   (después: make a-pm o make c-pm)"
     fi
     if [ "$abrir" = 1 ]; then lanzar_agy "PM-$proy"; fi
     exit 0 ;;

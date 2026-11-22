@@ -81,10 +81,16 @@ for rol, secs in SECCIONES.items():
         if "primer trabajo" not in cuerpo or prim["ref"] not in cuerpo:
             err.append(f"{f.name}: no marca el primer trabajo ({prim['ref']})")
 
+def sin_targets_viejos(nombre, texto):
+    m = re.search(r"\bmake (?:agy-|cursor-|(?:pm|os)\b)", texto)
+    if m:
+        err.append(f"{nombre}: referencia obsoleta a «{m.group(0)}»")
+
 pj_hijo = (TPL / "plantillas/hijo/pj").read_text()
-for frag in ("--yolo", "--trust", "@.cursor/rules/"):
+for frag in ("--yolo", "--trust", "@.cursor/rules/", "make a-pm", "make c-pm"):
     if frag not in pj_hijo:
         err.append(f"plantillas/hijo/pj: falta {frag}")
+sin_targets_viejos("plantillas/hijo/pj", pj_hijo)
 for rol in ("pm", "wk", "rv", "os"):
     mdc = RAIZ / f".cursor/rules/{rol}-{slug}.mdc"
     if not mdc.exists():
@@ -93,12 +99,13 @@ for rol in ("pm", "wk", "rv", "os"):
     if fm.get("alwaysApply") is not False: err.append(f"{mdc.name}: alwaysApply no es false")
     if "description" in fm: err.append(f"{mdc.name}: tiene description")
     if rol == "pm":
-        # ADR 0023 / HR-CLAVIS#73: default Cursor→Cursor + override + atajos c-*/cursor-*
-        for frag in ("make c-pm", "make cursor-pm", "pj-trio", "Override", ".cursor/agents/"):
+        # ADR 0023 / HR-CLAVIS#73: default Cursor→Cursor + override + atajos c-* y make listo c-pm
+        for frag in ("make c-pm", "make listo c-pm", "pj-trio", "Override", ".cursor/agents/"):
             if frag not in cuerpo:
                 err.append(f"{mdc.name}: falta despacho Cursor→Cursor («{frag}»; ADR 0023)")
         if "no** `pj-trio`" not in cuerpo and "no** pj-trio" not in cuerpo and "**no** `pj-trio`" not in cuerpo:
             err.append(f"{mdc.name}: no deja claro que el default NO es pj-trio→agy")
+    sin_targets_viejos(mdc.name, cuerpo)
     rutas(mdc, cuerpo)
 for rol in ("wk", "rv", "os"):
     f = RAIZ / f".cursor/agents/{rol}-{slug}.md"
@@ -107,7 +114,9 @@ for rol in ("wk", "rv", "os"):
     if fm.get("name") != f"{rol}-{slug}": err.append(f"{f.name}: name={fm.get('name')!r}")
     rutas(f, cuerpo)
 for r in ("logs", "comun", "pm", "wk", "rv", "os"):
-    if not (RAIZ / f".agents/reglas/{r}.md").exists(): err.append(f"falta .agents/reglas/{r}.md")
+    regla = RAIZ / f".agents/reglas/{r}.md"
+    if not regla.exists(): err.append(f"falta .agents/reglas/{r}.md")
+    else: sin_targets_viejos(f".agents/reglas/{r}.md", regla.read_text())
 
 for e in err: print("FALLA humo:", e)
 if err: sys.exit(1)
