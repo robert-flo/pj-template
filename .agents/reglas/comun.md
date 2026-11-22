@@ -29,7 +29,7 @@ Roberto Flores, ingeniero de software en America/El_Salvador (UTC-6), usuario av
 ## El trío
 - Cada repo tiene su equipo de agentes: **PM** (convierte pedidos en specs y tickets), **WK** (los programa), **RV** (revisa el PR final) y **OS** (oneshot: toma tickets triviales de punta a punta con Merge Gate). **Roberto solo habla con el PM** (`make a-pm` / `make listo a-pm` en agy, o Cursor vía `make c-pm` / `make listo c-pm`).
 - **Despacho en dos niveles vía `herdr`** (en agy y en Cursor):
-  - **PM en Cursor** (IDE o CLI): despachá en `herdr` con `--kind cursor` (`pj-trio <proyecto> <ticket> [--repo <miembro> --ticket-repo <dueño/home-repo>] [--base <rama>] --kind cursor` en Engineering, o `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro> --ticket-repo <dueño/home-repo>] --kind cursor` en Trivial; `make c-os` / `make listo c-os` para side-tasks directos). Sin subagentes in-chat en `.cursor/agents/`.
+  - **PM en Cursor** (IDE o CLI): despachá en `herdr` con `--kind cursor` (`pj-trio <proyecto> <spec> [--repo <miembro> --ticket-repo <dueño/home-repo>] --kind cursor` en Engineering —1 trío por spec completo—, o `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro> --ticket-repo <dueño/home-repo>] --kind cursor` en Trivial; `make c-os` / `make listo c-os` para side-tasks directos). Sin subagentes in-chat en `.cursor/agents/`.
   - **PM en agy / herdr:** despacho visible en `herdr` vía `pj-trio` (sin `--kind cursor`, usa `agy`). Cuando un Home Repo (`HR-*`) despacha un ticket hacia un repo miembro (`--repo <miembro>`), pasá explícitamente `--ticket-repo <dueño/home-repo>`.
   - **En agy, evitar `invoke_subagent` para trabajo largo:** corre a ciegas, no genera pestañas en herdr y gasta contexto del PM.
 - **Supervisión de flota con 0 tokens:**

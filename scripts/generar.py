@@ -63,7 +63,7 @@ def datos(p):
         out.append("- Notas del proyecto:")
         out += [f"  {l}" if l.strip() else "" for l in p["notas"].splitlines()]
     out.append(f"- Trío: PM-{p['proyecto']}, WK-{p['proyecto']}, RV-{p['proyecto']}")
-    out.append("- Roberto habla solo con el PM; el PM despacha al WK y al RV (`pj-trio` en `herdr` o `invoke_subagent` en agy).")
+    out.append("- Roberto habla solo con el PM; el PM Orquestador despacha 1 trío por spec en herdr con `pj-trio` (o `--oneshot` en triviales).")
     return "\n".join(out)
 
 
