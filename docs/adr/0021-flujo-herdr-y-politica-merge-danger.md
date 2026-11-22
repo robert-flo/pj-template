@@ -17,7 +17,7 @@ La operación multirrepo en `HR-CLAVIS` y la introducción del rol oneshot (`OS`
    - Se evita `invoke_subagent` para tareas de desarrollo o ejecución larga.
 2. **Supervisión de flota con 0 tokens:**
    - Se prohíbe el polling activo de estado por parte de los agentes.
-   - La espera pasiva se realiza con `pj-trio watch <PROYECTO>`, que solo despierta ante eventos accionables (`hecho`, `needs-roberto`, `blocked`, `unknown`).
+   - La espera pasiva del PM se realiza con `pj-trio watch <PROYECTO> --ticket <clave>` (repetible, o lista separada por comas). El flag es el de ravn-trio 0.1.14 (`947e62d` en `58-watch-ticket-filter`): filtra temprano y solo despierta ante eventos accionables (`hecho`, `needs-roberto`, `blocked`, `unknown`) de esos tickets, de inmediato si alguno ya está accionable al arrancar. Cada sesión pasa únicamente las claves que ella despachó. Sin `--ticket`, `watch` sigue observando la flota completa.
    - Las consultas de estado consolidado se realizan bajo demanda con `pj-trio fleet <PROYECTO> [--activos]`.
 3. **Política de `Merge Danger` (Merge Gate):**
    - Todo PR redacta su sección `## Merge Danger` (skill `/pr`) declarando `**Door:**` y `**Blast Radius:**`.
