@@ -18,5 +18,5 @@ Abrir el trío en agy ya es trivial (`make pm` / `make agy-pm`, [ADR 0020](0020-
 ## Consecuencias
 - `make pm` / `make agy-*` siguen = agy ([ADR 0020](0020-make-agy-pm.md)).
 - Los hijos reciben los targets vía PR de sync (`./pj check` exige `Makefile` byte-igual al molde).
-- Despacho PM-en-Cursor → subagentes Cursor (vs `pj-trio`→agy) es política de sesión / regla generada; no cambia este launcher.
+- Despacho PM-en-Cursor → subagentes Cursor (vs `pj-trio`→agy) es política de sesión / regla generada ([0023](0023-despacho-cursor-cuando-pm-en-cursor.md)); no cambia este launcher.
 - Sin fallback automático agy→Cursor (fuera de alcance de esta ADR).
