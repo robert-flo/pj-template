@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prueba de ./pj cursor y make c-*/cursor-* (ADR 0022) en un hijo de prueba, sin red, con
+# Prueba de ./pj cursor y make c-* (ADR 0022) en un hijo de prueba, sin red, con
 # mise y cursor-agent de mentira. La corre check.sh en pj-template (y CI). Imprime ok/FALLA; sale con 1 si algo falla.
 set -euo pipefail
 T="$(cd "$(dirname "$0")/.." && pwd)"
@@ -59,53 +59,85 @@ echo "traído por el pull" >> "$tmp/otro/README.md" && git -C "$tmp/otro" add -A
 
 corre(){ : > "$log"; PATH="$1:$base" bash -c "${*:2}" </dev/null >"$tmp/out" 2>&1; }
 
-# 0) make -n / help: los ocho targets Cursor y fleet/watch intactos; pm sigue = agy.
+# 0) make / make help: 4 secciones, 15 targets operativos, descripciones autocontenidas y sin targets viejos.
+ayuda_def="$(PATH="$tmp/bin:$base" make)"
 ayuda="$(PATH="$tmp/bin:$base" make help)"
-for t in c-pm c-wk c-rv c-os cursor-pm cursor-wk cursor-rv cursor-os fleet watch; do
-  grep -q "^$t	" <<< "$ayuda" || grep -q "^$t " <<< "$ayuda" \
-    && ok "make help lista $t" || { mal "make help no lista $t"; echo "$ayuda"; }
+[ "$ayuda_def" = "$ayuda" ] && ok "make (default) == make help" || { mal "make != make help"; diff -u <(echo "$ayuda_def") <(echo "$ayuda") || true; }
+"$PY" - "$ayuda" <<'PY' || fallas=$((fallas+1))
+import re, sys
+txt = sys.argv[1]
+secciones = ["Agentes — agy", "Agentes — Cursor", "Home Repo", "Flota (pj-trio)"]
+pos = [txt.find(s) for s in secciones]
+if any(p < 0 for p in pos) or pos != sorted(pos):
+    print("FALLA make help: faltan secciones o están desordenadas:", secciones)
+    sys.exit(1)
+esperados = [
+    "a-pm", "a-wk", "a-rv", "a-os",
+    "c-pm", "c-wk", "c-rv", "c-os",
+    "listo", "onboard", "sync", "check", "clean",
+    "fleet", "watch",
+]
+encontrados = re.findall(r'^\s+([a-z0-9-]+)\s+\S', txt, re.M)
+if encontrados != esperados:
+    print(f"FALLA make help: targets={encontrados} esperados={esperados}")
+    sys.exit(1)
+if "Igual" in txt or "igual" in txt:
+    print("FALLA make help: descripción con referencia cruzada ('Igual')")
+    sys.exit(1)
+print("ok   make help: 4 secciones, 15 targets y descripciones autocontenidas")
+PY
+for r in pm wk rv os; do
+  PATH="$tmp/bin:$base" make -n "c-$r" ARGS="--demo" | grep -qx "./pj cursor $r --solo --demo" \
+    && ok "make -n c-$r → ./pj cursor $r --solo" || { mal "make -n c-$r"; PATH="$tmp/bin:$base" make -n "c-$r" ARGS="--demo"; }
 done
-PATH="$tmp/bin:$base" make -n c-pm | grep -q './pj cursor pm --solo' \
-  && ok "make -n c-pm → ./pj cursor pm --solo" || { mal "make -n c-pm"; PATH="$tmp/bin:$base" make -n c-pm; }
-PATH="$tmp/bin:$base" make -n cursor-pm | grep -Eq './pj cursor pm( |$)' \
-  && ! PATH="$tmp/bin:$base" make -n cursor-pm | grep -q -- '--solo' \
-  && ok "make -n cursor-pm → ./pj cursor pm (sin --solo)" || { mal "make -n cursor-pm"; PATH="$tmp/bin:$base" make -n cursor-pm; }
-PATH="$tmp/bin:$base" make -n c-wk | grep -q './pj cursor wk --solo' \
-  && ok "make -n c-wk → ./pj cursor wk --solo" || mal "make -n c-wk"
-PATH="$tmp/bin:$base" make -n cursor-os | grep -Eq './pj cursor os( |$)' \
-  && ok "make -n cursor-os → ./pj cursor os" || mal "make -n cursor-os"
-PATH="$tmp/bin:$base" make -n pm | grep -q './pj agy pm --solo' \
-  && ok "make -n pm sigue = ./pj agy pm --solo" || mal "make -n pm cambió"
-PATH="$tmp/bin:$base" make -n fleet | grep -q 'pj-trio fleet' \
-  && PATH="$tmp/bin:$base" make -n watch | grep -q 'pj-trio watch' \
+for viejo in pm os cursor-pm cursor-wk cursor-rv cursor-os; do
+  if PATH="$tmp/bin:$base" make -n "$viejo" >/dev/null 2>&1; then
+    mal "make -n $viejo debería fallar (target eliminado)"
+  else
+    ok "make -n $viejo eliminado"
+  fi
+done
+PATH="$tmp/bin:$base" make -n fleet | grep -q 'pj-trio fleet \.' \
+  && PATH="$tmp/bin:$base" make -n watch | grep -q 'pj-trio watch \.' \
   && ok "make -n fleet/watch intactos" || mal "make -n fleet/watch"
 
-# 1) make cursor-pm: pull y ./pj listo primero, después mise con la regla del PM.
-if corre "$tmp/bin" make cursor-pm; then
+# 1) make listo c-pm: pull y ./pj listo primero, después mise con la regla del PM.
+if corre "$tmp/bin" make listo c-pm; then
   grep -qx "mise use -g --quiet cursor-agent · MISE_MINIMUM_RELEASE_AGE=0" "$log" \
-    && ok "make cursor-pm: mise use -g --quiet cursor-agent con MISE_MINIMUM_RELEASE_AGE=0" || { mal "make cursor-pm: mise use"; cat "$log"; }
+    && ok "make listo c-pm: mise use -g --quiet cursor-agent con MISE_MINIMUM_RELEASE_AGE=0" || { mal "make listo c-pm: mise use"; cat "$log"; }
   grep -qx "exec cursor-agent --yolo --trust --workspace $h @.cursor/rules/pm-demo.mdc" "$log" \
-    && ok "make cursor-pm: mise x cursor-agent --yolo --trust y @.cursor/rules/pm-demo.mdc" || { mal "make cursor-pm: exec"; cat "$log" "$tmp/out"; }
-  grep -q "check: todo bien" "$tmp/out" && ok "make cursor-pm: ./pj check del hijo da todo bien" || { mal "make cursor-pm: check"; cat "$tmp/out"; }
-  grep -q "traído por el pull" README.md && ok "make cursor-pm: corrió el pull de listo" || { mal "make cursor-pm: pull"; cat "$tmp/out"; }
-else mal "make cursor-pm falló"; cat "$tmp/out"; fi
+    && ok "make listo c-pm: mise x cursor-agent --yolo --trust y @.cursor/rules/pm-demo.mdc" || { mal "make listo c-pm: exec"; cat "$log" "$tmp/out"; }
+  grep -q "check: todo bien" "$tmp/out" && ok "make listo c-pm: ./pj check del hijo da todo bien" || { mal "make listo c-pm: check"; cat "$tmp/out"; }
+  grep -q "traído por el pull" README.md && ok "make listo c-pm: corrió el pull de listo" || { mal "make listo c-pm: pull"; cat "$tmp/out"; }
+else mal "make listo c-pm falló"; cat "$tmp/out"; fi
 
 # 2) Los cuatro roles: el prompt es solo @.cursor/rules/<rol>-<slug>.mdc
-corre "$tmp/bin" make cursor-wk && grep -qx "exec cursor-agent --yolo --trust --workspace $h @.cursor/rules/wk-demo.mdc" "$log" \
-  && ok "make cursor-wk: prompt @.cursor/rules/wk-demo.mdc" || { mal "make cursor-wk"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" ./pj cursor wk && grep -qx "exec cursor-agent --yolo --trust --workspace $h @.cursor/rules/wk-demo.mdc" "$log" \
+  && ok "./pj cursor wk: prompt @.cursor/rules/wk-demo.mdc" || { mal "./pj cursor wk"; cat "$log" "$tmp/out"; }
 corre "$tmp/bin" ./pj cursor rv && grep -qx "exec cursor-agent --yolo --trust --workspace $h @.cursor/rules/rv-demo.mdc" "$log" \
   && ok "./pj cursor rv: prompt @.cursor/rules/rv-demo.mdc" || { mal "./pj cursor rv"; cat "$log"; }
-corre "$tmp/bin" make cursor-os ARGS="'--print hola'" && grep -qx "exec cursor-agent --yolo --trust --workspace $h --print hola @.cursor/rules/os-demo.mdc" "$log" \
-  && ok "make cursor-os ARGS=…: pasa args y prompt de OS" || { mal "make cursor-os"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" ./pj cursor os --print hola && grep -qx "exec cursor-agent --yolo --trust --workspace $h --print hola @.cursor/rules/os-demo.mdc" "$log" \
+  && ok "./pj cursor os args…: pasa args y prompt de OS" || { mal "./pj cursor os"; cat "$log" "$tmp/out"; }
 
-# 3) Atajos rápidos c-* / --solo: no corren pull ni listo.
+# 3) Atajos por defecto c-*: no corren pull ni listo.
 echo "cambio remoto pendiente" >> "$tmp/otro/README.md" && git -C "$tmp/otro" add -A && git -C "$tmp/otro" commit -qm "remoto pendiente" && git -C "$tmp/otro" push -q 2>/dev/null
 corre "$tmp/bin" make c-pm && grep -qx "exec cursor-agent --yolo --trust --workspace $h @.cursor/rules/pm-demo.mdc" "$log" \
   && ! grep -q "check: todo bien" "$tmp/out" && ! grep -q "cambio remoto pendiente" README.md \
   && ok "make c-pm: abre al instante sin pull ni listo" || { mal "make c-pm"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" make c-wk && grep -qx "exec cursor-agent --yolo --trust --workspace $h @.cursor/rules/wk-demo.mdc" "$log" \
+  && ! grep -q "check: todo bien" "$tmp/out" && ! grep -q "cambio remoto pendiente" README.md \
+  && ok "make c-wk: abre al instante sin pull ni listo" || { mal "make c-wk"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" make c-rv && grep -qx "exec cursor-agent --yolo --trust --workspace $h @.cursor/rules/rv-demo.mdc" "$log" \
+  && ! grep -q "check: todo bien" "$tmp/out" \
+  && ok "make c-rv: abre al instante sin pull ni listo" || { mal "make c-rv"; cat "$log" "$tmp/out"; }
 corre "$tmp/bin" make c-os ARGS="'--print rápido'" && grep -qx "exec cursor-agent --yolo --trust --workspace $h --print rápido @.cursor/rules/os-demo.mdc" "$log" \
   && ! grep -q "check: todo bien" "$tmp/out" \
   && ok "make c-os ARGS=…: al instante sin listo" || { mal "make c-os"; cat "$log" "$tmp/out"; }
+
+# 3b) make listo c-pm sí trae el cambio remoto pendiente.
+corre "$tmp/bin" make listo c-pm && grep -q "cambio remoto pendiente" README.md \
+  && grep -qx "exec cursor-agent --yolo --trust --workspace $h @.cursor/rules/pm-demo.mdc" "$log" \
+  && ok "make listo c-pm: actualiza el hijo y abre PM-demo" || { mal "make listo c-pm"; cat "$log" "$tmp/out"; }
 
 corre "$tmp/bin" ./pj cursor --print x && grep -qx "exec cursor-agent --yolo --trust --workspace $h --print x @.cursor/rules/pm-demo.mdc" "$log" \
   && ok "./pj cursor sin rol: PM por defecto y @.cursor/rules/pm-demo.mdc" || { mal "./pj cursor sin rol"; cat "$log"; }
