@@ -28,6 +28,11 @@
 #                   PATH. Si ./pj listo falla, no abre nada. Con --solo (o --sin-listo) salta pull y listo
 #                   para arrancar al instante. Atajos: make agy-pm, make agy-wk, make agy-rv, make agy-os,
 #                   make pm, make os.
+#   ./pj cursor [pm|wk|rv|os] [--solo] [args…]  espejo de ./pj agy para Cursor CLI: ./pj listo (salvo
+#                   --solo) y `cursor-agent --yolo --trust --workspace <raiz>`. pm sin prompt extra
+#                   (regla alwaysApply); wk/rv/os con prompt a `.cursor/agents/<rol>-<slug>.md`. Sin
+#                   cursor-agent, exit 127. Atajos: make cursor-pm|wk|rv|os (completo) y make c-pm|…
+#                   (rápido con --solo). make pm / make agy-* siguen = agy (ADR 0022).
 #   ./pj enlazar    solo enlaza las fichas en ~/.gemini/config/agents (./pj listo ya lo hace).
 #   ./pj clonar [--dry-run|-n]  clona los repos de proyecto.yml (con --dry-run / PJ_CLONAR_DRY_RUN=1 simula).
 #   ./pj <target>   corre un target del Makefile del template: check, humo, clonar, generar…
@@ -181,6 +186,36 @@ if [ "${1:-}" = agy ]; then
   echo "pj: abriendo ${rol^^}-$proy"
   lanzar_agy "${rol^^}-$proy" "${args[@]}"
 fi
+lanzar_cursor(){ # $1 = rol (pm|wk|rv|os); el resto va a cursor-agent. ADR 0022.
+  local rol="$1" slug="${proy,,}" prompt=(); shift
+  case "$rol" in
+    pm) ;;
+    wk|rv|os) prompt=("Seguí tu ficha en .cursor/agents/${rol}-${slug}.md y arrancá como ese rol.") ;;
+    *) echo "pj: rol de cursor desconocido: $rol" >&2; exit 2 ;;
+  esac
+  if ! command -v cursor-agent >/dev/null 2>&1; then
+    echo "pj: no encuentro cursor-agent. Instalá cursor-agent (mise o el instalador de Cursor) y volvé a correr ./pj cursor" >&2
+    exit 127
+  fi
+  exec cursor-agent --yolo --trust --workspace "$raiz" "$@" "${prompt[@]}"
+}
+if [ "${1:-}" = cursor ]; then
+  shift; rol=pm
+  case "${1:-}" in pm|wk|rv|os|PM|WK|RV|OS) rol="${1,,}"; shift ;; esac
+  solo=0
+  args=()
+  for a in "$@"; do
+    case "$a" in
+      --solo|--sin-listo) solo=1 ;;
+      *) args+=("$a") ;;
+    esac
+  done
+  if [ "$solo" = 0 ]; then
+    "$raiz/pj" listo || { echo "pj: ./pj listo falló; no abro cursor (arreglalo y volvé a correr ./pj cursor)" >&2; exit 1; }
+  fi
+  echo "pj: abriendo Cursor ($rol) en $raiz"
+  lanzar_cursor "$rol" "${args[@]}"
+fi
 if [ "${1:-}" = listo ] && [ -z "${PJ_LISTO_PULL:-}" ]; then
   # Primero el pull (puede cambiar template_ref o este mismo script); después se vuelve a ejecutar.
   if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
@@ -306,9 +341,9 @@ case "${1:-}" in
     echo
     if f="$(onboarding_hecho)" && [ -n "$f" ]; then
       echo "pj: onboarding hecho el $f (./pj onboard lo muestra o lo cambia)."
-      echo "pj: listo. Para arrancar:  make agy-pm   (o ./pj agy pm; o abrí la carpeta en Cursor)"
+      echo "pj: listo. Para arrancar:  make agy-pm   (o make cursor-pm / ./pj cursor pm; o abrí la carpeta en Cursor)"
     else
-      echo "pj: falta el onboarding del PM. Corré:  ./pj onboard   (después: make agy-pm)"
+      echo "pj: falta el onboarding del PM. Corré:  ./pj onboard   (después: make agy-pm o make cursor-pm)"
     fi
     if [ "$abrir" = 1 ]; then lanzar_agy "PM-$proy"; fi
     exit 0 ;;

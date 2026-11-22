@@ -26,6 +26,7 @@ Decisiones vigentes de los tríos PM/WK/RV, para cualquier plataforma (Cursor y 
 
 | [0020](0020-make-agy-pm.md) | `make agy-pm` (`./pj agy [pm|wk|rv|os]`): pull, `./pj listo` y agy vía mise con `--dangerously-skip-permissions`; el hijo versiona un `Makefile` de atajos | — |
 | [0021](0021-flujo-herdr-y-politica-merge-danger.md) | Flujo herdr (pj-trio, fleet, watch, --oneshot) y política de Merge Danger | — |
+| [0022](0022-make-cursor-pm.md) | `make cursor-pm` / `c-pm` (`./pj cursor`): espejo de agy con `cursor-agent --yolo --trust`; `make pm` sigue = agy | HR-CLAVIS#71 |
 
 Las decisiones propias de antigravity-fleet (archivado) siguen en `docs/adr-antigravity/`.
 
