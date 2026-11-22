@@ -25,6 +25,7 @@ make listo a-pm         # actualiza primero (git pull + ./pj listo) y abre el PM
 Necesitás `python3` (con el módulo venv); PyYAML y jsonschema se instalan solos en `.pj/venv` desde `requirements.txt`, `gh`, `git` y `make`.
 
 - Cómo crear un hijo y cambiar el template: [`AGENTS.md`](AGENTS.md).
+- En Cursor CLI (`make c-pm`), el PM Orquestador despacha tríos efímeros en `herdr` con `pj-trio --kind cursor` y `.cursor/rules/pm-trio-<slug>.mdc` (sin subagentes in-chat; Cursor IDE queda fuera de alcance): [ADR 0025](docs/adr/0025-despacho-cursor-trio-efimero-herdr.md).
 - Onboarding del trío (misión, no tocar, primeros pasos, cómo prueba el WK, qué exige el RV): [ADR 0017](docs/adr/0017-onboarding-del-trio.md).
 - Modo dependencia, esquema, prueba de humo, workflows y el secreto `PJ_TEMPLATE_TOKEN`: [`docs/pj-template.md`](docs/pj-template.md).
 - Hijos: [`family.yml`](family.yml).
