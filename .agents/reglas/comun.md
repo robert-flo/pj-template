@@ -38,7 +38,7 @@ Roberto Flores, ingeniero de software en America/El_Salvador (UTC-6), usuario av
   - **En agy, evitar `invoke_subagent` para trabajo largo:** corre a ciegas, no genera pestañas en herdr y gasta contexto del PM. En Cursor, los subagentes `.cursor/agents/*` son el camino canónico de esa sesión.
 - **Supervisión de flota con 0 tokens:**
   - Ningún agente hace polling activo en bucle ni gasta tokens esperando trabajo de otros agentes.
-  - `pj-trio watch <PROYECTO>`: observa pasivamente el estado de la flota (`.trio/*/status.json`) y despierta solo ante eventos accionables (`hecho`, `needs-roberto`, `blocked`, `unknown`).
+  - `pj-trio watch <PROYECTO> --ticket <clave>` (repetible; ravn-trio 0.1.14, `947e62d`): observa pasivamente solo esos tickets (`.trio/<clave>/status.json`) y despierta ante eventos accionables (`hecho`, `needs-roberto`, `blocked`, `unknown`). Cada sesión de PM pasa `--ticket` únicamente con los tickets que ella despachó, y despierta de inmediato si alguno ya está accionable al arrancar. Sin `--ticket` se conserva la observación de la flota completa.
   - `pj-trio fleet <PROYECTO>`: genera reportes consolidados bajo demanda (`--activos` para ver los tríos en curso).
 - GitHub sigue siendo el registro: todo lo que pasa (issue, rama, PR, veredicto) queda escrito en issues, PRs y comentarios, y el estado de los tríos en `.trio/<clave>/status.json`.
 - Un proyecto tiene un solo trío/equipo fijo, que vive en su meta-repo (`.agents/agents/`), con una sola fuente de reglas (`.agents/reglas/`) y de skills (`.agents/skills/`). Todo eso viene de `robert-flo/pj-template`.
