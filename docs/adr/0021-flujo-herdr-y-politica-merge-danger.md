@@ -14,7 +14,7 @@ La operación multirrepo en `HR-CLAVIS` y la introducción del rol oneshot (`OS`
 ## Decisión
 1. **Despacho visible en `herdr`:**
    - Todo trabajo de Engineering se despacha vía `pj-trio <proyecto> <ticket> [--repo <miembro>] [--base <rama>]`, abriendo pestañas dedicadas (`pm`, `wk`, `rv`).
-   - Todo trabajo Trivial se despacha vía `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro>]` (o `make agy-os` para side-tasks directos).
+   - Todo trabajo Trivial se despacha vía `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro>]` (o `make a-os` para side-tasks directos).
    - Se evita `invoke_subagent` para tareas de desarrollo o ejecución larga.
 2. **Supervisión de flota con 0 tokens:**
    - Se prohíbe el polling activo de estado por parte de los agentes.

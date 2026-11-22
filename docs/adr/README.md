@@ -24,10 +24,11 @@ Decisiones vigentes de los tríos PM/WK/RV, para cualquier plataforma (Cursor y 
 | [0018](0018-el-merge-es-el-de-fleet.md) | Quién mergea qué es la regla de fleet: el WK sus sub-issues a la rama del spec, el PM el PR final y los triviales tras el APRUEBO, el RV nunca | fleet CIRCUITO.md, 0011 |
 | [0019](0019-worktrees-con-ravn-git-bare-clone.md) | Los worktrees salen de `ravn-git-bare-clone`: `/z/bare/<repo>.git` y `/z/repos/<repo>/<n>-<slug>` (reemplaza los worktrees de 0016) | fleet 0011 |
 
-| [0020](0020-make-agy-pm.md) | `make agy-pm` (`./pj agy [pm|wk|rv|os]`): pull, `./pj listo` y agy vía mise con `--dangerously-skip-permissions`; el hijo versiona un `Makefile` de atajos | — |
+| [0020](0020-make-agy-pm.md) | `./pj agy [pm\|wk\|rv\|os]` vía mise con `--dangerously-skip-permissions`; el hijo versiona un `Makefile` de atajos (nombres de targets enmendados por 0024) | — |
 | [0021](0021-flujo-herdr-y-politica-merge-danger.md) | Flujo herdr (pj-trio, fleet, watch, --oneshot) y política de Merge Danger | — |
-| [0022](0022-make-cursor-pm.md) | `make cursor-pm` / `c-pm` (`./pj cursor`): espejo de agy con `cursor-agent --yolo --trust`; `make pm` sigue = agy | HR-CLAVIS#71 |
+| [0022](0022-make-cursor-pm.md) | `./pj cursor` espejo de agy con `cursor-agent --yolo --trust` (nombres de targets enmendados por 0024) | HR-CLAVIS#71 |
 | [0023](0023-despacho-cursor-cuando-pm-en-cursor.md) | PM en Cursor → WK/RV/OS como subagentes Cursor por defecto; override explícito a herdr/`pj-trio`/agy (enmienda el default de 0021) | HR-CLAVIS#71 |
+| [0024](0024-convencion-simetrica-a-c-y-listo.md) | Convención simétrica `a-*` / `c-*` en `--solo` y composición `make listo <target>` (enmienda 0020 y 0022) | pj-template#81 |
 
 Las decisiones propias de antigravity-fleet (archivado) siguen en `docs/adr-antigravity/`.
 
