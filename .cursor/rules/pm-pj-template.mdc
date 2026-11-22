@@ -1,6 +1,5 @@
 ---
-description: Identidad del PM de pj-template en Cursor. Roberto habla con este perfil.
-alwaysApply: true
+alwaysApply: false
 ---
 <!-- GENERADO por scripts/generar.py desde plantillas/cursor/pm.mdc. No lo edités a mano. -->
 

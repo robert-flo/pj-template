@@ -6,7 +6,9 @@ Estático (siempre, también en CI):
   correctos y las secciones obligatorias;
 - cada skill del frontmatter existe en .agents/skills/<s>/SKILL.md;
 - toda ruta `.agents/...` o `.cursor/...` citada en fichas y adaptadores de Cursor existe;
-- la regla del PM en Cursor es alwaysApply y los subagentes wk/rv tienen el name que lanza el PM;
+- las cuatro reglas de rol en Cursor (pm/wk/rv/os) son alwaysApply false y no tienen description;
+- plantillas/hijo/pj lanza cursor-agent con --yolo, --trust y la mención @.cursor/rules/;
+- los subagentes wk/rv/os tienen el name que lanza el PM;
 - si hay specs, la ficha del PM marca el primer trabajo.
 - cada ficha manda a cargar logs.md, comun.md y su rol; la del PM trae su primer mensaje armado y, con
   onboarding hecho (ADR 0017), las tres fichas llevan la misión y cada rol su bloque (pasos, pruebas, exige).
@@ -79,17 +81,24 @@ for rol, secs in SECCIONES.items():
         if "primer trabajo" not in cuerpo or prim["ref"] not in cuerpo:
             err.append(f"{f.name}: no marca el primer trabajo ({prim['ref']})")
 
-mdc = RAIZ / f".cursor/rules/pm-{slug}.mdc"
-if not mdc.exists(): err.append(f"falta {mdc.relative_to(RAIZ)}")
-else:
+pj_hijo = (TPL / "plantillas/hijo/pj").read_text()
+for frag in ("--yolo", "--trust", "@.cursor/rules/"):
+    if frag not in pj_hijo:
+        err.append(f"plantillas/hijo/pj: falta {frag}")
+for rol in ("pm", "wk", "rv", "os"):
+    mdc = RAIZ / f".cursor/rules/{rol}-{slug}.mdc"
+    if not mdc.exists():
+        err.append(f"falta {mdc.relative_to(RAIZ)}"); continue
     fm, cuerpo = frontmatter(mdc)
-    if fm.get("alwaysApply") is not True: err.append(f"{mdc.name}: no es alwaysApply")
-    # ADR 0023 / HR-CLAVIS#73: default Cursor→Cursor + override + atajos c-*/cursor-*
-    for frag in ("make c-pm", "make cursor-pm", "pj-trio", "Override", ".cursor/agents/"):
-        if frag not in cuerpo:
-            err.append(f"{mdc.name}: falta despacho Cursor→Cursor («{frag}»; ADR 0023)")
-    if "no** `pj-trio`" not in cuerpo and "no** pj-trio" not in cuerpo and "**no** `pj-trio`" not in cuerpo:
-        err.append(f"{mdc.name}: no deja claro que el default NO es pj-trio→agy")
+    if fm.get("alwaysApply") is not False: err.append(f"{mdc.name}: alwaysApply no es false")
+    if "description" in fm: err.append(f"{mdc.name}: tiene description")
+    if rol == "pm":
+        # ADR 0023 / HR-CLAVIS#73: default Cursor→Cursor + override + atajos c-*/cursor-*
+        for frag in ("make c-pm", "make cursor-pm", "pj-trio", "Override", ".cursor/agents/"):
+            if frag not in cuerpo:
+                err.append(f"{mdc.name}: falta despacho Cursor→Cursor («{frag}»; ADR 0023)")
+        if "no** `pj-trio`" not in cuerpo and "no** pj-trio" not in cuerpo and "**no** `pj-trio`" not in cuerpo:
+            err.append(f"{mdc.name}: no deja claro que el default NO es pj-trio→agy")
     rutas(mdc, cuerpo)
 for rol in ("wk", "rv", "os"):
     f = RAIZ / f".cursor/agents/{rol}-{slug}.md"

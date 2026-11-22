@@ -5,4 +5,7 @@
 .cursor/agents/os-pj-template.md
 .cursor/agents/rv-pj-template.md
 .cursor/agents/wk-pj-template.md
+.cursor/rules/os-pj-template.mdc
 .cursor/rules/pm-pj-template.mdc
+.cursor/rules/rv-pj-template.mdc
+.cursor/rules/wk-pj-template.mdc

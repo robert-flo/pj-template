@@ -159,6 +159,15 @@ def render(plantilla, vals):
     return (t if t.endswith("\n") else t + "\n").encode()
 
 
+def render_regla(plantilla, vals):
+    """Regla .mdc del rol: el cuerpo del agente, con alwaysApply false y sin description."""
+    t = render(plantilla, vals).decode()
+    if not t.startswith("---\n"):
+        die(f"{plantilla}: el agente no tiene frontmatter")
+    cuerpo = t.split("---", 2)[2].lstrip("\n")
+    return f"---\nalwaysApply: false\n---\n{cuerpo}".encode()
+
+
 def copias():
     """Archivos que el template copia tal cual al hijo: ruta -> (bytes, modo)."""
     out = {}
@@ -195,6 +204,7 @@ def main():
     salida[f".cursor/rules/pm-{slug}.mdc"] = (render("plantillas/cursor/pm.mdc", base), 0o644)
     for rol in ("wk", "rv", "os"):
         salida[f".cursor/agents/{rol}-{slug}.md"] = (render(f"plantillas/cursor/{rol}.md", base), 0o644)
+        salida[f".cursor/rules/{rol}-{slug}.mdc"] = (render_regla(f"plantillas/cursor/{rol}.md", base), 0o644)
     if DEP:
         salida.update(copias())
 
