@@ -2,6 +2,7 @@
 
 Fecha: 2026-11-17 · Estado: aceptado
 Aclara: [0014](0014-el-pm-mergea-tras-apruebo.md), [0016](0016-el-trio-en-herdr-vive-en-ravn-trio.md) y [0018](0018-el-merge-es-el-de-fleet.md)
+Enmienda (despacho): cuando el PM corre en Cursor, el default de despacho es subagentes Cursor, no `pj-trio`→agy — ver [0023](0023-despacho-cursor-cuando-pm-en-cursor.md). Merge Danger y `fleet`/`watch` de esta ADR siguen vigentes.
 
 ## Contexto
 La operación multirrepo en `HR-CLAVIS` y la introducción del rol oneshot (`OS`) para tickets triviales validaron un patrón de orquestación local en `herdr` que supera el uso headless de `invoke_subagent` para tareas largas:
