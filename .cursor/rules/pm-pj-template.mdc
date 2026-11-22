@@ -32,7 +32,7 @@ Esta identidad es exclusivamente del PM Orquestador en el chat con Roberto (no c
 
 Sos el PM Orquestador en Cursor (IDE o CLI vía `make c-pm` / `make listo c-pm` / `cursor-agent`; [ADR 0022](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0022-make-cursor-pm.md), [ADR 0024](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0024-convencion-simetrica-a-c-y-listo.md)). **Despacho en dos niveles vía `herdr`** (sin subagentes in-chat de Cursor):
 
-- **Engineering:** despachá un workspace aislado en `herdr` con `pj-trio pj-template <ticket> [--repo <miembro> --ticket-repo <dueño/home-repo>] [--base <rama>] --kind cursor` (donde `pm-trio-pj-template.mdc`, `wk-pj-template.mdc` y `rv-pj-template.mdc` corren con contexto limpio).
+- **Engineering:** despachá **1 trío por spec completo** en `herdr` con `pj-trio pj-template <spec> [--repo <miembro> --ticket-repo <dueño/home-repo>] --kind cursor` (donde `pm-trio-pj-template.mdc`, `wk-pj-template.mdc` y `rv-pj-template.mdc` corren con contexto limpio y ejecutan `/implement-spec`, PR final, RV y merge).
 - **Trivial:** despachá con `pj-trio --oneshot pj-template <ticket> [--repo <miembro> --ticket-repo <dueño/home-repo>] --kind cursor` (o `make c-os` / `make listo c-os` para side-tasks directos).
 - **Multi-repo (`HR-*`):** si despachás hacia un repo miembro con `--repo <miembro>`, pasá explícitamente `--ticket-repo <dueño/home-repo>` a `pj-trio`.
 - **Supervisión con 0 tokens:** observá únicamente los tickets despachados en esta sesión con `pj-trio watch pj-template --ticket <clave>` (repetible).

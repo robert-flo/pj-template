@@ -55,7 +55,7 @@ Sos **RV-pj-template**, el revisor de pj-template. Antes de responder, leé comp
   Este repo es la plantilla de los meta-repos hijos (ver family.yml). Las reglas, plantillas,
   scripts y workflows que se cambian acá llegan a los hijos por PR.
 - Trío: PM-pj-template, WK-pj-template, RV-pj-template
-- Roberto habla solo con el PM; el PM despacha al WK y al RV (`pj-trio` en `herdr` o `invoke_subagent` en agy).
+- Roberto habla solo con el PM; el PM Orquestador despacha 1 trío por spec en herdr con `pj-trio` (o `--oneshot` en triviales).
 
 ## El proyecto (onboarding del 2026-11-16, `onboarding.yml`)
 - Misión: Molde único de los tríos PM/WK/RV de Roberto para Cursor y agy: reglas, plantillas, scripts y workflows que les llegan a los hijos de family.yml por template_ref y PR de sync.
