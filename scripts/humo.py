@@ -6,9 +6,9 @@ Estático (siempre, también en CI):
   correctos y las secciones obligatorias;
 - cada skill del frontmatter existe en .agents/skills/<s>/SKILL.md;
 - toda ruta `.agents/...` o `.cursor/...` citada en fichas y adaptadores de Cursor existe;
-- las cuatro reglas de rol en Cursor (pm/wk/rv/os) son alwaysApply false y no tienen description;
+- las cinco reglas de rol en Cursor (pm/pm-trio/wk/rv/os) son alwaysApply false y no tienen description;
 - plantillas/hijo/pj lanza cursor-agent con --yolo, --trust y la mención @.cursor/rules/;
-- los subagentes wk/rv/os tienen el name que lanza el PM;
+- no se generan subagentes in-chat en .cursor/agents/;
 - si hay specs, la ficha del PM marca el primer trabajo.
 - cada ficha manda a cargar logs.md, comun.md y su rol; la del PM trae su primer mensaje armado y, con
   onboarding hecho (ADR 0017), las tres fichas llevan la misión y cada rol su bloque (pasos, pruebas, exige).
@@ -91,7 +91,7 @@ for frag in ("--yolo", "--trust", "@.cursor/rules/", "make a-pm", "make c-pm"):
     if frag not in pj_hijo:
         err.append(f"plantillas/hijo/pj: falta {frag}")
 sin_targets_viejos("plantillas/hijo/pj", pj_hijo)
-for rol in ("pm", "wk", "rv", "os"):
+for rol in ("pm", "pm-trio", "wk", "rv", "os"):
     mdc = RAIZ / f".cursor/rules/{rol}-{slug}.mdc"
     if not mdc.exists():
         err.append(f"falta {mdc.relative_to(RAIZ)}"); continue
@@ -99,20 +99,20 @@ for rol in ("pm", "wk", "rv", "os"):
     if fm.get("alwaysApply") is not False: err.append(f"{mdc.name}: alwaysApply no es false")
     if "description" in fm: err.append(f"{mdc.name}: tiene description")
     if rol == "pm":
-        # ADR 0023 / HR-CLAVIS#73: default Cursor→Cursor + override + atajos c-* y make listo c-pm
-        for frag in ("make c-pm", "make listo c-pm", "pj-trio", "Override", ".cursor/agents/"):
+        for frag in ("make c-pm", "make listo c-pm", "pj-trio", "--kind cursor", "--oneshot", "pj-trio watch"):
             if frag not in cuerpo:
-                err.append(f"{mdc.name}: falta despacho Cursor→Cursor («{frag}»; ADR 0023)")
-        if "no** `pj-trio`" not in cuerpo and "no** pj-trio" not in cuerpo and "**no** `pj-trio`" not in cuerpo:
-            err.append(f"{mdc.name}: no deja claro que el default NO es pj-trio→agy")
+                err.append(f"{mdc.name}: falta despacho en herdr («{frag}»)")
+    if rol == "pm-trio":
+        for frag in ("kickoff.md", "herdr agent prompt", "herdr agent wait --timeout 600000", "wk.md", "rv.md", "Merge Danger"):
+            if frag not in cuerpo:
+                err.append(f"{mdc.name}: falta flujo de PM efímero en herdr («{frag}»)")
     sin_targets_viejos(mdc.name, cuerpo)
     rutas(mdc, cuerpo)
-for rol in ("wk", "rv", "os"):
-    f = RAIZ / f".cursor/agents/{rol}-{slug}.md"
-    if not f.exists(): err.append(f"falta {f.relative_to(RAIZ)}"); continue
-    fm, cuerpo = frontmatter(f)
-    if fm.get("name") != f"{rol}-{slug}": err.append(f"{f.name}: name={fm.get('name')!r}")
-    rutas(f, cuerpo)
+agentes_cursor = RAIZ / ".cursor/agents"
+if agentes_cursor.exists():
+    sobrantes = sorted(p.name for p in agentes_cursor.iterdir() if p.is_file())
+    if sobrantes:
+        err.append(f".cursor/agents/ no debe tener subagentes in-chat generados: {sobrantes}")
 for r in ("logs", "comun", "pm", "wk", "rv", "os"):
     regla = RAIZ / f".agents/reglas/{r}.md"
     if not regla.exists(): err.append(f"falta .agents/reglas/{r}.md")

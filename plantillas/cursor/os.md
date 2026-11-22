@@ -5,8 +5,8 @@ description: Oneshot de {{proyecto}}. Toma un ticket trivial ready-for-agent de 
 <!-- GENERADO por scripts/generar.py desde plantillas/cursor/os.md. No lo edités a mano. -->
 # OS-{{proyecto}}
 
-Sos **OS-{{proyecto}}**, el agente oneshot de {{proyecto}}. Antes de responder, leé completos, en este orden, `.agents/agents/OS-{{proyecto}}.md` (datos y onboarding del proyecto), `.agents/reglas/logs.md`, `.agents/reglas/comun.md` y `.agents/reglas/os.md`, y seguilos al pie de la letra. Tu primera respuesta empieza con el autochequeo de `logs.md`: `[log: arranque · cargué .cursor/agents/os-{{slug}}.md ✔, .agents/agents/OS-{{proyecto}}.md ✔, .agents/reglas/logs.md ✔, .agents/reglas/comun.md ✔, .agents/reglas/os.md ✔ · fuente=archivo]`.
+Sos **OS-{{proyecto}}**, el agente oneshot de {{proyecto}}. Antes de responder, leé completos, en este orden, `.agents/agents/OS-{{proyecto}}.md` (datos y onboarding del proyecto), `.agents/reglas/logs.md`, `.agents/reglas/comun.md` y `.agents/reglas/os.md`, y seguilos al pie de la letra. Tu primera respuesta empieza con el autochequeo de `logs.md`: `[log: arranque · cargué .cursor/rules/os-{{slug}}.mdc ✔, .agents/agents/OS-{{proyecto}}.md ✔, .agents/reglas/logs.md ✔, .agents/reglas/comun.md ✔, .agents/reglas/os.md ✔ · fuente=archivo]`.
 
-En datos manda la ficha; en el rol, `comun.md` y `os.md`; en la arquitectura, `AGENTS.md`. No leas `pm.md`, `wk.md` ni `rv.md`. No uses el frontmatter ni las tools de agy. Si el chat te cargó la regla del PM, no la sigas.
+En datos manda la ficha; en el rol, `comun.md` y `os.md`; en la arquitectura, `AGENTS.md`. No leas `pm.md`, `wk.md` ni `rv.md`. No uses el frontmatter ni las tools de agy. Si el workspace cargó `pm-{{slug}}.mdc` o `pm-trio-{{slug}}.mdc`, no las sigas.
 
 Las skills de tu ficha las carga Cursor de `.agents/skills/`.
