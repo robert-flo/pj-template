@@ -113,9 +113,9 @@ YML
   rm -f "$h/onboarding.yml"
   # Onboarding, ./pj onboard y ./pj clean de punta a punta en un hijo de prueba (sin red).
   bash "$T/scripts/prueba-onboarding.sh" || fallas=$((fallas+1))
-  # ./pj agy y make agy-pm/wk/rv (ADR 0020) con mise y agy de mentira.
+  # ./pj agy y make a-* / make listo a-pm (ADR 0020) con mise y agy de mentira.
   bash "$T/scripts/prueba-agy.sh" || fallas=$((fallas+1))
-  # ./pj cursor y make c-*/cursor-* (ADR 0022) con cursor-agent de mentira.
+  # ./pj cursor y make c-* / make listo c-pm (ADR 0022) con cursor-agent de mentira.
   bash "$T/scripts/prueba-cursor.sh" || fallas=$((fallas+1))
   # --dry-run / --no-clonar en clone-repos.sh, ./pj clonar y ./pj listo (incluyendo worktree).
   bash "$T/scripts/prueba-clonar-dry-run.sh" || fallas=$((fallas+1))

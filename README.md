@@ -10,13 +10,15 @@ make deriva             # % de archivos idénticos de cada hijo frente al templa
 make generar            # fichas de agy y adaptadores de Cursor de este repo
 
 # en un hijo
-make agy-pm             # el de todos los días: git pull + ./pj listo y abre el PM en agy vía mise (agy-wk, agy-rv; ARGS="…")
+make a-pm               # abre el PM en agy al instante (--solo; a-wk, a-rv, a-os; Cursor CLI: c-pm/wk/rv/os)
+make listo a-pm         # actualiza primero (git pull + ./pj listo) y abre el PM (o make listo c-pm)
 ./pj                    # trae pj-template@template_ref a .pj/ y genera .agents/ y .cursor/
 ./pj listo [--abrir]    # todo de una tras clonar: pull, template, genera, hooks, onboarding (si falta), agy, clonar, check
 ./pj onboard            # entrevista del PM (onboarding.yml); 2ª vez: «ya está hecho», muestra y pregunta qué cambiar
 ./pj clean [--onboarding]  # deshace ./pj listo para repetirlo (--onboarding: también el onboarding); idempotente
 ./pj hooks              # cada git pull regenera solo (lo instala ./pj listo)
-./pj agy [pm|wk|rv] [args…]  # lo mismo que make agy-pm/wk/rv
+./pj agy [pm|wk|rv|os] [--solo] [args…]     # atajos: make a-pm/wk/rv/os (--solo) o make listo a-pm
+./pj cursor [pm|wk|rv|os] [--solo] [args…]  # atajos: make c-pm/wk/rv/os (--solo) o make listo c-pm
 ./pj check | humo | clonar | enlazar
 ```
 
