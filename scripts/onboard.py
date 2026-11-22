@@ -312,7 +312,7 @@ def escribir(o, repos, p):
     r = subprocess.run([sys.executable, str(TPL / "scripts/generar.py")], env=dict(os.environ, PJ_RAIZ=str(RAIZ)))
     if r.returncode:
         sys.exit("onboard: generar.py falló")
-    sigue = "" if os.environ.get("PJ_EN_LISTO") else f" Ahora: `make agy-pm` (pull, `./pj listo` y abre PM-{p['proyecto']} en agy) o Cursor."
+    sigue = "" if os.environ.get("PJ_EN_LISTO") else f" Ahora: `make a-pm` (o `make listo a-pm` para actualizar antes; `make c-pm` / `make listo c-pm` en Cursor CLI)."
     print(f"\nonboarding hecho el {o['hecho']}.{sigue}")
 
 
