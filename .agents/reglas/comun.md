@@ -7,8 +7,8 @@ Las reglas son las mismas en todas; cambia solo esto:
 
 | Plataforma | Dónde corre | Cómo se lanza | Qué no aplica |
 | --- | --- | --- | --- |
-| `agy` | cualquier máquina, en el clon del meta-repo | `make agy-pm` / `agy-wk` / `agy-rv` en el hijo (= `./pj agy <rol>`: pull, `./pj listo` y `agy --agent <ROL>-<proyecto>` vía mise; ADR 0020) | — |
-| `Cursor` | cualquier máquina (IDE o CLI) | regla del PM en `.cursor/rules/`; WK y RV en `.cursor/agents/` | el frontmatter y las tools de agy |
+| `agy` | cualquier máquina, en el clon del meta-repo | `make agy-pm` / `agy-wk` / `agy-rv` / `agy-os` en el hijo (= `./pj agy <rol>`: pull, `./pj listo` y `agy --agent <ROL>-<proyecto>` vía mise; ADR 0020). Rápidos: `make pm` / `make os` (`--solo`) | — |
+| `Cursor` | cualquier máquina (IDE o CLI) | regla del PM en `.cursor/rules/`; WK, RV y OS en `.cursor/agents/`. CLI: `make cursor-pm` / `cursor-wk` / `cursor-rv` / `cursor-os` (= `./pj cursor <rol>`; ADR 0022) y rápidos `make c-pm` / `c-wk` / `c-rv` / `c-os` | el frontmatter y las tools de agy |
 
 ## Lo justo
 - Leés solo `logs.md`, `comun.md` y el archivo de tu rol; nunca los de los otros roles. Cada mensaje tuyo abre con los logs de `logs.md` y el primero con su autochequeo.
@@ -27,11 +27,15 @@ Roberto Flores, ingeniero de software en America/El_Salvador (UTC-6), usuario av
 - **Primero reformulá:** ante un pedido nuevo con respuesta abierta, corrés la skill `ro-restate-goals` (2–3 frases con su objetivo y el problema) y parás con «¿es eso?». Se salta en una elección cerrada, un gracias o si Roberto lo pide.
 
 ## El trío
-- Cada repo tiene su equipo de agentes: **PM** (convierte pedidos en specs y tickets), **WK** (los programa), **RV** (revisa el PR final) y **OS** (oneshot: toma tickets triviales de punta a punta con Merge Gate). **Roberto solo habla con el PM** (`agy --agent PM-<proyecto>`).
-- **Despacho visible en `herdr`:**
+- Cada repo tiene su equipo de agentes: **PM** (convierte pedidos en specs y tickets), **WK** (los programa), **RV** (revisa el PR final) y **OS** (oneshot: toma tickets triviales de punta a punta con Merge Gate). **Roberto solo habla con el PM** (`agy --agent PM-<proyecto>` o Cursor vía `make c-pm` / `make cursor-pm`).
+- **Despacho según la sesión del PM** ([ADR 0023](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0023-despacho-cursor-cuando-pm-en-cursor.md)):
+  - **PM en Cursor** (IDE o CLI): default = subagentes `.cursor/agents/{wk,rv,os}-*` (Task / equivalente). No abras `pj-trio`→agy solo porque el ticket es Engineering.
+  - **PM en agy / herdr:** default = despacho visible en `herdr` vía `pj-trio` (abajo).
+  - **Override explícito:** Roberto puede pedir herdr/`pj-trio`/agy desde Cursor (o al revés) cuando quiera visibilidad en herdr. Sin `--runtime` en `pj-trio` (Fase 2).
+- **Despacho visible en `herdr`** (default en agy; override desde Cursor):
   - Engineering vía `pj-trio <proyecto> <ticket> [--repo <miembro>] [--base <rama>]` (abre un workspace en herdr con pestañas visibles para `pm`, `wk`, `rv`).
-  - Trivial vía `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro>]` (workspace visible de 1 pestaña con el agente `OS`) o `make agy-os` para side-tasks directos.
-  - **Evitar `invoke_subagent` para trabajo largo:** `invoke_subagent` corre en segundo plano a ciegas, no genera pestañas en herdr y bloquea la visibilidad para Roberto además de gastar contexto del PM. Para tareas de desarrollo o ejecución larga se despacha siempre en herdr vía `pj-trio`.
+  - Trivial vía `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro>]` (workspace visible de 1 pestaña con el agente `OS`) o `make agy-os` / `make c-os` / `make cursor-os` para side-tasks directos según la plataforma.
+  - **En agy, evitar `invoke_subagent` para trabajo largo:** corre a ciegas, no genera pestañas en herdr y gasta contexto del PM. En Cursor, los subagentes `.cursor/agents/*` son el camino canónico de esa sesión.
 - **Supervisión de flota con 0 tokens:**
   - Ningún agente hace polling activo en bucle ni gasta tokens esperando trabajo de otros agentes.
   - `pj-trio watch <PROYECTO>`: observa pasivamente el estado de la flota (`.trio/*/status.json`) y despierta solo ante eventos accionables (`hecho`, `needs-roberto`, `blocked`, `unknown`).

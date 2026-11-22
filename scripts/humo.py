@@ -84,6 +84,12 @@ if not mdc.exists(): err.append(f"falta {mdc.relative_to(RAIZ)}")
 else:
     fm, cuerpo = frontmatter(mdc)
     if fm.get("alwaysApply") is not True: err.append(f"{mdc.name}: no es alwaysApply")
+    # ADR 0023 / HR-CLAVIS#73: default Cursor→Cursor + override + atajos c-*/cursor-*
+    for frag in ("make c-pm", "make cursor-pm", "pj-trio", "Override", ".cursor/agents/"):
+        if frag not in cuerpo:
+            err.append(f"{mdc.name}: falta despacho Cursor→Cursor («{frag}»; ADR 0023)")
+    if "no** `pj-trio`" not in cuerpo and "no** pj-trio" not in cuerpo and "**no** `pj-trio`" not in cuerpo:
+        err.append(f"{mdc.name}: no deja claro que el default NO es pj-trio→agy")
     rutas(mdc, cuerpo)
 for rol in ("wk", "rv", "os"):
     f = RAIZ / f".cursor/agents/{rol}-{slug}.md"

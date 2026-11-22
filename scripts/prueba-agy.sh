@@ -12,12 +12,14 @@ export HOME="$tmp/home" PJ_TEMPLATE_DIR="$T" PJ_SIN_GH=1 PY
 export GIT_CONFIG_GLOBAL="$tmp/gitconfig" GIT_AUTHOR_NAME=prueba GIT_AUTHOR_EMAIL=p@x GIT_COMMITTER_NAME=prueba GIT_COMMITTER_EMAIL=p@x
 mkdir -p "$HOME"; git config --file "$GIT_CONFIG_GLOBAL" init.defaultBranch master
 # PATH sin mise ni agy reales; los de mentira van en $tmp/bin (mise) y $tmp/bin-agy (agy suelto).
-# Las carpetas del PATH que tienen mise o agy se cambian por $tmp/herr con enlaces a todo lo demás (make, git…).
+# También sin rf-term-theme: si está, lanzar_agy mete --settings y rompe los grep exactos (ADR theme).
+# Las carpetas del PATH que tienen mise, agy o rf-term-theme se cambian por $tmp/herr con enlaces al resto.
 mkdir -p "$tmp/herr"
+unset RF_TERM_THEME
 base="$(tr : '\n' <<< "$PATH" | while IFS= read -r d; do
   [ -n "$d" ] && [ -d "$d" ] || continue
-  if [ -e "$d/mise" ] || [ -e "$d/agy" ]; then
-    for x in "$d"/*; do case "${x##*/}" in mise|agy) ;; *) [ -x "$x" ] && [ ! -e "$tmp/herr/${x##*/}" ] && ln -s "$x" "$tmp/herr/${x##*/}" ;; esac; done
+  if [ -e "$d/mise" ] || [ -e "$d/agy" ] || [ -e "$d/rf-term-theme" ]; then
+    for x in "$d"/*; do case "${x##*/}" in mise|agy|rf-term-theme) ;; *) [ -x "$x" ] && [ ! -e "$tmp/herr/${x##*/}" ] && ln -s "$x" "$tmp/herr/${x##*/}" ;; esac; done
     echo "$tmp/herr"
   else echo "$d"; fi
 done | awk '!v[$0]++' | paste -sd:)"
