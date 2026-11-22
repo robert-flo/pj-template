@@ -1,7 +1,9 @@
 # 0023. Despacho Cursor→Cursor cuando el PM corre en Cursor
 
-Fecha: 2026-11-21 · Estado: aceptado
-Origen: Roberto / HR-CLAVIS#71–#73 (Fase 1). Enmienda el default de despacho de [0021](0021-flujo-herdr-y-politica-merge-danger.md) según la sesión del PM. Los atajos de entrada viven en [0022](0022-make-cursor-pm.md).
+Fecha: 2026-11-21 · Estado: superado por [0025](0025-despacho-cursor-trio-efimero-herdr.md)
+Origen: Roberto / HR-CLAVIS#71–#73 (Fase 1). Enmendó el default de despacho de [0021](0021-flujo-herdr-y-politica-merge-danger.md) según la sesión del PM. Los atajos de entrada viven en [0022](0022-make-cursor-pm.md).
+
+> **Superado por [ADR 0025](0025-despacho-cursor-trio-efimero-herdr.md):** los subagentes in-chat (`.cursor/agents/*`) fueron retirados; el PM Orquestador en Cursor CLI (`make c-pm`) ahora despacha tríos efímeros en `herdr` con `pj-trio --kind cursor` y `.cursor/rules/pm-trio-<slug>.mdc`, y Cursor IDE queda fuera de alcance como orquestador.
 
 ## Contexto
 Con [0021](0021-flujo-herdr-y-politica-merge-danger.md) el default era siempre `pj-trio`→agy en herdr. Eso choca cuando el PM ya está en Cursor (IDE o CLI vía `make c-pm` / `make listo c-pm` / `cursor-agent`): rebotar a agy/herdr gasta cuota de Gemini y rompe la expectativa de quedarse en la misma plataforma. [0022](0022-make-cursor-pm.md) ya dejó los atajos CLI; faltaba la política de sesión.

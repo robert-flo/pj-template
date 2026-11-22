@@ -1,9 +1,10 @@
 # 0022. `./pj cursor` / `c-*`: atajos Cursor espejo de agy
 
-Fecha: 2026-11-21 · Estado: aceptado (enmendado en nombres de targets de `Makefile` por [0024](0024-convencion-simetrica-a-c-y-listo.md))
+Fecha: 2026-11-21 · Estado: aceptado (enmendado en nombres de targets de `Makefile` por [0024](0024-convencion-simetrica-a-c-y-listo.md) y en el retiro de `.cursor/agents/` por [0025](0025-despacho-cursor-trio-efimero-herdr.md))
 Origen: Roberto / HR-CLAVIS#71–#72: Fase 1 sin fallback agy→Cursor.
 
 > **Enmienda ([ADR 0024](0024-convencion-simetrica-a-c-y-listo.md)):** los targets completos `make cursor-*` fueron reemplazados por la composición `make listo c-*`, manteniendo `make c-{pm,wk,rv,os}` en `--solo` por defecto, en simetría con `make a-{pm,wk,rv,os}`.
+> **Enmienda ([ADR 0025](0025-despacho-cursor-trio-efimero-herdr.md)):** se retira la generación de subagentes in-chat `.cursor/agents/*`, reemplazada por `pm-trio-<slug>.mdc` y despacho en `herdr` con `pj-trio --kind cursor`. Se conservan `make c-*`, `cursor-agent --yolo --trust`, `mise` y `@.cursor/rules/<rol>-<slug>.mdc`.
 
 ## Contexto
 Abrir el trío en agy ya es trivial (`./pj agy`, [ADR 0020](0020-make-agy-pm.md)). En Cursor CLI no había camino canónico equivalente (`cursor-agent --yolo --trust --workspace …`) ni atajos en el `Makefile` del hijo.
