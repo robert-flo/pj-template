@@ -63,7 +63,7 @@ def datos(p):
         out.append("- Notas del proyecto:")
         out += [f"  {l}" if l.strip() else "" for l in p["notas"].splitlines()]
     out.append(f"- Trío: PM-{p['proyecto']}, WK-{p['proyecto']}, RV-{p['proyecto']}")
-    out.append("- Roberto habla solo con el PM; el PM lanza al WK y al RV (`invoke_subagent` en agy; subagentes en Cursor).")
+    out.append("- Roberto habla solo con el PM; el PM despacha al WK y al RV (`pj-trio` en `herdr` o `invoke_subagent` en agy).")
     return "\n".join(out)
 
 
@@ -202,8 +202,8 @@ def main():
                  skills_inline=", ".join(f"`{s}`" for s in skills))
         salida[f".agents/agents/{rol.upper()}-{proy}.md"] = (render(f"plantillas/agents/{rol.upper()}.md", v), 0o644)
     salida[f".cursor/rules/pm-{slug}.mdc"] = (render("plantillas/cursor/pm.mdc", base), 0o644)
+    salida[f".cursor/rules/pm-trio-{slug}.mdc"] = (render("plantillas/cursor/pm-trio.mdc", base), 0o644)
     for rol in ("wk", "rv", "os"):
-        salida[f".cursor/agents/{rol}-{slug}.md"] = (render(f"plantillas/cursor/{rol}.md", base), 0o644)
         salida[f".cursor/rules/{rol}-{slug}.mdc"] = (render_regla(f"plantillas/cursor/{rol}.md", base), 0o644)
     if DEP:
         salida.update(copias())

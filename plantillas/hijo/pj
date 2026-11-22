@@ -117,7 +117,9 @@ YML
     local gen=() propios
     [ -f .agents/generados.txt ] && mapfile -t gen < .agents/generados.txt
     gen+=(".agents/agents/PM-$proy.md" ".agents/agents/WK-$proy.md" ".agents/agents/RV-$proy.md" ".agents/agents/OS-$proy.md"
-          ".cursor/rules/pm-$slug.mdc" ".cursor/agents/wk-$slug.md" ".cursor/agents/rv-$slug.md" ".cursor/agents/os-$slug.md"
+          ".cursor/rules/pm-$slug.mdc" ".cursor/rules/pm-trio-$slug.mdc"
+          ".cursor/rules/wk-$slug.mdc" ".cursor/rules/rv-$slug.mdc" ".cursor/rules/os-$slug.mdc"
+          ".cursor/agents/wk-$slug.md" ".cursor/agents/rv-$slug.md" ".cursor/agents/os-$slug.md"
           ".agents/generados.txt")
     for f in "${gen[@]}"; do
       case "$f" in .agents/*|.cursor/*) ;; *) continue ;; esac
@@ -187,10 +189,10 @@ if [ "${1:-}" = agy ]; then
   echo "pj: abriendo ${rol^^}-$proy"
   lanzar_agy "${rol^^}-$proy" "${args[@]}"
 fi
-lanzar_cursor(){ # $1 = rol (pm|wk|rv|os); el resto va a cursor-agent. Espejo de lanzar_agy (ADR 0022).
+lanzar_cursor(){ # $1 = rol (pm|pm-trio|wk|rv|os); el resto va a cursor-agent. Espejo de lanzar_agy (ADR 0022).
   local rol="$1" slug="${proy,,}" prompt; shift
   case "$rol" in
-    pm|wk|rv|os) prompt="@.cursor/rules/${rol}-${slug}.mdc" ;;
+    pm|pm-trio|wk|rv|os) prompt="@.cursor/rules/${rol}-${slug}.mdc" ;;
     *) echo "pj: rol de cursor desconocido: $rol" >&2; exit 2 ;;
   esac
   if command -v mise >/dev/null 2>&1; then

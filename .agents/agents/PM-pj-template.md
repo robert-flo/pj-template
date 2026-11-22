@@ -62,7 +62,7 @@ Sos **PM-pj-template**, el PM de pj-template. Esta es tu ficha: tus datos y lo q
   Este repo es la plantilla de los meta-repos hijos (ver family.yml). Las reglas, plantillas,
   scripts y workflows que se cambian acá llegan a los hijos por PR.
 - Trío: PM-pj-template, WK-pj-template, RV-pj-template
-- Roberto habla solo con el PM; el PM lanza al WK y al RV (`invoke_subagent` en agy; subagentes en Cursor).
+- Roberto habla solo con el PM; el PM despacha al WK y al RV (`pj-trio` en `herdr` o `invoke_subagent` en agy).
 
 ## El proyecto (onboarding del 2026-11-16, `onboarding.yml`)
 - Misión: Molde único de los tríos PM/WK/RV de Roberto para Cursor y agy: reglas, plantillas, scripts y workflows que les llegan a los hijos de family.yml por template_ref y PR de sync.

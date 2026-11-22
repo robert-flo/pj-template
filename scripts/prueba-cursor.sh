@@ -109,6 +109,10 @@ if corre "$tmp/bin" make listo c-pm; then
     && ok "make listo c-pm: mise x cursor-agent --yolo --trust y @.cursor/rules/pm-demo.mdc" || { mal "make listo c-pm: exec"; cat "$log" "$tmp/out"; }
   grep -q "check: todo bien" "$tmp/out" && ok "make listo c-pm: ./pj check del hijo da todo bien" || { mal "make listo c-pm: check"; cat "$tmp/out"; }
   grep -q "traído por el pull" README.md && ok "make listo c-pm: corrió el pull de listo" || { mal "make listo c-pm: pull"; cat "$tmp/out"; }
+  [ -f .cursor/rules/pm-demo.mdc ] && [ -f .cursor/rules/pm-trio-demo.mdc ] \
+    && [ ! -d .cursor/agents ] \
+    && ok "make listo c-pm: genera pm-demo.mdc y pm-trio-demo.mdc, sin .cursor/agents/" \
+    || { mal "make listo c-pm: reglas/agentes de Cursor"; ls -la .cursor/ .cursor/rules/ .cursor/agents/ 2>/dev/null || true; }
 else mal "make listo c-pm falló"; cat "$tmp/out"; fi
 
 # 2) Los cuatro roles: el prompt es solo @.cursor/rules/<rol>-<slug>.mdc

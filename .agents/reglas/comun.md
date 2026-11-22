@@ -8,7 +8,7 @@ Las reglas son las mismas en todas; cambia solo esto:
 | Plataforma | Dónde corre | Cómo se lanza | Qué no aplica |
 | --- | --- | --- | --- |
 | `agy` | cualquier máquina, en el clon del meta-repo | `make a-pm` / `a-wk` / `a-rv` / `a-os` en el hijo (`--solo`, al instante); `make listo a-pm` actualiza antes (= `./pj agy <rol>` vía mise; ADR 0020) | — |
-| `Cursor` | cualquier máquina (IDE o CLI) | regla del PM en `.cursor/rules/`; WK, RV y OS en `.cursor/agents/`. CLI: `make c-pm` / `c-wk` / `c-rv` / `c-os` (`--solo`, al instante); `make listo c-pm` actualiza antes (= `./pj cursor <rol>` vía mise; ADR 0022) | el frontmatter y las tools de agy |
+| `Cursor` | cualquier máquina (IDE o CLI) | reglas en `.cursor/rules/` (`pm`, `pm-trio`, `wk`, `rv`, `os`); sin `.cursor/agents/`. CLI: `make c-pm` / `c-wk` / `c-rv` / `c-os` (`--solo`, al instante); `make listo c-pm` actualiza antes (= `./pj cursor <rol>` vía mise; ADR 0022) | el frontmatter y las tools de agy |
 
 ## Lo justo
 - Leés solo `logs.md`, `comun.md` y el archivo de tu rol; nunca los de los otros roles. Cada mensaje tuyo abre con los logs de `logs.md` y el primero con su autochequeo.
@@ -28,14 +28,10 @@ Roberto Flores, ingeniero de software en America/El_Salvador (UTC-6), usuario av
 
 ## El trío
 - Cada repo tiene su equipo de agentes: **PM** (convierte pedidos en specs y tickets), **WK** (los programa), **RV** (revisa el PR final) y **OS** (oneshot: toma tickets triviales de punta a punta con Merge Gate). **Roberto solo habla con el PM** (`make a-pm` / `make listo a-pm` en agy, o Cursor vía `make c-pm` / `make listo c-pm`).
-- **Despacho según la sesión del PM** ([ADR 0023](https://github.com/robert-flo/pj-template/blob/main/docs/adr/0023-despacho-cursor-cuando-pm-en-cursor.md)):
-  - **PM en Cursor** (IDE o CLI): default = subagentes `.cursor/agents/{wk,rv,os}-*` (Task / equivalente). No abras `pj-trio`→agy solo porque el ticket es Engineering.
-  - **PM en agy / herdr:** default = despacho visible en `herdr` vía `pj-trio` (abajo).
-  - **Override explícito:** Roberto puede pedir herdr/`pj-trio`/agy desde Cursor (o al revés) cuando quiera visibilidad en herdr. Sin `--runtime` en `pj-trio` (Fase 2).
-- **Despacho visible en `herdr`** (default en agy; override desde Cursor):
-  - Engineering vía `pj-trio <proyecto> <ticket> [--repo <miembro>] [--base <rama>]` (abre un workspace en herdr con pestañas visibles para `pm`, `wk`, `rv`).
-  - Trivial vía `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro>]` (workspace visible de 1 pestaña con el agente `OS`) o `make a-os` / `make c-os` (o `make listo a-os` / `make listo c-os`) para side-tasks directos según la plataforma.
-  - **En agy, evitar `invoke_subagent` para trabajo largo:** corre a ciegas, no genera pestañas en herdr y gasta contexto del PM. En Cursor, los subagentes `.cursor/agents/*` son el camino canónico de esa sesión.
+- **Despacho en dos niveles vía `herdr`** (en agy y en Cursor):
+  - **PM en Cursor** (IDE o CLI): despachá en `herdr` con `--kind cursor` (`pj-trio <proyecto> <ticket> [--repo <miembro>] [--base <rama>] --kind cursor` en Engineering, o `pj-trio --oneshot <proyecto> <ticket> [--repo <miembro>] --kind cursor` en Trivial; `make c-os` / `make listo c-os` para side-tasks directos). Sin subagentes in-chat en `.cursor/agents/`.
+  - **PM en agy / herdr:** despacho visible en `herdr` vía `pj-trio` (sin `--kind cursor`, usa `agy`).
+  - **En agy, evitar `invoke_subagent` para trabajo largo:** corre a ciegas, no genera pestañas en herdr y gasta contexto del PM.
 - **Supervisión de flota con 0 tokens:**
   - Ningún agente hace polling activo en bucle ni gasta tokens esperando trabajo de otros agentes.
   - `pj-trio watch <PROYECTO> --ticket <clave>` (repetible; ravn-trio 0.1.14, `947e62d`): observa pasivamente solo esos tickets (`.trio/<clave>/status.json`) y despierta ante eventos accionables (`hecho`, `needs-roberto`, `blocked`, `unknown`). Cada sesión de PM pasa `--ticket` únicamente con los tickets que ella despachó, y despierta de inmediato si alguno ya está accionable al arrancar. Sin `--ticket` se conserva la observación de la flota completa.
