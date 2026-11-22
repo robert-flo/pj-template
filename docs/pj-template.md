@@ -23,7 +23,7 @@ El hijo versiona solo **8 archivos**: `proyecto.yml`, `onboarding.yml` (el alma 
 | Skills | `.agents/skills/` + `skills-lock.json` | CI de pj-template, desde `robert-flo/skills@personal` |
 | Skills por rol | `plantillas/roles.yml` (+ `skills_extra` del hijo) | pj-template / el hijo |
 | Esquema de `proyecto.yml` | `schema/proyecto.schema.json` | pj-template |
-| Archivos fijos del hijo | `plantillas/hijo/{pj,Makefile,pj-template.yml,gitignore}` | pj-template (el PR de sync los actualiza) |
+| Archivos fijos del hijo | `plantillas/hijo/{pj,Makefile,pj-template.yml,gitignore}` (`Makefile`: atajos agy [ADR 0020](adr/0020-make-agy-pm.md) y Cursor [ADR 0022](adr/0022-make-cursor-pm.md)) | pj-template (el PR de sync los actualiza) |
 | Fichas de agy | `.agents/agents/{PM,WK,RV}-<proyecto>.md` | `scripts/generar.py` |
 | Adaptadores de Cursor | `.cursor/rules/pm-<proyecto>.mdc`, `.cursor/agents/{wk,rv}-<proyecto>.md` | `scripts/generar.py` |
 | Datos del proyecto, con `template_ref` | `proyecto.yml` | vos, en el hijo (`template_ref` lo sube el PR de sync) |
@@ -40,7 +40,8 @@ Lo valida `schema/proyecto.schema.json` (JSON Schema 2020-12, con `jsonschema` d
 
 ## Motores
 - **agy**: `make agy-pm` (o `agy-wk`, `agy-rv`, `agy-os`; `ARGS="…"` para agy) desde la raíz del hijo = `./pj agy [pm|wk|rv|os] [args…]`: `git pull --rebase --autostash`, `./pj listo` y, si pasó, `MISE_MINIMUM_RELEASE_AGE=0 mise use -g --quiet antigravity-cli` y `exec mise x antigravity-cli -- agy --dangerously-skip-permissions --agent <ROL>-<proyecto> args…` (sin mise, el `agy` del PATH; [ADR 0020](adr/0020-make-agy-pm.md)). Para arranques rápidos durante una sesión activa sin re-correr pull ni listo: `make pm` y `make os` (vía `./pj agy pm --solo` / `./pj agy os --solo`). `./pj listo` (o solo `./pj enlazar`; `make agy` en pj-template) enlaza las fichas en `~/.gemini/config/agents`, porque agy interactivo solo resuelve `--agent` con los agentes globales. `skills:` del frontmatter es declarativo: agy carga todas las de `.agents/skills/`.
-- **Cursor**: el PM es la regla `alwaysApply`; WK y RV son subagentes en `.cursor/agents/`. Cursor carga las skills de `.agents/skills/`; no hay `.cursor/skills/`.
+- **Cursor CLI**: `make cursor-pm` (o `cursor-wk`/`cursor-rv`/`cursor-os`) = `./pj cursor [pm|wk|rv|os]`: mismo `./pj listo` y después `cursor-agent --yolo --trust --workspace <raiz>` ([ADR 0022](adr/0022-make-cursor-pm.md)). Rápidos sin listo: `make c-pm` / `c-wk` / `c-rv` / `c-os`. **`make pm` / `make agy-*` no cambian** (siguen = agy). Sin `cursor-agent`, exit 127. wk/rv/os reciben un prompt inicial a `.cursor/agents/<rol>-<slug>.md`; el PM confía en la regla `alwaysApply`.
+- **Cursor IDE**: el PM es la regla `alwaysApply`; WK, RV y OS son subagentes en `.cursor/agents/`. Cursor carga las skills de `.agents/skills/`; no hay `.cursor/skills/`.
 
 ## Prueba de humo
 `scripts/humo.py` (parte de `check`, y `./pj humo` / `make humo`):

@@ -74,7 +74,8 @@ Meta-repo del trío PM/WK/RV de $P (hijo de \`robert-flo/pj-template\`, modo dep
 
 \`\`\`bash
 ./pj listo      # todo de una: pull, template, genera, hooks, onboarding (si falta), agy, clonar, check
-make agy-pm     # pull + ./pj listo y abre el PM en agy (make agy-wk, make agy-rv; = ./pj agy pm|wk|rv)
+make agy-pm     # pull + ./pj listo y abre el PM en agy (make agy-wk/rv/os; = ./pj agy …)
+make cursor-pm  # igual en Cursor CLI (make c-pm rápido; make cursor-wk/rv/os; = ./pj cursor …)
 ./pj onboard    # la entrevista del PM (onboarding.yml); la segunda vez muestra lo que hay y pregunta qué cambiar
 ./pj clean      # deshace ./pj listo (--onboarding: también el onboarding) para volver a probar
 ./pj            # solo trae pj-template al template_ref y genera .agents/ y .cursor/
