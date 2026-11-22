@@ -29,10 +29,12 @@
 #                   para arrancar al instante. Atajos: make agy-pm, make agy-wk, make agy-rv, make agy-os,
 #                   make pm, make os.
 #   ./pj cursor [pm|wk|rv|os] [--solo] [args…]  espejo de ./pj agy para Cursor CLI: ./pj listo (salvo
-#                   --solo) y `cursor-agent --yolo --trust --workspace <raiz>`. pm sin prompt extra
-#                   (regla alwaysApply); wk/rv/os con prompt a `.cursor/agents/<rol>-<slug>.md`. Sin
-#                   cursor-agent, exit 127. Atajos: make cursor-pm|wk|rv|os (completo) y make c-pm|…
-#                   (rápido con --solo). make pm / make agy-* siguen = agy (ADR 0022).
+#                   --solo) y mise (`cursor-agent`): MISE_MINIMUM_RELEASE_AGE=0, `mise use -g
+#                   cursor-agent` y `mise x cursor-agent -- cursor-agent --yolo --trust --workspace
+#                   <raiz> args… @.cursor/rules/<rol>-<slug>.mdc` (pm, wk, rv y os). Sin mise, el
+#                   cursor-agent del PATH. Sin ninguno, exit 127. Atajos: make cursor-pm|wk|rv|os
+#                   (completo) y make c-pm|… (rápido con --solo). make pm / make agy-* siguen = agy
+#                   (ADR 0022).
 #   ./pj enlazar    solo enlaza las fichas en ~/.gemini/config/agents (./pj listo ya lo hace).
 #   ./pj clonar [--dry-run|-n]  clona los repos de proyecto.yml (con --dry-run / PJ_CLONAR_DRY_RUN=1 simula).
 #   ./pj <target>   corre un target del Makefile del template: check, humo, clonar, generar…
@@ -186,18 +188,25 @@ if [ "${1:-}" = agy ]; then
   echo "pj: abriendo ${rol^^}-$proy"
   lanzar_agy "${rol^^}-$proy" "${args[@]}"
 fi
-lanzar_cursor(){ # $1 = rol (pm|wk|rv|os); el resto va a cursor-agent. ADR 0022.
-  local rol="$1" slug="${proy,,}" prompt=(); shift
+lanzar_cursor(){ # $1 = rol (pm|wk|rv|os); el resto va a cursor-agent. Espejo de lanzar_agy (ADR 0022).
+  local rol="$1" slug="${proy,,}" prompt; shift
   case "$rol" in
-    pm) ;;
-    wk|rv|os) prompt=("Seguí tu ficha en .cursor/agents/${rol}-${slug}.md y arrancá como ese rol.") ;;
+    pm|wk|rv|os) prompt="@.cursor/rules/${rol}-${slug}.mdc" ;;
     *) echo "pj: rol de cursor desconocido: $rol" >&2; exit 2 ;;
   esac
-  if ! command -v cursor-agent >/dev/null 2>&1; then
-    echo "pj: no encuentro cursor-agent. Instalá cursor-agent (mise o el instalador de Cursor) y volvé a correr ./pj cursor" >&2
-    exit 127
+  if command -v mise >/dev/null 2>&1; then
+    if ! mise which cursor-agent >/dev/null 2>&1; then
+      export MISE_MINIMUM_RELEASE_AGE=0
+      mise use -g --quiet cursor-agent || { echo "pj: falló mise use -g cursor-agent" >&2; exit 1; }
+    fi
+    exec mise x cursor-agent -- cursor-agent --yolo --trust --workspace "$raiz" "$@" "$prompt"
   fi
-  exec cursor-agent --yolo --trust --workspace "$raiz" "$@" "${prompt[@]}"
+  if command -v cursor-agent >/dev/null 2>&1; then
+    echo "pj: aviso: no hay mise; uso el cursor-agent del PATH" >&2
+    exec cursor-agent --yolo --trust --workspace "$raiz" "$@" "$prompt"
+  fi
+  echo "pj: no encuentro mise ni cursor-agent. Instalá mise (sudo pacman -S mise) y volvé a correr ./pj cursor" >&2
+  exit 127
 }
 if [ "${1:-}" = cursor ]; then
   shift; rol=pm
