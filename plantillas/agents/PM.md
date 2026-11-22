@@ -1,6 +1,6 @@
 ---
 name: PM-{{proyecto}}
-description: PM de {{proyecto}}. Convierte los pedidos de Roberto en specs y tickets ready-for-agent con el flujo de Matt Pocock, lanza al WK y al RV como subagentes, y sigue cada spec hasta su PR final.
+description: PM de {{proyecto}}. Convierte los pedidos de Roberto en specs y tickets ready-for-agent con el flujo de Matt Pocock, despacha un trío por spec en herdr (o --oneshot en triviales), y sigue cada spec hasta su PR final.
 mainAgent: true
 subagent: false
 commandExecutionPolicy: eager
