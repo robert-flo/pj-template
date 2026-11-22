@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prueba de ./pj agy y make agy-pm/agy-wk/agy-rv (ADR 0020) en un hijo de prueba, sin red, con mise y agy
+# Prueba de ./pj agy y make a-* (ADR 0020) en un hijo de prueba, sin red, con mise y agy
 # de mentira. La corre check.sh en pj-template (y CI). Imprime ok/FALLA; sale con 1 si algo falla.
 set -euo pipefail
 T="$(cd "$(dirname "$0")/.." && pwd)"
@@ -60,38 +60,62 @@ echo "traído por el pull" >> "$tmp/otro/README.md" && git -C "$tmp/otro" add -A
 
 corre(){ : > "$log"; PATH="$1:$base" bash -c "${*:2}" </dev/null >"$tmp/out" 2>&1; }
 
-# 1) make agy-pm: pull y ./pj listo primero, después mise con el PM.
-if corre "$tmp/bin" make agy-pm; then
+# 0) make -n: a-* invocan ./pj agy <rol> --solo con ARGS; los targets viejos ya no existen.
+for r in pm wk rv os; do
+  PATH="$tmp/bin:$base" make -n "a-$r" ARGS="--demo" | grep -qx "./pj agy $r --solo --demo" \
+    && ok "make -n a-$r → ./pj agy $r --solo" || { mal "make -n a-$r"; PATH="$tmp/bin:$base" make -n "a-$r" ARGS="--demo"; }
+done
+for viejo in pm os agy-pm agy-wk agy-rv agy-os; do
+  if PATH="$tmp/bin:$base" make -n "$viejo" >/dev/null 2>&1; then
+    mal "make -n $viejo debería fallar (target eliminado)"
+  else
+    ok "make -n $viejo eliminado"
+  fi
+done
+
+# 1) make listo a-pm: pull y ./pj listo primero, después mise con el PM (--solo).
+if corre "$tmp/bin" make listo a-pm; then
   grep -qx "mise use -g --quiet antigravity-cli · MISE_MINIMUM_RELEASE_AGE=0" "$log" \
-    && ok "make agy-pm: mise use -g --quiet antigravity-cli con MISE_MINIMUM_RELEASE_AGE=0" || { mal "make agy-pm: mise use"; cat "$log"; }
+    && ok "make listo a-pm: mise use -g --quiet antigravity-cli con MISE_MINIMUM_RELEASE_AGE=0" || { mal "make listo a-pm: mise use"; cat "$log"; }
   grep -qx "exec agy --dangerously-skip-permissions --agent PM-demo · pull=si · ficha=si" "$log" \
-    && ok "make agy-pm: abre PM-demo con --dangerously-skip-permissions después del pull y de ./pj listo" || { mal "make agy-pm: exec"; cat "$log" "$tmp/out"; }
-  grep -q "check: todo bien" "$tmp/out" && ok "make agy-pm: ./pj check del hijo da todo bien" || { mal "make agy-pm: check"; cat "$tmp/out"; }
-else mal "make agy-pm falló"; cat "$tmp/out"; fi
+    && ok "make listo a-pm: abre PM-demo con --dangerously-skip-permissions después del pull y de ./pj listo" || { mal "make listo a-pm: exec"; cat "$log" "$tmp/out"; }
+  grep -q "check: todo bien" "$tmp/out" && ok "make listo a-pm: ./pj check del hijo da todo bien" || { mal "make listo a-pm: check"; cat "$tmp/out"; }
+else mal "make listo a-pm falló"; cat "$tmp/out"; fi
 primera="$(cat "$log")"
 
 # 2) Idempotente: la segunda vez, lo mismo y sin cambios en el repo.
 snap(){ git status --porcelain; find .agents .cursor -type f -print0 | sort -z | xargs -0 sha256sum; }
 a="$(snap)"
-corre "$tmp/bin" make agy-pm && [ "$(cat "$log")" = "$primera" ] && [ "$a" = "$(snap)" ] \
-  && ok "make agy-pm dos veces: misma llamada y mismos bytes" || { mal "make agy-pm no es idempotente"; cat "$log"; }
+corre "$tmp/bin" make listo a-pm && [ "$(cat "$log")" = "$primera" ] && [ "$a" = "$(snap)" ] \
+  && ok "make listo a-pm dos veces: misma llamada y mismos bytes" || { mal "make listo a-pm no es idempotente"; cat "$log"; }
 
-# 3) Rol y argumentos: wk/rv/os y lo que sobra va tal cual a agy.
-corre "$tmp/bin" make agy-wk ARGS="'--print hola'" && grep -qx "exec agy --dangerously-skip-permissions --agent WK-demo --print hola · pull=si · ficha=si" "$log" \
-  && ok "make agy-wk ARGS=…: WK-demo con los argumentos" || { mal "make agy-wk"; cat "$log" "$tmp/out"; }
+# 3) Rol y argumentos: ./pj agy wk/rv/os y lo que sobra va tal cual a agy.
+corre "$tmp/bin" ./pj agy wk --print hola && grep -qx "exec agy --dangerously-skip-permissions --agent WK-demo --print hola · pull=si · ficha=si" "$log" \
+  && ok "./pj agy wk args…: WK-demo con los argumentos" || { mal "./pj agy wk"; cat "$log" "$tmp/out"; }
 corre "$tmp/bin" ./pj agy rv --modelo "dos palabras" && grep -qx "exec agy --dangerously-skip-permissions --agent RV-demo --modelo dos palabras · pull=si · ficha=si" "$log" \
   && ok "./pj agy rv args…: RV-demo con los argumentos" || { mal "./pj agy rv"; cat "$log"; }
-corre "$tmp/bin" make agy-os ARGS="'--print hola'" && grep -qx "exec agy --dangerously-skip-permissions --agent OS-demo --print hola · pull=si · ficha=si" "$log" \
-  && ok "make agy-os ARGS=…: OS-demo con los argumentos" || { mal "make agy-os"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" ./pj agy os --print hola && grep -qx "exec agy --dangerously-skip-permissions --agent OS-demo --print hola · pull=si · ficha=si" "$log" \
+  && ok "./pj agy os args…: OS-demo con los argumentos" || { mal "./pj agy os"; cat "$log" "$tmp/out"; }
 
-# 3b) Atajos rápidos make pm / make os y flag --solo: no corren pull ni listo.
+# 3b) Atajos por defecto make a-*: no corren pull ni listo.
 echo "cambio remoto pendiente" >> "$tmp/otro/README.md" && git -C "$tmp/otro" add -A && git -C "$tmp/otro" commit -qm "remoto pendiente" && git -C "$tmp/otro" push -q 2>/dev/null
-corre "$tmp/bin" make pm && grep -qx "exec agy --dangerously-skip-permissions --agent PM-demo · pull=si · ficha=si" "$log" \
+corre "$tmp/bin" make a-pm && grep -qx "exec agy --dangerously-skip-permissions --agent PM-demo · pull=si · ficha=si" "$log" \
   && ! grep -q "check: todo bien" "$tmp/out" && ! grep -q "cambio remoto pendiente" README.md \
-  && ok "make pm: abre PM-demo al instante sin pull ni listo" || { mal "make pm falló"; cat "$log" "$tmp/out"; }
-corre "$tmp/bin" make os ARGS="'--print rápido'" && grep -qx "exec agy --dangerously-skip-permissions --agent OS-demo --print rápido · pull=si · ficha=si" "$log" \
+  && ok "make a-pm: abre PM-demo al instante sin pull ni listo" || { mal "make a-pm falló"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" make a-wk ARGS="'--print hola'" && grep -qx "exec agy --dangerously-skip-permissions --agent WK-demo --print hola · pull=si · ficha=si" "$log" \
+  && ! grep -q "check: todo bien" "$tmp/out" && ! grep -q "cambio remoto pendiente" README.md \
+  && ok "make a-wk ARGS=…: abre WK-demo al instante sin pull ni listo" || { mal "make a-wk falló"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" make a-rv && grep -qx "exec agy --dangerously-skip-permissions --agent RV-demo · pull=si · ficha=si" "$log" \
   && ! grep -q "check: todo bien" "$tmp/out" \
-  && ok "make os ARGS=…: abre OS-demo al instante sin pull ni listo" || { mal "make os falló"; cat "$log" "$tmp/out"; }
+  && ok "make a-rv: abre RV-demo al instante sin pull ni listo" || { mal "make a-rv falló"; cat "$log" "$tmp/out"; }
+corre "$tmp/bin" make a-os ARGS="'--print rápido'" && grep -qx "exec agy --dangerously-skip-permissions --agent OS-demo --print rápido · pull=si · ficha=si" "$log" \
+  && ! grep -q "check: todo bien" "$tmp/out" \
+  && ok "make a-os ARGS=…: abre OS-demo al instante sin pull ni listo" || { mal "make a-os falló"; cat "$log" "$tmp/out"; }
+
+# 3c) make listo a-pm sí trae el cambio remoto pendiente.
+corre "$tmp/bin" make listo a-pm && grep -q "cambio remoto pendiente" README.md \
+  && grep -qx "exec agy --dangerously-skip-permissions --agent PM-demo · pull=si · ficha=si" "$log" \
+  && ok "make listo a-pm: actualiza el hijo y abre PM-demo" || { mal "make listo a-pm"; cat "$log" "$tmp/out"; }
 
 corre "$tmp/bin" ./pj agy --print x && grep -qx "exec agy --dangerously-skip-permissions --agent PM-demo --print x · pull=si · ficha=si" "$log" \
   && ok "./pj agy sin rol: PM por defecto y pasa los argumentos" || { mal "./pj agy sin rol"; cat "$log"; }
