@@ -22,7 +22,7 @@ Decisiones vigentes de los tríos PM/WK/RV, para cualquier plataforma (Cursor y 
 | [0016](0016-el-trio-en-herdr-vive-en-ravn-trio.md) | El trío en herdr vive en robert-flo/ravn-trio; las reglas y los ADR de acá mandan si choca | — |
 | [0017](0017-onboarding-del-trio.md) | El onboarding del trío: `onboarding.yml`, autochequeo de logs y `./pj clean` | — |
 | [0018](0018-el-merge-es-el-de-fleet.md) | Quién mergea qué es la regla de fleet: el WK sus sub-issues a la rama del spec, el PM el PR final y los triviales tras el APRUEBO, el RV nunca | fleet CIRCUITO.md, 0011 |
-| [0019](0019-worktrees-con-ravn-git-bare-clone.md) | Los worktrees salen de `ravn-git-bare-clone`: `/z/bare/<repo>.git` y `/z/repos/<repo>/<n>-<slug>` (reemplaza los worktrees de 0016) | fleet 0011 |
+| [0019](0019-worktrees-con-ravn-git-bare-clone.md) | Los worktrees salen de `ravn-git-bare-clone`: `/z/bare/<repo>.git` y `/z/repos/<repo>/<n>-<slug>` (reemplaza los worktrees de 0016; en un Home Repo lo enmienda 0026) | fleet 0011 |
 
 | [0020](0020-make-agy-pm.md) | `./pj agy [pm\|wk\|rv\|os]` vía mise con `--dangerously-skip-permissions`; el hijo versiona un `Makefile` de atajos (nombres de targets enmendados por 0024) | — |
 | [0021](0021-flujo-herdr-y-politica-merge-danger.md) | Flujo herdr (pj-trio, fleet, watch, --oneshot) y política de Merge Danger | — |
@@ -30,6 +30,7 @@ Decisiones vigentes de los tríos PM/WK/RV, para cualquier plataforma (Cursor y 
 | [0023](0023-despacho-cursor-cuando-pm-en-cursor.md) | PM en Cursor → WK/RV/OS como subagentes Cursor por defecto (superado por 0025) | HR-CLAVIS#71 |
 | [0024](0024-convencion-simetrica-a-c-y-listo.md) | Convención simétrica `a-*` / `c-*` en `--solo` y composición `make listo <target>` (enmienda 0020 y 0022) | pj-template#81 |
 | [0025](0025-despacho-cursor-trio-efimero-herdr.md) | Despacho del orquestador Cursor CLI vía trío efímero en `herdr` (`pj-trio --kind cursor`, `pm-trio-<slug>.mdc`, sin `.cursor/agents/*`; supera 0023 y enmienda 0022) | HR-CLAVIS#85 |
+| [0026](0026-worktrees-del-home-repo.md) | En un Home Repo el bare y los worktrees son `.bares/<repo>.git` y `repos/<repo>/`; si el bare existe, clone solo hace fetch y no duplica en `/z` (enmienda 0019) | HR-CLAVIS#141 |
 
 Las decisiones propias de antigravity-fleet (archivado) siguen en `docs/adr-antigravity/`.
 

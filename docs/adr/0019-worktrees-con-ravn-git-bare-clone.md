@@ -18,5 +18,5 @@ Reemplaza: los worktrees del WK de [0016](0016-el-trio-en-herdr-vive-en-ravn-tri
 
 ## Consecuencias
 - `./pj listo` no cambia y `./pj clean` nunca toca `/z/bare` ni `/z/repos`: son compartidos entre proyectos y guardan el trabajo del WK. `clean` deshace solo lo que creó `listo`.
-- `wk.md` paso 3, `rv.md`, `comun.md` §Git y el `AGENTS.md` de los hijos lo dicen igual.
-- ravn-trio crea el worktree del ticket con `ravn-git-bare-clone` en `/z/repos/<repo>/<n>-<slug>`.
+- `wk.md` paso 3, `rv.md`, `comun.md` §Git y el `AGENTS.md` de los hijos lo dicen igual. Dentro de un Home Repo manda [0026](0026-worktrees-del-home-repo.md): `.bares/` y `repos/`, sin duplicar en `/z`.
+- Fuera de un Home Repo, ravn-trio crea el worktree del ticket con `ravn-git-bare-clone` en `/z/repos/<repo>/<n>-<slug>`.
