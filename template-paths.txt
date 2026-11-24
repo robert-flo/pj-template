@@ -9,6 +9,7 @@ schema
 scripts
 clone-repos.sh
 Makefile
+make
 template-paths.txt
 .cursor/rules/no-cursor-coauthor.mdc
 .github/workflows/pj-sync.yml
