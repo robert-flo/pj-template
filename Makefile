@@ -30,7 +30,7 @@ DIVIDER := =====================================================================
 
 ifeq ($(DRY_RUN),1)
 define run_op
-	@echo -e "$(YELLOW)[DRY_RUN]$(RESET) $(1)"
+	@printf '$(YELLOW)[DRY_RUN]$(RESET) %s\n' '$(subst ','\'',$(1))'
 endef
 else
 define run_op
