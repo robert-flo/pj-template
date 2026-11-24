@@ -12,24 +12,30 @@ DRY_RUN ?= 0
 
 ifndef NO_COLOR
 BOLD   := \033[1m
-DIM    := \033[2m
 CYAN   := \033[36m
 BLUE   := \033[34m
 GREEN  := \033[32m
 YELLOW := \033[33m
-RED    := \033[31m
 RESET  := \033[0m
 else
 BOLD   :=
-DIM    :=
 CYAN   :=
 BLUE   :=
 GREEN  :=
 YELLOW :=
-RED    :=
 RESET  :=
 endif
 
 DIVIDER := ================================================================================
+
+ifeq ($(DRY_RUN),1)
+define run_op
+	@echo -e "$(YELLOW)[DRY_RUN]$(RESET) $(1)"
+endef
+else
+define run_op
+	$(1)
+endef
+endif
 
 include $(TPL)/make/*.mk
