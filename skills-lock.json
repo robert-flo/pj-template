@@ -13,7 +13,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/in-progress/chief-of-staff/SKILL.md",
-      "computedHash": "5967bbce30f8285a5d3ca050e699d51cb12d64eeeefb8cac34a9fd468b6be1c8"
+      "computedHash": "463fc3ea03372b17459f967417cd7aaa5426d311d8bac4a5cf57dd20e86975b3"
     },
     "claude-handoff": {
       "source": "robert-flo/skills",
