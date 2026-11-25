@@ -65,7 +65,14 @@ El workflow del hijo (`plantillas/hijo/pj-template.yml`) corre el sync en línea
 
 ## Trío en herdr (`pj-trio`)
 
-Cada meta-repo hijo tiene `.trio/` (con `.gitkeep` y `README.md`) para los handoffs del trío, que se commitean. Se lanza con `pj-trio <proyecto> <ticket> --repo <miembro> [--kind <agy|cursor>]` (por defecto `agy`; `--kind cursor` para el orquestador en Cursor CLI, [ADR 0025](adr/0025-despacho-cursor-trio-efimero-herdr.md)), que viene del paquete `ravn-trio` de `[omarchy-personal]` (`/usr/bin/pj-trio`). La fuente de verdad de cómo corre el trío (pestañas, arranque del PM, handoffs y worktrees del WK) es [robert-flo/ravn-trio](https://github.com/robert-flo/ravn-trio); acá no se duplica. Si algo choca, mandan `.agents/reglas/` y los ADR [0018](adr/0018-el-merge-es-el-de-fleet.md) (quién mergea qué, la regla de fleet) y [0019](adr/0019-worktrees-con-ravn-git-bare-clone.md) (worktrees con `ravn-git-bare-clone` en `/z/repos`, o `.bares/` y `repos/<repo>/` dentro del Home Repo con `./pj clonar`), y se corrige ravn-trio. [ravn-trio#23](https://github.com/robert-flo/ravn-trio/pull/23) alinea `trio-pm-prompt.md` con esa regla. Ver [ADR 0016](adr/0016-el-trio-en-herdr-vive-en-ravn-trio.md).
+Cada meta-repo hijo tiene `.trio/` (con `.gitkeep` y `README.md`) para los handoffs del trío, que se commitean. Se lanza con `pj-trio <proyecto> <ticket> --repo <miembro> [--kind <agy|cursor>]` (por defecto `agy`; `--kind cursor` para el orquestador en Cursor CLI, [ADR 0025](adr/0025-despacho-cursor-trio-efimero-herdr.md)), que viene del paquete `ravn-trio` de `[omarchy-personal]` (`/usr/bin/pj-trio`).
+
+Comandos diarios de flota (disponibles en el `Makefile` de cada Home Repo vía `make help`):
+- `make fleet` (`pj-trio fleet .`): estado real de cada trío (`vivo`, `sin-cuota`, `colgado`, `muerto`, `terminado`) cruzando `herdr`, `git` y `gh` (`ARGS="--activos --json --no-gh"`).
+- `make resume ARGS="<clave> --kind cursor"` (`pj-trio resume . <clave> --kind cursor`): releva un agente caído o sin cuota armando el contexto desde `HANDOFF.md`, `status.json`, `git` y `gh`.
+- `make watch ARGS="--loop"` (`pj-trio watch . --loop`): observa la flota en vivo y alerta con `notify-send` / `herdr notification show`.
+
+La fuente de verdad de cómo corre el trío (pestañas, arranque del PM, handoffs y worktrees del WK) es [robert-flo/ravn-trio](https://github.com/robert-flo/ravn-trio); acá no se duplica. Si algo choca, mandan `.agents/reglas/` y los ADR [0018](adr/0018-el-merge-es-el-de-fleet.md) (quién mergea qué, la regla de fleet) y [0019](adr/0019-worktrees-con-ravn-git-bare-clone.md) (worktrees con `ravn-git-bare-clone` en `/z/repos`, o `.bares/` y `repos/<repo>/` dentro del Home Repo con `./pj clonar`), y se corrige ravn-trio. [ravn-trio#23](https://github.com/robert-flo/ravn-trio/pull/23) alinea `trio-pm-prompt.md` con esa regla. Ver [ADR 0016](adr/0016-el-trio-en-herdr-vive-en-ravn-trio.md).
 
 ## Empaquetado Arch (`*-arch`) y canal `[omarchy-personal]`
 
