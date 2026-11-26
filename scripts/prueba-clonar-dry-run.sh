@@ -9,8 +9,9 @@ trap 'echo "FALLA prueba-clonar-dry-run: se cortó en la línea $LINENO"' ERR
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 PYTHONUSERBASE="$("$PY" -m site --user-base || true)"; export PYTHONUSERBASE
 export HOME="$tmp/home" PJ_TEMPLATE_DIR="$T" PJ_SIN_GH=1 PY
+export RAVN_HOME_REPOS_ROOT="$tmp/central"
 export GIT_CONFIG_GLOBAL="$tmp/gitconfig" GIT_AUTHOR_NAME=prueba GIT_AUTHOR_EMAIL=p@x GIT_COMMITTER_NAME=prueba GIT_COMMITTER_EMAIL=p@x
-mkdir -p "$HOME" "$tmp/bin"
+mkdir -p "$HOME" "$tmp/bin" "$tmp/central"
 git config --file "$GIT_CONFIG_GLOBAL" init.defaultBranch master
 
 cat > "$tmp/bin/gh" <<'GH'
@@ -56,7 +57,7 @@ git add -A && git commit -qm inicial && git push -q origin HEAD:master 2>/dev/nu
 
 esperar_dry_run(){
   local desc="$1" out="$2"
-  if grep -qF '[dry-run] clonaría robert-flo/repo-uno en .bares/repo-uno.git y repos/repo-uno (rama main)' "$out" \
+  if grep -qF "[dry-run] clonaría robert-flo/repo-uno en $tmp/central/.bare/repo-uno.git y $tmp/central/repos/repo-uno (rama main)" "$out" \
      && grep -qF '[dry-run] verificaría/actualizaría rf-dos (robert-flo/repo-dos -> master); sugeriría limpiar clon viejo con ./pj clean' "$out"; then
     ok "$desc"
   else
@@ -136,33 +137,33 @@ chmod +x "$tmp/bin/stub-bare"
 export STUB_LOG="$tmp/stub.log"
 : > "$STUB_LOG"
 PJ_RAIZ="$h" PJ_CLONAR_CMD="$tmp/bin/stub-bare" bash "$T/clone-repos.sh" >"$tmp/o10" 2>&1
-if grep -qxF "CALL BARE_HOME=$h/.bares WORKTREES_HOME=$h/repos ARGS=clone robert-flo/repo-uno" "$STUB_LOG" \
-   && grep -qxF "CALL BARE_HOME=$h/.bares WORKTREES_HOME=$h/repos ARGS=clone robert-flo/repo-dos" "$STUB_LOG" \
+if grep -qxF "CALL BARE_HOME=$tmp/central/.bare WORKTREES_HOME=$tmp/central/repos ARGS=clone robert-flo/repo-uno" "$STUB_LOG" \
+   && grep -qxF "CALL BARE_HOME=$tmp/central/.bare WORKTREES_HOME=$tmp/central/repos ARGS=clone robert-flo/repo-dos" "$STUB_LOG" \
    && grep -qF "Aviso: existe un clon viejo en 'rf-dos/.git'" "$tmp/o10" \
    && grep -qF "./pj clean" "$tmp/o10" \
    && [ -d "$h/rf-dos/.git" ] \
-   && [ -d "$h/.bares/repo-uno.git" ] \
-   && [ -d "$h/repos/repo-uno" ]; then
-  ok "stub ravn-git-bare-clone usa .bares/ y repos/, avisa clon viejo sin borrarlo"
+   && [ -d "$tmp/central/.bare/repo-uno.git" ] \
+   && [ -d "$tmp/central/repos/repo-uno" ]; then
+  ok "stub ravn-git-bare-clone usa .bare/ y repos/ centrales, avisa clon viejo sin borrarlo"
 else
   mal "stub ravn-git-bare-clone"
   cat "$STUB_LOG"
   cat "$tmp/o10"
 fi
 
-# 7) dry-run cuando ya existe .bares/repo-uno.git
+# 7) dry-run cuando ya existe .bare/repo-uno.git
 PJ_RAIZ="$h" bash "$T/clone-repos.sh" --dry-run >"$tmp/o11" 2>&1
-if grep -qF "[dry-run] verificaría/actualizaría robert-flo/repo-uno en .bares/repo-uno.git y repos/repo-uno (rama main)" "$tmp/o11"; then
-  ok "--dry-run detecta .bares/repo-uno.git existente"
+if grep -qF "[dry-run] verificaría/actualizaría robert-flo/repo-uno en $tmp/central/.bare/repo-uno.git y $tmp/central/repos/repo-uno (rama main)" "$tmp/o11"; then
+  ok "--dry-run detecta .bare/repo-uno.git existente"
 else
-  mal "--dry-run no detectó .bares/repo-uno.git existente"
+  mal "--dry-run no detectó .bare/repo-uno.git existente"
   cat "$tmp/o11"
 fi
 
 # 8) repos_externos: se clonan como los demás y generan reglas duras de solo lectura
 PJ_RAIZ="$h" bash "$T/clone-repos.sh" --dry-run >"$tmp/o12" 2>&1
-if grep -qF '[dry-run] verificaría/actualizaría omacom/omarchy-pkgs en .bares/omarchy-pkgs.git y repos/omarchy-pkgs (rama master)' "$tmp/o12" \
-   && grep -qxF "CALL BARE_HOME=$h/.bares WORKTREES_HOME=$h/repos ARGS=clone omacom/omarchy-pkgs" "$STUB_LOG"; then
+if grep -qF "[dry-run] verificaría/actualizaría omacom/omarchy-pkgs en $tmp/central/.bare/omarchy-pkgs.git y $tmp/central/repos/omarchy-pkgs (rama master)" "$tmp/o12" \
+   && grep -qxF "CALL BARE_HOME=$tmp/central/.bare WORKTREES_HOME=$tmp/central/repos ARGS=clone omacom/omarchy-pkgs" "$STUB_LOG"; then
   ok "clone-repos --dry-run incluye los repos_externos"
 else
   mal "clone-repos --dry-run no incluye los repos_externos"

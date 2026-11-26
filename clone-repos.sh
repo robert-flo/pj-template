@@ -16,6 +16,12 @@ done
 PY="${PY:-$(bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts/py.sh")}"; export PY
 cd "${PJ_RAIZ:-$(dirname "${BASH_SOURCE[0]}")}"
 
+central_root="${RAVN_HOME_REPOS_ROOT:-$([ -d /z-home-repos ] && echo /z-home-repos || echo "${HOME}/z-home-repos")}"
+bare_home="${BARE_HOME:-$central_root/.bare}"
+wt_home="${WORKTREES_HOME:-$central_root/repos}"
+export BARE_HOME="$bare_home"
+export WORKTREES_HOME="$wt_home"
+
 mapfile -t REPOS < <("$PY" -c '
 import yaml
 p = yaml.safe_load(open("proyecto.yml")) or {}
@@ -32,13 +38,13 @@ for entry in "${REPOS[@]}"; do
   IFS=$'\t' read -r dir repo rama <<< "$entry"
   repo_name="${repo##*/}"
   if [ "$dry_run" = 1 ]; then
-    if [ -d ".bares/$repo_name.git" ]; then
-      echo "[dry-run] verificaría/actualizaría $repo en .bares/$repo_name.git y repos/$repo_name (rama $rama)"
+    if [ -d "$bare_home/$repo_name.git" ]; then
+      echo "[dry-run] verificaría/actualizaría $repo en $bare_home/$repo_name.git y $wt_home/$repo_name (rama $rama)"
       [ -d "$dir/.git" ] && echo "[dry-run] aviso: existe clon viejo en $dir/.git; podés limpiarlo cuando no tenga cambios locales con ./pj clean"
     elif [ -d "$dir/.git" ]; then
       echo "[dry-run] verificaría/actualizaría $dir ($repo -> $rama); sugeriría limpiar clon viejo con ./pj clean"
     else
-      echo "[dry-run] clonaría $repo en .bares/$repo_name.git y repos/$repo_name (rama $rama)"
+      echo "[dry-run] clonaría $repo en $bare_home/$repo_name.git y $wt_home/$repo_name (rama $rama)"
     fi
     continue
   fi
@@ -48,15 +54,17 @@ for entry in "${REPOS[@]}"; do
     echo "Aviso: existe un clon viejo en '$dir/.git'; cuando no tenga cambios locales podés limpiarlo con './pj clean'."
   fi
   bare_cmd="${PJ_CLONAR_CMD:-}"
-  if [ -z "$bare_cmd" ] && command -v ravn-git-bare-clone >/dev/null 2>&1; then
+  if [ -z "$bare_cmd" ] && command -v ravn-wt >/dev/null 2>&1; then
+    bare_cmd="ravn-wt"
+  elif [ -z "$bare_cmd" ] && command -v ravn-git-bare-clone >/dev/null 2>&1; then
     bare_cmd="ravn-git-bare-clone"
   fi
   if [ -n "$bare_cmd" ]; then
-    BARE_HOME="$PWD/.bares" WORKTREES_HOME="$PWD/repos" "$bare_cmd" clone "$repo"
-    echo "OK: $repo en .bares/$repo_name.git y repos/$repo_name"
+    "$bare_cmd" clone "$repo"
+    echo "OK: $repo en $bare_home/$repo_name.git y $wt_home/$repo_name"
     continue
   fi
-  echo "Aviso: ravn-git-bare-clone no está instalado; usando fallback con gh repo clone."
+  echo "Aviso: ravn-wt no está instalado; usando fallback con gh repo clone."
   if [ ! -d "$dir/.git" ]; then
     gh repo clone "$repo" "$dir"
   else

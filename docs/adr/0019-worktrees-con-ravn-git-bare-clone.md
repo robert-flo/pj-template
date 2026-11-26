@@ -1,8 +1,11 @@
 # 0019. Los worktrees salen de ravn-git-bare-clone
 
-Fecha: 2026-11-16 · Estado: aceptado
+Fecha: 2026-11-16 · Estado: reemplazado por [0027](0027-topologia-centralizada-ravn-wt.md)
 Origen: [robert-flo/ravn-git-bare-clone](https://github.com/robert-flo/ravn-git-bare-clone) (su README); fleet ADR 0011 («`git-issue-worktree` … never raw `git worktree`»)
 Reemplaza: los worktrees del WK de [0016](0016-el-trio-en-herdr-vive-en-ravn-trio.md) (`<clon>-wt-<n>-<fecha>`, hermano del clon)
+
+> [!NOTE]
+> Reemplazado por [0027](0027-topologia-centralizada-ravn-wt.md). La topología `/z/bare` y `/z/repos` queda obsoleta y se unifica en `/z-home-repos/.bare` y `/z-home-repos/repos` con `ravn-wt`.
 
 ## Contexto
 [0016](0016-el-trio-en-herdr-vive-en-ravn-trio.md) copiaba la convención de ravn-trio: `git worktree add` a mano, hermano del clon. Fleet ADR 0011 pide `git-issue-worktree` y nunca `git worktree` a mano, y la herramienta ya existe: `ravn-git-bare-clone` (paquete de `[omarchy-personal]`), con `/z/bare` y `/z/repos` como topología de la workstation. Roberto, 2026-11-16: la herramienta existe y hay que usarla.
