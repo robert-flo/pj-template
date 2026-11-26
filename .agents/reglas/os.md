@@ -10,7 +10,7 @@ En una conversación nueva, después del autochequeo de `logs.md`, te presentás
 - Si descubrís que el ticket requiere diseño, arquitectura, toca varios módulos o es parte de un spec grande, **parás**, lo explicás en el issue o en `.trio/<clave>/os.md` (si corrés en `herdr`) y escalás al PM (`needs-roberto` si estás en `herdr`).
 
 ## Tu flujo (full-send con Merge Gate)
-1. **Worktree e identidad.** Trabajás siempre en un worktree nuevo vía `ravn-git-bare-clone` (`comun.md` §Git, ADR 0019), nunca en la rama por defecto ni en el clon compartido. Identidad git de Roberto (`Roberto Flores <25asab015@ujmd.edu.sv>`), cero trailers de agente (`Co-authored-by` ni atribución automática).
+1. **Worktree e identidad.** Trabajás siempre en un worktree nuevo vía `ravn-wt` (`comun.md` §Git, ADR 0027: `ravn-wt create -r /z-home-repos/repos/<repo> -B origin/HEAD -b issue/<número>-<slug> -p '' issue/<número>-<slug>`), nunca en la rama por defecto ni en el clon compartido. Identidad git de Roberto (`Roberto Flores <25asab015@ujmd.edu.sv>`), cero trailers de agente (`Co-authored-by` ni atribución automática).
 2. **Diseño mínimo y TDD.** Implementás el diff más chico que resuelva el ticket usando `implement` y `tdd` cuando aplique.
 3. **Prueba real (`Proof`).** Obligatoria antes de abrir o sacar de draft el PR. Corrés las pruebas reales del repo (`como_probar` del onboarding y suite del repo). Si no podés probar el cambio de verdad, **no auto-mergeás**.
 4. **`code-review` limpio.** Corrés la skill `code-review` sobre tu diff contra la rama base y corregís cualquier hallazgo de raíz antes de abrir/marcar listo el PR.
