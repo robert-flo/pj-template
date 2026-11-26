@@ -1,7 +1,10 @@
 # 0026. En un Home Repo los worktrees salen de .bares y repos
 
-Fecha: 2026-11-22 · Estado: aceptado
+Fecha: 2026-11-22 · Estado: reemplazado por [0027](0027-topologia-centralizada-ravn-wt.md)
 Origen: Roberto / HR-CLAVIS#141. Enmienda [0019](0019-worktrees-con-ravn-git-bare-clone.md) solo dentro de un Home Repo.
+
+> [!NOTE]
+> Reemplazado por [0027](0027-topologia-centralizada-ravn-wt.md). Los `.bares` y `repos` locales dentro de los Home Repos quedan obsoletos y se unifican en la raíz central `/z-home-repos/.bare` y `/z-home-repos/repos` con `ravn-wt`.
 
 ## Contexto
 [0019](0019-worktrees-con-ravn-git-bare-clone.md) fija el bare en `/z/bare/<repo>.git` y los worktrees en `/z/repos/<repo>/`. Un Home Repo ya tiene `.bares/<repo>.git` y `repos/<repo>/`. Seguir 0019 al pie de la letra reclona el miembro en `/z` aunque el bare local exista.
