@@ -75,7 +75,7 @@ esperados = [
     "a-pm", "a-wk", "a-rv", "a-os",
     "c-pm", "c-wk", "c-rv", "c-os",
     "listo", "onboard", "sync", "check", "clean",
-    "fleet", "watch",
+    "fleet", "resume", "watch",
 ]
 encontrados = re.findall(r'^\s+([a-z0-9-]+)\s+\S', txt, re.M)
 if encontrados != esperados:
@@ -84,7 +84,7 @@ if encontrados != esperados:
 if "Igual" in txt or "igual" in txt:
     print("FALLA make help: descripción con referencia cruzada ('Igual')")
     sys.exit(1)
-print("ok   make help: 4 secciones, 15 targets y descripciones autocontenidas")
+print("ok   make help: 4 secciones, 16 targets y descripciones autocontenidas")
 PY
 for r in pm wk rv os; do
   PATH="$tmp/bin:$base" make -n "c-$r" ARGS="--demo" | grep -qx "./pj cursor $r --solo --demo" \
