@@ -13,7 +13,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/in-progress/chief-of-staff/SKILL.md",
-      "computedHash": "5967bbce30f8285a5d3ca050e699d51cb12d64eeeefb8cac34a9fd468b6be1c8"
+      "computedHash": "463fc3ea03372b17459f967417cd7aaa5426d311d8bac4a5cf57dd20e86975b3"
     },
     "claude-handoff": {
       "source": "robert-flo/skills",
@@ -48,7 +48,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/domain-modeling/SKILL.md",
-      "computedHash": "9ead6a6c1916d48f88f4f1f1ba19e323ae8037e8b70998d9fa01229f5fb84212"
+      "computedHash": "965b8f6c2dd008dac25ea7412558e138212df93fdfecdcf8cce1335660531688"
     },
     "grill-me": {
       "source": "robert-flo/skills",
@@ -216,7 +216,7 @@
       "sourceType": "github",
       "ref": "personal",
       "skillPath": "skills/engineering/to-tickets/SKILL.md",
-      "computedHash": "eaf6dfd5152a879c8a9cc799cf61079e5c8efe2ad3cc3517d3e9fae872b88fdb"
+      "computedHash": "ce2302939b48f0fbdc088f9b9beb9e1e1548a70f27e9a9285f0ed6a1a0dd1f83"
     },
     "triage": {
       "source": "robert-flo/skills",
